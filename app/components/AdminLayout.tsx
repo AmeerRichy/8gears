@@ -1,291 +1,161 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import { 
+  LayoutDashboard, 
+  Package, 
+  FolderTree, 
+  ExternalLink, 
+  LogOut, 
+  Menu, 
+  X, 
+  Settings, 
+  ShieldCheck,
+  Truck,
+  MessageSquare
+} from 'lucide-react';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const auth = localStorage.getItem("admin_auth");
-    if (auth) {
-      setIsAuthenticated(true);
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
     }
-  }, []);
+  }, [status, router]);
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    localStorage.setItem("admin_user", username);
-    localStorage.setItem("admin_pass", password);
-    localStorage.setItem("admin_auth", "true");
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin_auth");
-    localStorage.removeItem("admin_user");
-    localStorage.removeItem("admin_pass");
-    setIsAuthenticated(false);
-    setSidebarOpen(false);
-    router.push("/admin");
-  };
-
-  const isActive = (href: string) => pathname === href;
-
-  if (!isAuthenticated) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5] p-4 sm:p-6 font-sans">
-        <div className="bg-white w-full max-w-lg border border-purple-100/50 rounded-[2rem] sm:rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] px-5 py-8 sm:p-12 flex flex-col items-center animate-in zoom-in-95 duration-500">
-          <div className="relative group mb-6 sm:mb-8">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-full shadow-2xl object-cover border-4 border-white"
-            />
-          </div>
-
-          <h1 className="text-2xl sm:text-4xl font-[900] text-gray-900 mb-2 text-center tracking-tight leading-tight">
-            Elegance Essentials
-          </h1>
-          <p className="text-gray-400 mb-8 sm:mb-10 text-center text-sm sm:text-base font-medium">
-            Restricted Administrative Access
-          </p>
-
-          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6 w-full">
-            <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-purple-400 uppercase tracking-[0.2em] ml-1 group-focus-within:text-purple-600 transition-colors">
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] sm:rounded-[1.5rem] focus:bg-white focus:border-purple-200 outline-none transition-all text-gray-800 placeholder-gray-300 font-semibold text-base sm:text-lg cursor-text"
-                placeholder="Admin username"
-                required
-              />
-            </div>
-
-            <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-purple-400 uppercase tracking-[0.2em] ml-1 group-focus-within:text-purple-600 transition-colors">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] sm:rounded-[1.5rem] focus:bg-white focus:border-purple-200 outline-none transition-all text-gray-800 placeholder-gray-300 font-semibold text-base sm:text-lg cursor-text"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white py-4 sm:py-5 rounded-[1.25rem] sm:rounded-[1.5rem] font-black text-base sm:text-lg hover:shadow-[0_15px_30px_-10px_rgba(79,70,229,0.5)] transition-all active:scale-[0.97] mt-4 sm:mt-6 cursor-pointer"
-            >
-              Unlock Dashboard
-            </button>
-
-            <Link
-              href="/"
-              className="block text-center text-sm font-bold text-gray-400 hover:text-purple-600 transition-all cursor-pointer mt-3 sm:mt-4"
-            >
-              ← Back to Storefront
-            </Link>
-          </form>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     );
   }
 
+  if (!session) return null;
+
+  const isActive = (href: string) => pathname === href;
+
+  const navItems = [
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Products', href: '/admin/products', icon: Package },
+    { name: 'Orders', href: '/admin/orders', icon: Truck },
+    { name: 'Categories', href: '/admin/categories', icon: FolderTree },
+    { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f8f7ff] flex font-sans selection:bg-purple-100 selection:text-purple-900">
-      {/* Mobile Overlay */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 md:hidden ${sidebarOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-          }`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[86%] max-w-[320px] md:w-80 bg-white border-r border-purple-50 flex flex-col shadow-[10px_0_30px_rgba(0,0,0,0.06)] md:shadow-[10px_0_30px_rgba(0,0,0,0.02)] transform transition-transform duration-300 ease-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
-      >
-        <div className="p-5 sm:p-6 md:p-10 flex flex-col items-center border-b border-purple-50/50 relative">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-lg font-bold cursor-pointer"
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-
-          <Link
-            href="/admin"
-            className="group flex flex-col items-center cursor-pointer"
-          >
-            <div className="relative mb-4 md:mb-6">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="relative w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-md object-cover border-2 border-white"
-              />
-            </div>
-            <span className="text-lg md:text-xl font-[1000] bg-gradient-to-br from-purple-900 via-indigo-900 to-gray-900 bg-clip-text text-transparent text-center leading-[1.1] tracking-tighter">
-              Elegance
-              <br />
-              Essentials
-            </span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 p-4 sm:p-5 md:p-8 space-y-2 md:space-y-3 overflow-y-auto">
-          <p className="text-[10px] font-[900] text-purple-300 uppercase tracking-[0.25em] mb-4 md:mb-6 ml-3 md:ml-4">
-            Management
-          </p>
-
-          <Link
-            href="/admin"
-            className={`flex items-center space-x-4 px-4 md:px-5 py-3.5 md:py-4 rounded-[1.1rem] md:rounded-[1.25rem] transition-all font-bold group cursor-pointer active:scale-[0.98] ${isActive("/admin")
-                ? "bg-purple-50 text-purple-700"
-                : "text-gray-500 hover:bg-purple-50 hover:text-purple-700"
-              }`}
-          >
-            <span className="text-xl opacity-70 group-hover:opacity-100 transition-opacity">
-              📈
-            </span>
-            <span className="tracking-tight">Dashboard</span>
-          </Link>
-
-          <Link
-            href="/admin/products"
-            className={`flex items-center space-x-4 px-4 md:px-5 py-3.5 md:py-4 rounded-[1.1rem] md:rounded-[1.25rem] transition-all font-bold group cursor-pointer active:scale-[0.98] ${isActive("/admin/products")
-                ? "bg-purple-50 text-purple-700"
-                : "text-gray-500 hover:bg-purple-50 hover:text-purple-700"
-              }`}
-          >
-            <span className="text-xl opacity-70 group-hover:opacity-100 transition-opacity">
-              📦
-            </span>
-            <span className="tracking-tight">Inventory</span>
-          </Link>
-
-          <Link
-            href="/admin/categories"
-            className={`flex items-center space-x-4 px-4 md:px-5 py-3.5 md:py-4 rounded-[1.1rem] md:rounded-[1.25rem] transition-all font-bold group cursor-pointer active:scale-[0.98] ${isActive("/admin/categories")
-                ? "bg-purple-50 text-purple-700"
-                : "text-gray-500 hover:bg-purple-50 hover:text-purple-700"
-              }`}
-          >
-            <span className="text-xl opacity-70 group-hover:opacity-100 transition-opacity">
-              📁
-            </span>
-            <span className="tracking-tight">Categories</span>
-          </Link>
-
-          <div className="pt-6 md:pt-10">
-            <p className="text-[10px] font-[900] text-purple-300 uppercase tracking-[0.25em] mb-4 md:mb-6 ml-3 md:ml-4">
-              Shortcut
-            </p>
-
-            <Link
-              href="/"
-              className="flex items-center space-x-4 px-4 md:px-5 py-3.5 md:py-4 rounded-[1.1rem] md:rounded-[1.25rem] hover:bg-indigo-50 text-gray-500 hover:text-indigo-700 transition-all font-bold group cursor-pointer active:scale-[0.98]"
-            >
-              <span className="text-xl opacity-70 group-hover:opacity-100 transition-opacity">
-                🌐
-              </span>
-              <span className="tracking-tight">Live Store</span>
+    <div className="min-h-screen bg-slate-50 flex font-sans">
+      {/* Sidebar for Desktop */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="h-full flex flex-col">
+          {/* Sidebar Header */}
+          <div className="p-8 border-b border-slate-800">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-black text-xl">8G</span>
+              </div>
+              <span className="font-black text-2xl tracking-tighter uppercase">8 GEARS</span>
             </Link>
+            <div className="mt-4 flex items-center gap-2 px-1">
+              <ShieldCheck size={14} className="text-orange-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Admin Mode</span>
+            </div>
           </div>
-        </nav>
 
-        <div className="p-4 sm:p-5 md:p-8 mt-auto border-t border-purple-50/50">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-3 px-6 py-3.5 md:py-4 text-sm font-black text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-[1.1rem] md:rounded-[1.25rem] transition-all active:scale-[0.96] shadow-sm hover:shadow-rose-100 cursor-pointer"
-          >
-            <span>🚪</span>
-            <span>Sign Out</span>
-          </button>
+          {/* Navigation */}
+          <nav className="flex-1 p-6 space-y-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`
+                  flex items-center gap-4 px-4 py-4 rounded-2xl transition-all font-bold group
+                  ${isActive(item.href) 
+                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
+                `}
+              >
+                <item.icon size={22} className={isActive(item.href) ? 'text-white' : 'text-slate-500 group-hover:text-orange-500 transition-colors'} />
+                <span className="tracking-tight">{item.name}</span>
+              </Link>
+            ))}
+
+            <div className="pt-8">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 px-4">Utilities</p>
+              <Link
+                href="/"
+                className="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold group"
+              >
+                <ExternalLink size={22} className="text-slate-500 group-hover:text-orange-500" />
+                <span className="tracking-tight">View Live Store</span>
+              </Link>
+              <Link
+                href="/admin/settings"
+                className="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold group"
+              >
+                <Settings size={22} className="text-slate-500 group-hover:text-orange-500" />
+                <span className="tracking-tight">System Settings</span>
+              </Link>
+            </div>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-6 border-t border-slate-800">
+            <button
+              onClick={() => signOut()}
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white transition-all font-bold group"
+            >
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main wrapper */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile topbar */}
-        <header className="md:hidden sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-purple-100 px-4 py-3 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-purple-50 text-purple-700 text-xl font-bold hover:bg-purple-100 transition cursor-pointer"
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header */}
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight capitalize">
+              {pathname === '/admin' ? 'System Overview' : pathname.split('/').pop()?.replace('-', ' ')}
+            </h2>
+          </div>
 
-          <Link href="/admin" className="flex items-center gap-3 min-w-0">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-10 h-10 rounded-xl object-cover border border-purple-100"
-            />
-            <div className="min-w-0">
-              <p className="text-sm font-black text-gray-900 leading-tight truncate">
-                Elegance Essentials
-              </p>
-              <p className="text-[11px] text-gray-400 font-semibold">
-                Admin Panel
-              </p>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-sm font-black text-slate-900">{session.user?.name}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master Administrator</span>
             </div>
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-rose-50 text-rose-500 text-lg hover:bg-rose-100 transition cursor-pointer"
-            aria-label="Sign out"
-          >
-            🚪
-          </button>
+            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black">
+              {session.user?.name?.charAt(0)}
+            </div>
+          </div>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-5 md:p-14 overflow-y-auto">
-          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
+        {/* Content Container */}
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>

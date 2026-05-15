@@ -1,8 +1,17 @@
-"use client";
+'use client';
 
-import AdminLayout from "@/app/components/AdminLayout";
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
+import AdminLayout from '@/components/AdminLayout';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { 
+  Package, 
+  TrendingUp, 
+  Eye, 
+  ShieldCheck, 
+  PlusCircle, 
+  ArrowUpRight,
+  LayoutGrid
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<any[]>([]);
@@ -13,14 +22,7 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchData = async () => {
-    const user = localStorage.getItem("admin_user");
-    const pass = localStorage.getItem("admin_pass");
-    const res = await fetch("/api/admin/products", {
-      headers: {
-        "x-admin-username": user || "",
-        "x-admin-password": pass || "",
-      },
-    });
+    const res = await fetch('/api/products');
     if (res.ok) {
       const data = await res.json();
       setProducts(data);
@@ -28,100 +30,143 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
-  const categoryStats = useMemo(() => {
-    const counts: Record<string, number> = {};
-    products.forEach((p) => {
-      counts[p.category] = (counts[p.category] || 0) + 1;
-    });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const stats = useMemo(() => {
+    const totalViews = products.reduce((acc, p) => acc + (p.analytics?.views || 0), 0);
+    const categoryCount = new Set(products.map(p => p.category)).size;
+    const outOfStock = products.filter(p => p.variants.some((v: any) => v.stockQuantity === 0)).length;
+    
+    return {
+      totalProducts: products.length,
+      totalViews,
+      categoryCount,
+      outOfStock
+    };
   }, [products]);
 
   return (
     <AdminLayout>
-      <div className="space-y-12 pb-10">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-5xl font-[1000] text-gray-900 tracking-tighter">Command Center</h1>
-            <p className="text-gray-500 font-medium mt-2 text-lg">Real-time overview of Elegance Essentials performance.</p>
-          </div>
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-purple-50 shadow-sm">
-            <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse ml-2"></span>
-            <span className="text-sm font-black text-gray-900 mr-2">System Live</span>
+      <div className="space-y-10">
+        {/* Hero Welcome */}
+        <header className="relative bg-slate-900 rounded-[2.5rem] p-10 overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-orange-600/20 to-transparent"></div>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-orange-500 font-black text-xs uppercase tracking-widest mb-4">
+                <ShieldCheck size={16} />
+                <span>8 GEARS CONTROL PROTOCOL</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                Welcome back, Commander.
+              </h1>
+              <p className="text-slate-400 font-medium text-lg max-w-xl">
+                Your inventory is synchronized with the global cluster. You have {stats.totalProducts} active units live.
+              </p>
+            </div>
+            <Link 
+              href="/admin/products/new"
+              className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-orange-900/40 flex items-center gap-3 active:scale-95"
+            >
+              <PlusCircle size={22} />
+              Add New Product
+            </Link>
           </div>
         </header>
-        
-        {/* Top Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-purple-50 hover:shadow-xl transition-all group cursor-default">
-            <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">📦</div>
-            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total Inventory</h2>
-            <p className="text-6xl font-[1000] text-gray-900 tracking-tighter">{products.length}</p>
-            <p className="text-sm text-gray-500 mt-2 font-bold italic">Products currently live in your store</p>
-          </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-purple-50 hover:shadow-xl transition-all group cursor-default">
-            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">🏗️</div>
-            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Database Status</h2>
-            <p className="text-4xl font-[1000] text-gray-900 tracking-tighter uppercase">Healthy</p>
-            <p className="text-sm text-gray-500 mt-2 font-bold italic">MongoDB Cluster is synchronized</p>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard 
+            title="Total Products" 
+            value={stats.totalProducts} 
+            sub="Active Catalog Items" 
+            icon={<Package className="text-blue-500" />} 
+          />
+          <StatCard 
+            title="Total Traffic" 
+            value={stats.totalViews} 
+            sub="Lifetime Product Views" 
+            icon={<Eye className="text-emerald-500" />} 
+          />
+          <StatCard 
+            title="Categories" 
+            value={stats.categoryCount} 
+            sub="Active Product Segments" 
+            icon={<LayoutGrid className="text-purple-500" />} 
+          />
+          <StatCard 
+            title="Low Stock" 
+            value={stats.outOfStock} 
+            sub="Items needing attention" 
+            icon={<TrendingUp className={`text-red-500 ${stats.outOfStock > 0 ? 'animate-pulse' : ''}`} />} 
+          />
         </div>
 
-        {/* Middle Section */}
+        {/* Recent Products & Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-            <div className="relative z-10 flex flex-col h-full justify-between gap-10">
-              <div className="space-y-4">
-                <h2 className="text-4xl font-[1000] tracking-tighter leading-none">Elevate Your<br/>Storefront Today.</h2>
-                <p className="text-purple-100 font-medium text-lg max-w-md">Your catalog is synchronized. Keep your inventory fresh with new arrivals.</p>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/admin/products" className="bg-white text-purple-700 px-8 py-4 rounded-2xl font-black hover:bg-purple-50 transition-all shadow-xl active:scale-95 cursor-pointer">
-                  Manage Inventory →
-                </Link>
-                <Link href="/" className="bg-purple-500/30 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-black hover:bg-white/20 transition-all active:scale-95 cursor-pointer">
-                  View Live Site
-                </Link>
-              </div>
+          <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Recently Added</h3>
+              <Link href="/admin/products" className="text-sm font-bold text-orange-600 hover:underline">View All</Link>
             </div>
-          </div>
-
-          {/* Category Distribution */}
-          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-purple-50 flex flex-col">
-            <h3 className="text-xl font-[1000] text-gray-900 mb-8 tracking-tighter">Category Density</h3>
-            <div className="space-y-6 flex-1">
-              {categoryStats.slice(0, 5).map(([cat, count]) => (
-                <div key={cat} className="space-y-2">
-                  <div className="flex justify-between text-sm font-black text-gray-700">
-                    <span className="uppercase tracking-widest text-[10px]">{cat}</span>
-                    <span>{count} items</span>
+            <div className="space-y-4">
+              {products.slice(0, 5).map((product) => (
+                <div key={product._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-slate-200 rounded-xl overflow-hidden">
+                      {product.variants?.[0]?.images?.[0] && (
+                        <img src={product.variants[0].images[0]} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-900">{product.title}</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase">{product.category}</p>
+                    </div>
                   </div>
-                  <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
-                      style={{ width: `${(count / products.length) * 100}%` }}
-                    ></div>
-                  </div>
+                  <Link 
+                    href={`/admin/products/edit/${product._id}`}
+                    className="p-2 bg-white rounded-lg border border-slate-200 hover:border-orange-500 hover:text-orange-600 transition-all"
+                  >
+                    <ArrowUpRight size={18} />
+                  </Link>
                 </div>
               ))}
-              {categoryStats.length === 0 && (
-                <p className="text-center text-gray-400 font-medium py-10 italic">No data available yet.</p>
+              {products.length === 0 && (
+                <div className="text-center py-10 text-slate-400 font-bold italic">No products found. Start by adding one!</div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Footer Area */}
-        <div className="flex items-center justify-between pt-6 border-t border-purple-50 px-4">
-          <p className="text-xs font-black text-gray-300 uppercase tracking-[0.3em]">Elegance Essentials Security Shield Active</p>
-          <div className="flex gap-6 text-xs font-black text-purple-300 uppercase tracking-widest">
-            <span className="cursor-not-allowed">API Docs</span>
-            <span className="cursor-not-allowed">Audit Logs</span>
+          <div className="bg-orange-600 rounded-[2.5rem] p-8 text-white flex flex-col justify-between shadow-xl shadow-orange-900/20">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-black tracking-tighter leading-none">Global Performance Index</h3>
+              <p className="text-orange-100 font-medium text-sm">Your store is currently operating at optimal capacity. All systems functional.</p>
+            </div>
+            <div className="mt-10 py-6 border-y border-white/20">
+                <div className="flex items-end gap-2">
+                    <span className="text-5xl font-black leading-none tracking-tighter">100%</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-orange-200 mb-1">Reliability</span>
+                </div>
+            </div>
+            <button className="mt-8 w-full bg-white text-orange-600 py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition-all active:scale-95">
+              Generate Report
+            </button>
           </div>
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+function StatCard({ title, value, sub, icon }: any) {
+  return (
+    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+      <div className="flex justify-between items-start mb-4">
+        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+        <div className="text-xs font-black text-slate-400 uppercase tracking-widest">{title}</div>
+      </div>
+      <div className="text-4xl font-black text-slate-900 tracking-tighter mb-1">{value}</div>
+      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{sub}</div>
+    </div>
   );
 }

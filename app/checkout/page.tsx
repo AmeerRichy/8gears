@@ -1,5 +1,5 @@
-import CheckoutHero from "@/app/sections/CheckoutHero";
-import CheckoutForm from "@/app/sections/CheckoutForm";
+import CheckoutHero from "@/components/sections/CheckoutHero";
+import CheckoutForm from "@/components/sections/CheckoutForm";
 
 export default function CheckoutPage() {
   return (

@@ -10,7 +10,7 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden bg-[#0b0b0b] text-white rounded-b-[3rem]">
         <div className="absolute inset-0">
-          <div className="absolute -top-36 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-[#DB005B]/20 blur-3xl" />
+          <div className="absolute -top-36 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-orange-600/20 blur-3xl" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 to-black" />
         </div>
 
@@ -19,7 +19,7 @@ export default function ContactPage() {
             ← Back to Home
           </Link>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
-            Get in Touch<span className="text-[#DB005B]">.</span>
+            Get in Touch<span className="text-orange-600">.</span>
           </h1>
           <p className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
             Have questions about our products or your order? We're here to help you achieve your perfect glow.
@@ -38,7 +38,7 @@ export default function ContactPage() {
             <a
               href="https://wa.me/923334471403"
               target="_blank"
-              className="inline-flex items-center gap-2 text-[#DB005B] font-black text-lg hover:gap-4 transition-all"
+              className="inline-flex items-center gap-2 text-orange-600 font-black text-lg hover:gap-4 transition-all"
             >
               0333-4471403 <span>→</span>
             </a>
@@ -52,7 +52,7 @@ export default function ContactPage() {
             <a
               href="https://wa.me/923084243437"
               target="_blank"
-              className="inline-flex items-center gap-2 text-[#DB005B] font-black text-lg hover:gap-4 transition-all"
+              className="inline-flex items-center gap-2 text-orange-600 font-black text-lg hover:gap-4 transition-all"
             >
               0308-4243437 <span>→</span>
             </a>
@@ -64,8 +64,8 @@ export default function ContactPage() {
             <h3 className="text-2xl font-black text-black mb-2 tracking-tight">Voice Call</h3>
             <p className="text-gray-500 font-medium mb-6">Call us directly during business hours (10 AM - 8 PM).</p>
             <div className="space-y-2">
-              <a href="tel:03334471403" className="block text-black font-black text-lg hover:text-[#DB005B] transition">0333-4471403</a>
-              <a href="tel:03084243437" className="block text-black font-black text-lg hover:text-[#DB005B] transition">0308-4243437</a>
+              <a href="tel:03334471403" className="block text-black font-black text-lg hover:text-orange-600 transition">0333-4471403</a>
+              <a href="tel:03084243437" className="block text-black font-black text-lg hover:text-orange-600 transition">0308-4243437</a>
             </div>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function ContactPage() {
       <section className="max-w-4xl mx-auto px-6 mb-32">
         <div className="bg-white p-12 rounded-[3rem] border border-pink-50 shadow-sm text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="h-8 w-1.5 rounded-full bg-[#DB005B]" />
+            <span className="h-8 w-1.5 rounded-full bg-orange-600" />
             <h2 className="text-3xl font-[1000] text-black tracking-tighter">Visit Storefront</h2>
           </div>
           <p className="text-gray-600 mb-10 text-lg font-medium">We're located in the heart of beauty excellence.</p>

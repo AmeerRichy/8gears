@@ -1,31 +1,29 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "./context/CartContext";
-import Navbar from "./components/navbar";
-
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+import AuthProvider from "./providers/AuthProvider";
+import NavbarWrapper from "@/app/components/NavbarWrapper";
+import EngagementManager from "@/app/components/EngagementManager";
 
 export const metadata: Metadata = {
-  title: "Elegance Essentials",
-  description: "Experience the true essence of elegance.",
+  title: "8 GEARS | Premium Motorbike Gear",
+  description: "High-performance accessories and gear for the modern rider.",
   icons: {
     icon: "/logo.png",
   }
 };
 
-import NavbarWrapper from "./components/NavbarWrapper";
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <CartProvider>
-          <NavbarWrapper />
-          {children}
-        </CartProvider>
+      <body className="antialiased font-sans">
+        <AuthProvider>
+          <CartProvider>
+            <EngagementManager />
+            <NavbarWrapper />
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

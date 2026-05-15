@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     .join("");
 
   const buyerMail = {
-    from: `"Elegance Essentials" <${process.env.SMTP_USER}>`,
+    from: `"8 GEARS" <${process.env.SMTP_USER}>`,
     to: customer.email,
     subject: "Your Order Confirmation",
     html: `
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   };
 
   const adminMail = {
-    from: `"Elegance Essentials" <${process.env.SMTP_USER}>`,
+    from: `"8 GEARS" <${process.env.SMTP_USER}>`,
     to: process.env.ADMIN_EMAIL,
     subject: "New Order Received",
     html: `

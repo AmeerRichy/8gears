@@ -1,89 +1,47 @@
-import { NextResponse } from "next/server";
-import clientPromise from "@/app/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { NextResponse } from 'next/server';
+import connectDB from '@/lib/db/mongodb';
+import Category from '@/models/Category';
 
-function checkAuth(req: Request) {
-  const username = req.headers.get("x-admin-username");
-  const password = req.headers.get("x-admin-password");
-
-  return (
-    username === process.env.ADMIN_USERNAME &&
-    password === process.env.ADMIN_PASSWORD
-  );
-}
-
-export async function GET(req: Request) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function GET() {
   try {
-    const client = await clientPromise;
-    const db = client.db("elegance_essentials");
-    const categories = await db.collection("categories").find({}).toArray();
+    await connectDB();
+    const categories = await Category.find({}).sort({ name: 1 });
     return NextResponse.json(categories);
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const client = await clientPromise;
-    const db = client.db("elegance_essentials");
+    await connectDB();
     const body = await req.json();
-
-    const result = await db.collection("categories").insertOne(body);
-    return NextResponse.json(result);
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
-  }
-}
-
-export async function PUT(req: Request) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const client = await clientPromise;
-    const db = client.db("elegance_essentials");
-    const body = await req.json();
-    const { _id, ...updateData } = body;
-
-    const result = await db.collection("categories").updateOne(
-      { _id: new ObjectId(_id) },
-      { $set: updateData }
-    );
-    return NextResponse.json(result);
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+    
+    // Auto-generate slug if not provided
+    if (!body.slug) {
+      body.slug = body.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    }
+    
+    const category = await Category.create(body);
+    return NextResponse.json(category, { status: 201 });
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Category name or slug already exists' }, { status: 400 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const client = await clientPromise;
-    const db = client.db("elegance_essentials");
-    const { ids } = await req.json();
-
-    if (!ids || !Array.isArray(ids)) {
-      return NextResponse.json({ error: "Invalid IDs" }, { status: 400 });
-    }
-
-    const result = await db.collection("categories").deleteMany({
-      _id: { $in: ids.map((id: string) => new ObjectId(id)) }
-    });
-    return NextResponse.json(result);
-  } catch (e) {
-    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+    
+    await Category.findByIdAndDelete(id);
+    return NextResponse.json({ message: 'Category deleted' });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
