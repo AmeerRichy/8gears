@@ -50,7 +50,8 @@ export async function DELETE(req: Request) {
         { 'lifestyleImage': secureUrl },
         { 'stylishSection.mainImage': secureUrl },
         { 'stylishSection.secondaryImage': secureUrl },
-        { 'bottomGallery': secureUrl }
+        { 'bottomGallery': secureUrl },
+        { 'sizeChart': secureUrl }
       ]
     }).select('title');
 

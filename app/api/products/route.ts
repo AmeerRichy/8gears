@@ -38,6 +38,7 @@ const productSchema = z.object({
   lifestyleImage: z.string().optional(),
   stylishSection: z.object({ title: z.string(), description: z.string(), mainImage: z.string(), secondaryImage: z.string() }).optional(),
   bottomGallery: z.array(z.string()).optional(),
+  sizeChart: z.string().optional(),
 });
 
 export async function POST(req: Request) {

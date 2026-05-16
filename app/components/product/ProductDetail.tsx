@@ -113,7 +113,10 @@ export default function ProductDetail({
 
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
-    if (selectedVariant.stockQuantity === 0) return;
+
+    const stockQuantity = Number(selectedVariant.stockQuantity || 0);
+
+    if (stockQuantity === 0) return;
 
     addToCart({
       id: `${product._id}-${selectedVariant.sku}`,
@@ -122,10 +125,12 @@ export default function ProductDetail({
       title: product.title,
       name: product.title,
       color: selectedColor,
+      colorHex: selectedVariant.colorHex || "#999999",
       size: selectedSize,
       price: selectedVariant.price,
       image: selectedVariant.images?.[0] || "",
       quantity: 1,
+      stock: stockQuantity,
     });
   };
 
@@ -149,7 +154,7 @@ export default function ProductDetail({
       <ProductHero
         product={{
           ...product,
-          reviews: reviewStats
+          reviews: reviewStats,
         }}
         selectedColor={selectedColor}
         setSelectedColor={setSelectedColor}

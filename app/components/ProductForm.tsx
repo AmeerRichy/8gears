@@ -57,6 +57,7 @@ const productSchema = z.object({
   lifestyleImage: z.string().optional(),
   stylishSection: z.object({ title: z.string().optional(), description: z.string().optional(), mainImage: z.string().optional(), secondaryImage: z.string().optional() }),
   bottomGallery: z.array(z.string()),
+  sizeChart: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -96,6 +97,7 @@ function normalizeProductData(initialData?: any): ProductFormValues {
       lifestyleImage: '',
       stylishSection: { title: '', description: '', mainImage: '', secondaryImage: '' },
       bottomGallery: [],
+      sizeChart: '',
     };
   }
 
@@ -151,6 +153,7 @@ function normalizeProductData(initialData?: any): ProductFormValues {
       secondaryImage: initialData.stylishSection?.secondaryImage || '',
     },
     bottomGallery: Array.isArray(initialData.bottomGallery) ? initialData.bottomGallery : [],
+    sizeChart: initialData.sizeChart || '',
   };
 }
 
@@ -207,6 +210,9 @@ export default function ProductForm({ initialData }: ProductFormProps) {
     formState: { errors },
   } = methods;
 
+  // Hidden input to ensure sizeChart is registered and synced
+  register('sizeChart');
+
   const { fields: variantFields, append: appendVariant, remove: removeVariant } = useFieldArray({
     control,
     name: 'variants',
@@ -248,7 +254,8 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           price: Number(v.price || 0),
           stockQuantity: Number(v.stockQuantity || 0),
           comparePrice: v.comparePrice || undefined
-        }))
+        })),
+        sizeChart: data.sizeChart || ""
       };
 
       const url = initialData ? `/api/products/${initialData._id}` : '/api/products';
@@ -476,8 +483,9 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                       <div>
                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Category</label>
                         <select
+                          key={categories.length}
                           {...register('category')}
-                          className="w-full px-6 py-5 rounded-2xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all font-bold appearance-none bg-white"
+                          className="w-full px-6 py-5 rounded-2xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all font-bold appearance-none bg-white cursor-pointer"
                         >
                           <option value="">Select Gear Class</option>
                           {categories.map(c => (
@@ -532,6 +540,53 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                     <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                       Open Visual Editor <Plus size={12} />
                     </div>
+                  </div>
+
+                  {/* Size Chart Image Optional */}
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-6">
+                    <div className="border-l-4 border-slate-900 pl-4">
+                      <h4 className="font-black uppercase tracking-widest text-xs text-slate-900">Size Chart Image</h4>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase">Optional</p>
+                    </div>
+
+                    {watch('sizeChart') ? (
+                      <div className="space-y-4">
+                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 group/chart">
+                          <img 
+                            src={watch('sizeChart')} 
+                            alt="Size Chart" 
+                            className="w-full h-full object-contain"
+                          />
+                          <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/chart:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                             <button
+                              type="button"
+                              onClick={() => setMediaManager({ isOpen: true, path: 'sizeChart', multiple: false })}
+                              className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-orange-500 hover:text-white transition-all cursor-pointer"
+                            >
+                              Replace
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setValue('sizeChart', '', { shouldDirty: true, shouldValidate: true })}
+                              className="px-4 py-2 bg-red-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-red-600 transition-all cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                        <button
+                          type="button"
+                          onClick={() => setMediaManager({ isOpen: true, path: 'sizeChart', multiple: false })}
+                          className="w-full aspect-[2/1] rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300 hover:border-orange-500 hover:text-orange-500 transition-all bg-gray-50/30 gap-2 group cursor-pointer"
+                        >
+                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Plus size={20} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Upload Size Chart</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -778,41 +833,37 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                     })}
                   </div>
                 </section>
-
-                {/* Media Manager Integration */}
-                <MediaManager
-                  isOpen={mediaManager.isOpen}
-                  onClose={() => setMediaManager(prev => ({ ...prev, isOpen: false }))}
-                  onSelect={(url) => {
-                    if (mediaManager.multiple) {
-                      const path = mediaManager.path;
-                      // Extract color from path to sync all variants of same color
-                      const match = path.match(/variants\.(\d+)/);
-                      if (match) {
-                        const idx = parseInt(match[1]);
-                        const colorName = watch(`variants.${idx}.color`);
-                        const sameColorIndices = watchedVariants.map((v: any, i: number) => v.color === colorName ? i : -1).filter((i: number) => i !== -1);
-
-                        sameColorIndices.forEach(i => {
-                          const current = watch(`variants.${i}.images`) || [];
-                          if (!current.includes(url)) {
-                            setValue(`variants.${i}.images`, [...current, url]);
-                          }
-                        });
-                      } else {
-                        const current = watch(path as any) || [];
-                        setValue(path as any, [...current, url]);
-                      }
-                    } else {
-                      setValue(mediaManager.path as any, url);
-                    }
-                    setMediaManager(prev => ({ ...prev, isOpen: false }));
-                  }}
-                />
               </div>
             )}
 
+            <MediaManager
+              isOpen={mediaManager.isOpen}
+              onClose={() => setMediaManager(prev => ({ ...prev, isOpen: false }))}
+              onSelect={(url) => {
+                if (mediaManager.multiple) {
+                  const path = mediaManager.path;
+                  const match = path.match(/variants\.(\d+)/);
+                  if (match) {
+                    const idx = parseInt(match[1]);
+                    const colorName = watch(`variants.${idx}.color`);
+                    const sameColorIndices = (watchedVariants || []).map((v: any, i: number) => (v.color || 'Black') === colorName ? i : -1).filter((i: number) => i !== -1);
 
+                    sameColorIndices.forEach(i => {
+                      const current = watch(`variants.${i}.images`) || [];
+                      if (!current.includes(url)) {
+                        setValue(`variants.${i}.images`, [...current, url], { shouldDirty: true });
+                      }
+                    });
+                  } else {
+                    const current = watch(path as any) || [];
+                    setValue(path as any, [...current, url], { shouldDirty: true });
+                  }
+                } else {
+                  setValue(mediaManager.path as any, url, { shouldDirty: true, shouldValidate: true });
+                }
+                setMediaManager(prev => ({ ...prev, isOpen: false }));
+              }}
+            />
           </div>
         )}
       </div>

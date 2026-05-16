@@ -43,6 +43,7 @@ export interface IProduct extends Document {
     totalSold: number;
     views: number;
   };
+  sizeChart?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +114,7 @@ const ProductSchema = new Schema<IProduct>(
       totalSold: { type: Number, default: 0 },
       views: { type: Number, default: 0 },
     },
+    sizeChart: { type: String, default: "" },
   },
   { timestamps: true }
 );
@@ -120,9 +122,7 @@ const ProductSchema = new Schema<IProduct>(
 // Add text index for search
 ProductSchema.index({ title: 'text', baseDescription: 'text', tags: 'text' });
 
-// Force refresh model in development to avoid schema caching issues
-if (process.env.NODE_ENV === 'development') {
-  delete mongoose.models.Product;
-}
+// Force refresh model to avoid schema caching issues
+delete mongoose.models.Product;
 
 export default mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);

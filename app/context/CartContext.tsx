@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 export type CartItem = {
   id: string; // Unique combination of productId and variantId
@@ -9,10 +15,12 @@ export type CartItem = {
   title: string;
   name: string; // Same as title for backward compatibility
   color: string;
+  colorHex?: string;
   size: string;
   price: number;
   image: string;
   quantity: number;
+  stock?: number;
 };
 
 type CartContextType = {
@@ -31,29 +39,50 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart');
+    const storedCart = localStorage.getItem("cart");
+
     if (storedCart) {
       try {
         setCart(JSON.parse(storedCart));
       } catch (e) {
-        console.error('Failed to parse cart');
+        console.error("Failed to parse cart");
       }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
+      const maxStock = item.stock ?? 999;
+
       if (existing) {
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-        );
+        return prev.map((i) => {
+          if (i.id !== item.id) return i;
+
+          const safeQuantity = Math.min(
+            i.quantity + item.quantity,
+            i.stock ?? maxStock
+          );
+
+          return {
+            ...i,
+            ...item,
+            quantity: safeQuantity,
+          };
+        });
       }
-      return [...prev, item];
+
+      return [
+        ...prev,
+        {
+          ...item,
+          quantity: Math.min(item.quantity, maxStock),
+        },
+      ];
     });
   };
 
@@ -62,22 +91,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-      return;
-    }
     setCart((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity } : i))
+      prev.map((item) => {
+        if (item.id !== id) return item;
+
+        const maxStock = item.stock ?? 999;
+        const safeQuantity = Math.max(1, Math.min(quantity, maxStock));
+
+        return {
+          ...item,
+          quantity: safeQuantity,
+        };
+      })
     );
   };
 
   const clearCart = () => setCart([]);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
-    <CartContext.Provider value={{ cart, cartCount, total, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        cartCount,
+        total,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -85,6 +134,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within a CartProvider');
+
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+
   return context;
 };
