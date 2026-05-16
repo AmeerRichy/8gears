@@ -2,31 +2,72 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IOrder extends Document {
   orderId: string;
+  trackingId: string;
   customerInfo: {
     name: string;
     email: string;
     phone: string;
   };
-  shippingAddress: string;
+  shippingAddress: {
+    address: string;
+    apartment?: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
   items: Array<{
     productId: mongoose.Types.ObjectId;
     variantId: string;
+    sku: string;
     title: string;
+    slug: string;
     color: string;
+    colorHex?: string;
     size: string;
-    price: number;
+    unitPrice: number;
     quantity: number;
+    lineTotal: number;
     image: string;
   }>;
-  totalAmount: number;
-  paymentMethod: 'Stripe' | 'PayPal';
-  paymentStatus: 'pending' | 'paid' | 'failed';
-  paymentId: string;
-  orderStatus: 'received' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  amounts: {
+    subtotal: number;
+    shippingAmount: number;
+    totalAmount: number;
+    currency: string;
+  };
+  payment: {
+    paymentMethod: 'Stripe' | 'PayPal' | 'COD' | 'Test';
+    paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+    paymentProviderId?: string;
+    stripeSessionId?: string;
+    paypalOrderId?: string;
+    paypalCaptureId?: string;
+  };
+  linkedCheckoutLeadId?: string;
+  orderStatus:
+  | 'order_received'
+  | 'payment_confirmed'
+  | 'processing'
+  | 'packed'
+  | 'shipped'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
+  fulfillmentStatus: 'pending' | 'packed' | 'shipped' | 'delivered' | 'returned';
+  shipping?: {
+    courierName?: string;
+    trackingNumber?: string;
+    trackingUrl?: string;
+  };
+  adminNotes?: string;
+  stockReduced: boolean;
   trackingTimeline: Array<{
     status: string;
     message: string;
     timestamp: Date;
+    updatedBy: 'system' | 'admin';
   }>;
   createdAt: Date;
   updatedAt: Date;
@@ -35,46 +76,98 @@ export interface IOrder extends Document {
 const OrderSchema: Schema = new Schema(
   {
     orderId: { type: String, required: true, unique: true },
+    trackingId: { type: String, required: true, unique: true },
     customerInfo: {
       name: { type: String, required: true },
       email: { type: String, required: true },
       phone: { type: String, required: true },
     },
-    shippingAddress: { type: String, required: true },
+    shippingAddress: {
+      address: { type: String, required: true },
+      apartment: { type: String },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      zip: { type: String, required: true },
+      country: { type: String, required: true },
+    },
     items: [
       {
         productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
         variantId: { type: String, required: true },
+        sku: { type: String, required: true },
         title: { type: String, required: true },
+        slug: { type: String, required: true },
         color: { type: String, required: true },
+        colorHex: { type: String },
         size: { type: String, required: true },
-        price: { type: Number, required: true },
+        unitPrice: { type: Number, required: true },
         quantity: { type: Number, required: true },
+        lineTotal: { type: Number, required: true },
         image: { type: String },
       },
     ],
-    totalAmount: { type: Number, required: true },
-    paymentMethod: { type: String, enum: ['Stripe', 'PayPal'], required: true },
-    paymentStatus: { 
-      type: String, 
-      enum: ['pending', 'paid', 'failed'], 
-      default: 'pending' 
+    amounts: {
+      subtotal: { type: Number, required: true },
+      shippingAmount: { type: Number, required: true },
+      totalAmount: { type: Number, required: true },
+      currency: { type: String, default: 'USD' },
     },
-    paymentId: { type: String },
-    orderStatus: { 
-      type: String, 
-      enum: ['received', 'processing', 'shipped', 'delivered', 'cancelled'], 
-      default: 'received' 
+    payment: {
+      paymentMethod: { type: String, enum: ['Stripe', 'PayPal', 'COD', 'Test'], required: true },
+      paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'failed', 'refunded'],
+        default: 'pending',
+      },
+      paymentProviderId: { type: String },
+      stripeSessionId: { type: String },
+      paypalOrderId: { type: String },
+      paypalCaptureId: { type: String },
     },
+    linkedCheckoutLeadId: { type: String },
+    orderStatus: {
+      type: String,
+      enum: [
+        'order_received',
+        'payment_confirmed',
+        'processing',
+        'packed',
+        'shipped',
+        'out_for_delivery',
+        'delivered',
+        'cancelled',
+        'refunded',
+      ],
+      default: 'order_received',
+    },
+    fulfillmentStatus: {
+      type: String,
+      enum: ['pending', 'packed', 'shipped', 'delivered', 'returned'],
+      default: 'pending',
+    },
+    shipping: {
+      courierName: { type: String },
+      trackingNumber: { type: String },
+      trackingUrl: { type: String },
+    },
+    adminNotes: { type: String },
+    stockReduced: { type: Boolean, default: false },
     trackingTimeline: [
       {
         status: { type: String, required: true },
         message: { type: String, required: true },
         timestamp: { type: Date, default: Date.now },
+        updatedBy: { type: String, enum: ['system', 'admin'], default: 'system' },
       },
     ],
   },
   { timestamps: true }
 );
 
+// Force refresh model to avoid schema caching issues
+if (mongoose.models.Order) {
+  delete mongoose.models.Order;
+}
+
 export default mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
+

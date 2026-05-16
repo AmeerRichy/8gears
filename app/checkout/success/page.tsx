@@ -22,14 +22,14 @@ function SuccessContent() {
 
   const verifyOrder = async () => {
     try {
-      const res = await fetch('/api/orders/verify', {
+      const res = await fetch('/api/payment/stripe/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId }),
       });
       const data = await res.json();
       if (res.ok) {
-        setOrder(data.order);
+        setOrder(data);
         // Clear cart after successful order
         localStorage.removeItem('cart');
         window.dispatchEvent(new Event('storage'));
@@ -85,7 +85,7 @@ function SuccessContent() {
               <h2 className="text-4xl font-black text-slate-900 tracking-tighter">{order.orderId}</h2>
             </div>
             <Link 
-              href={`/track-order?id=${order.orderId}`}
+              href={`/track-order?trackingId=${order.trackingId}`}
               className="group flex items-center gap-3 px-6 py-4 bg-orange-50 text-orange-600 rounded-2xl font-black text-sm hover:bg-orange-600 hover:text-white transition-all active:scale-95"
             >
               Track Live Progress
@@ -97,9 +97,9 @@ function SuccessContent() {
             <div>
               <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                Delivery Address
+                Tracking ID
               </h3>
-              <p className="text-slate-900 font-bold leading-relaxed">{order.shippingAddress}</p>
+              <p className="text-slate-900 font-bold leading-relaxed">{order.trackingId}</p>
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -123,6 +123,7 @@ function SuccessContent() {
     </div>
   );
 }
+
 
 export default function SuccessPage() {
   return (

@@ -7,24 +7,35 @@ export async function GET(req: Request) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const trackingId = searchParams.get("trackingId");
 
-    if (!id) {
+    if (!trackingId) {
       return NextResponse.json(
-        { error: "Order ID is required" },
+        { error: "Tracking ID is required" },
         { status: 400 }
       );
     }
 
-    const order = await Order.findOne({
-      orderId: id.toUpperCase(),
-    });
+    const order = await Order.findOne({ trackingId });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    return NextResponse.json(order);
+    // Return safe data
+    const safeData = {
+      orderId: order.orderId,
+      trackingId: order.trackingId,
+      orderStatus: order.orderStatus,
+      paymentStatus: order.payment.paymentStatus,
+      items: order.items,
+      amounts: order.amounts,
+      shipping: order.shipping,
+      trackingTimeline: order.trackingTimeline,
+      createdAt: order.createdAt,
+    };
+
+    return NextResponse.json(safeData);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

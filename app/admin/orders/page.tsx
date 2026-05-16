@@ -1,6 +1,6 @@
 'use client';
 
-import AdminLayout from '@/components/AdminLayout';
+import AdminLayout from '@/app/components/AdminLayout';
 import { useState, useEffect } from 'react';
 import { 
   Search, 
@@ -11,30 +11,39 @@ import {
   Package, 
   CheckCircle, 
   XCircle,
-  MoreVertical,
   Calendar,
   CreditCard,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  ShieldCheck,
+  Box,
+  UserCheck
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [search, setSearch] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [orderStatus, setOrderStatus] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [search, paymentStatus, orderStatus]);
 
   const fetchOrders = async () => {
+    setLoading(true);
+    const query = new URLSearchParams();
+    if (search) query.set('search', search);
+    if (paymentStatus) query.set('paymentStatus', paymentStatus);
+    if (orderStatus) query.set('orderStatus', orderStatus);
+    
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await fetch(`/api/admin/orders?${query.toString()}`);
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -50,7 +59,7 @@ export default function AdminOrdersPage() {
       const res = await fetch(`/api/admin/orders/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, message }),
+        body: JSON.stringify({ orderStatus: status, timelineMessage: message }),
       });
       if (res.ok) {
         const updatedOrder = await res.json();
@@ -64,20 +73,37 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.orderId.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          o.customerInfo.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || o.orderStatus === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const updateFulfillment = async (id: string, data: any) => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const updatedOrder = await res.json();
+        setOrders(orders.map(o => o._id === id ? updatedOrder : o));
+        setSelectedOrder(updatedOrder);
+      }
+    } catch (error) {
+      alert('Failed to update fulfillment');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'received': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'order_received': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'payment_confirmed': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case 'processing': return 'bg-purple-50 text-purple-600 border-purple-100';
+      case 'packed': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case 'shipped': return 'bg-orange-50 text-orange-600 border-orange-100';
+      case 'out_for_delivery': return 'bg-amber-50 text-amber-600 border-amber-100';
       case 'delivered': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case 'cancelled': return 'bg-rose-50 text-rose-600 border-rose-100';
+      case 'refunded': return 'bg-slate-50 text-slate-600 border-slate-100';
       default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   };
@@ -98,36 +124,49 @@ export default function AdminOrdersPage() {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatBox title="Active Orders" value={orders.filter(o => o.orderStatus !== 'delivered' && o.orderStatus !== 'cancelled').length} sub="Pending fulfillment" />
-          <StatBox title="Total Revenue" value={`Rs. ${orders.filter(o => o.paymentStatus === 'paid').reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}`} sub="Verified payments" />
+          <StatBox title="Active Orders" value={orders.filter(o => !['delivered', 'cancelled', 'refunded'].includes(o.orderStatus)).length} sub="Pending fulfillment" />
+          <StatBox title="Verified Revenue" value={`${orders.filter(o => o.payment.paymentStatus === 'paid').reduce((acc, o) => acc + o.amounts.totalAmount, 0).toFixed(2)} USD`} sub="Completed payments" />
           <StatBox title="Processing" value={orders.filter(o => o.orderStatus === 'processing').length} sub="In packaging phase" />
-          <StatBox title="Out for Delivery" value={orders.filter(o => o.orderStatus === 'shipped').length} sub="With logistics partner" />
+          <StatBox title="Global Orders" value={orders.length} sub="Total lifetime orders" />
         </div>
 
         {/* Filters & Table */}
         <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row gap-4 bg-slate-50/30">
-            <div className="relative flex-1">
+            <div className="relative flex-[2]">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search by Order ID or Customer Name..."
+                placeholder="Search by Order ID, Name, Email, Phone..."
                 className="w-full pl-14 pr-6 py-4 rounded-2xl bg-white border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/5 transition-all outline-none font-bold"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <select
-              className="px-6 py-4 rounded-2xl bg-white border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/5 transition-all outline-none font-black text-slate-700 min-w-[200px]"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              className="flex-1 px-6 py-4 rounded-2xl bg-white border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/5 transition-all outline-none font-black text-slate-700"
+              value={orderStatus}
+              onChange={(e) => setOrderStatus(e.target.value)}
             >
-              <option value="All">All Statuses</option>
-              <option value="received">Received</option>
+              <option value="">Order Status</option>
+              <option value="order_received">Received</option>
+              <option value="payment_confirmed">Paid</option>
               <option value="processing">Processing</option>
+              <option value="packed">Packed</option>
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
+            </select>
+            <select
+              className="flex-1 px-6 py-4 rounded-2xl bg-white border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/5 transition-all outline-none font-black text-slate-700"
+              value={paymentStatus}
+              onChange={(e) => setPaymentStatus(e.target.value)}
+            >
+              <option value="">Payment Status</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
             </select>
           </div>
 
@@ -135,10 +174,10 @@ export default function AdminOrdersPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-100 bg-white">
-                  <th className="px-8 py-6">Order ID & Date</th>
+                  <th className="px-8 py-6">Order ID & Tracking ID</th>
                   <th className="px-8 py-6">Customer</th>
                   <th className="px-8 py-6">Items</th>
-                  <th className="px-8 py-6">Payment</th>
+                  <th className="px-8 py-6">Amount</th>
                   <th className="px-8 py-6">Status</th>
                   <th className="px-8 py-6 text-right">Action</th>
                 </tr>
@@ -150,11 +189,14 @@ export default function AdminOrdersPage() {
                       <td colSpan={6} className="px-8 py-6 h-20 bg-slate-50/50"></td>
                     </tr>
                   ))
-                ) : filteredOrders.map((order) => (
+                ) : orders.map((order) => (
                   <tr key={order._id} className="hover:bg-slate-50/50 transition-all group">
                     <td className="px-8 py-6">
                       <div className="font-black text-slate-900 tracking-tight">{order.orderId}</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      <div className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-0.5">
+                        {order.trackingId}
+                      </div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
                     </td>
@@ -177,14 +219,14 @@ export default function AdminOrdersPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="font-black text-slate-900">Rs. {order.totalAmount}</div>
-                      <div className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border w-fit mt-1 ${order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
-                        {order.paymentStatus}
+                      <div className="font-black text-slate-900">{order.amounts.currency} {order.amounts.totalAmount.toFixed(2)}</div>
+                      <div className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border w-fit mt-1 ${order.payment.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                        {order.payment.paymentStatus}
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${getStatusColor(order.orderStatus)}`}>
-                        {order.orderStatus}
+                        {order.orderStatus.replace(/_/g, ' ')}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-right">
@@ -210,8 +252,12 @@ export default function AdminOrdersPage() {
             {/* Modal Header */}
             <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div>
-                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Logistics Detail</p>
+                <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Deployment Detail</p>
                 <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Order #{selectedOrder.orderId}</h2>
+                <div className="flex items-center gap-2 mt-1">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tracking ID:</span>
+                   <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{selectedOrder.trackingId}</span>
+                </div>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-4 hover:bg-white rounded-2xl text-slate-400 transition-all">
                 <XCircle size={28} />
@@ -225,7 +271,7 @@ export default function AdminOrdersPage() {
                 <section>
                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                    Customer Information
+                    Customer Profile
                   </h3>
                   <div className="bg-slate-50 p-6 rounded-3xl space-y-4">
                     <div className="flex items-center gap-4 text-slate-600 font-bold">
@@ -244,7 +290,12 @@ export default function AdminOrdersPage() {
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shrink-0">
                         <MapPin size={18} />
                       </div>
-                      {selectedOrder.shippingAddress}
+                      <div className="text-xs">
+                        <p>{selectedOrder.shippingAddress.address}</p>
+                        {selectedOrder.shippingAddress.apartment && <p>{selectedOrder.shippingAddress.apartment}</p>}
+                        <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zip}</p>
+                        <p>{selectedOrder.shippingAddress.country}</p>
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -252,7 +303,7 @@ export default function AdminOrdersPage() {
                 <section>
                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                    Order Items ({selectedOrder.items.length})
+                    Payload Contents ({selectedOrder.items.length})
                   </h3>
                   <div className="space-y-3">
                     {selectedOrder.items.map((item: any, idx: number) => (
@@ -265,7 +316,7 @@ export default function AdminOrdersPage() {
                           <p className="text-[10px] font-bold text-slate-400 uppercase">{item.color} / {item.size}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-black text-slate-900">Rs. {item.price}</p>
+                          <p className="text-sm font-black text-slate-900">{selectedOrder.amounts.currency} {item.unitPrice.toFixed(2)}</p>
                           <p className="text-xs font-bold text-orange-600">Qty: {item.quantity}</p>
                         </div>
                       </div>
@@ -279,24 +330,53 @@ export default function AdminOrdersPage() {
                 <section>
                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                    Logistics Control
+                    Deployment Control
                   </h3>
                   <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white">
-                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-4">Set Deployment Status</p>
+                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-4">Master Status Override</p>
                     <div className="grid grid-cols-2 gap-3">
-                      {['received', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                      {[
+                        'order_received', 
+                        'payment_confirmed', 
+                        'processing', 
+                        'packed', 
+                        'shipped', 
+                        'out_for_delivery', 
+                        'delivered', 
+                        'cancelled'
+                      ].map((status) => (
                         <button
                           key={status}
                           disabled={updating || selectedOrder.orderStatus === status}
                           onClick={() => updateOrderStatus(selectedOrder._id, status)}
-                          className={`py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50
+                          className={`py-3 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50
                             ${selectedOrder.orderStatus === status 
                               ? 'bg-orange-600 text-white' 
                               : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
                         >
-                          {status}
+                          {status.replace(/_/g, ' ')}
                         </button>
                       ))}
+                    </div>
+
+                    <div className="mt-8 space-y-4">
+                       <p className="text-[10px] font-black text-white/50 uppercase tracking-widest">Courier Manifest</p>
+                       <div className="space-y-2">
+                          <input 
+                            type="text" 
+                            placeholder="Courier Name (e.g. FedEx)"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-orange-500"
+                            defaultValue={selectedOrder.shipping?.courierName}
+                            onBlur={(e) => updateFulfillment(selectedOrder._id, { 'shipping.courierName': e.target.value })}
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Tracking Number"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-orange-500"
+                            defaultValue={selectedOrder.shipping?.trackingNumber}
+                            onBlur={(e) => updateFulfillment(selectedOrder._id, { 'shipping.trackingNumber': e.target.value })}
+                          />
+                       </div>
                     </div>
                   </div>
                 </section>
@@ -304,7 +384,7 @@ export default function AdminOrdersPage() {
                 <section className="flex-1">
                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                    Deployment History
+                    Logistics History
                   </h3>
                   <div className="bg-slate-50 rounded-3xl p-6 space-y-6 max-h-[300px] overflow-y-auto">
                     {selectedOrder.trackingTimeline.slice().reverse().map((step: any, idx: number) => (
@@ -314,7 +394,9 @@ export default function AdminOrdersPage() {
                         )}
                         <div className={`w-5 h-5 rounded-full mt-1 shrink-0 ${idx === 0 ? 'bg-orange-600 animate-pulse' : 'bg-slate-300'}`}></div>
                         <div>
-                          <p className={`font-black text-[10px] uppercase tracking-widest ${idx === 0 ? 'text-slate-900' : 'text-slate-400'}`}>{step.status}</p>
+                          <p className={`font-black text-[10px] uppercase tracking-widest ${idx === 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                            {step.status.replace(/_/g, ' ')}
+                          </p>
                           <p className="text-sm font-bold text-slate-600 leading-tight mt-1">{step.message}</p>
                           <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">{new Date(step.timestamp).toLocaleString()}</p>
                         </div>
@@ -340,3 +422,4 @@ function StatBox({ title, value, sub }: any) {
     </div>
   );
 }
+

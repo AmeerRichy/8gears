@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import paypal from '@paypal/checkout-server-sdk';
+import client from '@/lib/paypal';
 import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
 import { buildCheckoutOrderItems } from '@/lib/checkout/buildCheckoutOrderItems';
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
         currency: checkoutData.currency,
       },
       payment: {
-        paymentMethod: 'Stripe',
+        paymentMethod: 'PayPal',
         paymentStatus: 'pending',
       },
       linkedCheckoutLeadId: leadId,
@@ -50,34 +51,45 @@ export async function POST(req: Request) {
       ],
     });
 
-    // 4. Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: checkoutData.items.map((item) => ({
-        price_data: {
-          currency: checkoutData.currency.toLowerCase(),
-          product_data: {
-            name: item.title,
-            images: [item.image],
-            description: `${item.color} / ${item.size}`,
+    // 4. Create PayPal Order
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer('return=representation');
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          amount: {
+            currency_code: checkoutData.currency,
+            value: checkoutData.totalAmount.toFixed(2),
+            breakdown: {
+              item_total: {
+                currency_code: checkoutData.currency,
+                value: checkoutData.subtotal.toFixed(2),
+              },
+              shipping: {
+                currency_code: checkoutData.currency,
+                value: checkoutData.shippingAmount.toFixed(2),
+              },
+            },
           },
-          unit_amount: Math.round(item.unitPrice * 100),
+          items: checkoutData.items.map((item) => ({
+            name: item.title,
+            sku: item.sku,
+            unit_amount: {
+              currency_code: checkoutData.currency,
+              value: item.unitPrice.toFixed(2),
+            },
+            quantity: item.quantity.toString(),
+          })),
         },
-        quantity: item.quantity,
-      })),
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
-      metadata: {
-        orderMongoId: order._id.toString(),
-        orderId: order.orderId,
-        trackingId: order.trackingId,
-        leadId: leadId || '',
-      },
+      ],
     });
 
-    // 5. Update Order and Lead with stripeSessionId
-    order.payment.stripeSessionId = session.id;
+    const paypalResponse = await client().execute(request);
+    const paypalOrderId = paypalResponse.result.id;
+
+    // 5. Update Order and Lead with paypalOrderId
+    order.payment.paypalOrderId = paypalOrderId;
     await order.save();
 
     if (leadId) {
@@ -85,7 +97,7 @@ export async function POST(req: Request) {
       await CheckoutLead.findOneAndUpdate(
         { leadId },
         { 
-          stripeSessionId: session.id,
+          paypalOrderId: paypalOrderId,
           status: 'payment_started',
           linkedOrderId: order.orderId,
           lastActivityAt: new Date()
@@ -93,9 +105,9 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ id: paypalOrderId });
   } catch (error: any) {
-    console.error('Stripe Checkout Error:', error);
+    console.error('PayPal Create Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

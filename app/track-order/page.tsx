@@ -1,24 +1,31 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Package, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search, Package, Truck, CheckCircle, Clock, AlertCircle, ShieldCheck, Box, UserCheck } from 'lucide-react';
 
-export default function TrackOrderPage() {
-  const [orderId, setOrderId] = useState('');
+function TrackOrderContent() {
+  const searchParams = useSearchParams();
+  const [trackingId, setTrackingId] = useState('');
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!orderId) return;
+  useEffect(() => {
+    const id = searchParams.get('trackingId');
+    if (id) {
+      setTrackingId(id);
+      trackOrder(id);
+    }
+  }, [searchParams]);
 
+  const trackOrder = async (id: string) => {
     setLoading(true);
     setError('');
     setOrder(null);
 
     try {
-      const res = await fetch(`/api/orders/track/${orderId}`);
+      const res = await fetch(`/api/orders/track?trackingId=${id}`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -33,13 +40,23 @@ export default function TrackOrderPage() {
     }
   };
 
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackingId) return;
+    trackOrder(trackingId);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'received': return <Clock className="text-blue-500" />;
+      case 'order_received': return <Clock className="text-blue-500" />;
+      case 'payment_confirmed': return <ShieldCheck className="text-emerald-500" />;
       case 'processing': return <Package className="text-purple-500" />;
+      case 'packed': return <Box className="text-indigo-500" />;
       case 'shipped': return <Truck className="text-orange-500" />;
-      case 'delivered': return <CheckCircle className="text-emerald-500" />;
+      case 'out_for_delivery': return <UserCheck className="text-amber-500" />;
+      case 'delivered': return <CheckCircle className="text-emerald-600" />;
       case 'cancelled': return <AlertCircle className="text-rose-500" />;
+      case 'refunded': return <AlertCircle className="text-slate-500" />;
       default: return <Clock />;
     }
   };
@@ -49,7 +66,7 @@ export default function TrackOrderPage() {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-4">Track Your Gear</h1>
-          <p className="text-slate-500 font-medium italic">Enter your Order ID (e.g. 8G-ABCDE-1234) to see real-time updates.</p>
+          <p className="text-slate-500 font-medium italic">Enter your Tracking ID (e.g. TRK-8G-XXXXXX) to see real-time updates.</p>
         </div>
 
         {/* Search Bar */}
@@ -60,10 +77,10 @@ export default function TrackOrderPage() {
             </div>
             <input
               type="text"
-              placeholder="8G-XXXXX-XXXX"
+              placeholder="TRK-8G-XXXXXX"
               className="block w-full pl-16 pr-32 py-6 bg-white border-none rounded-3xl shadow-xl shadow-slate-200/50 focus:ring-4 focus:ring-orange-500/10 text-xl font-black tracking-widest uppercase placeholder:normal-case placeholder:tracking-normal placeholder:font-medium transition-all"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
+              value={trackingId}
+              onChange={(e) => setTrackingId(e.target.value)}
               required
             />
             <button
@@ -93,12 +110,16 @@ export default function TrackOrderPage() {
                   <div className="p-3 bg-slate-50 rounded-2xl">
                     {getStatusIcon(order.orderStatus)}
                   </div>
-                  <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">{order.orderStatus}</h2>
+                  <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">
+                    {order.orderStatus.replace(/_/g, ' ')}
+                  </h2>
                 </div>
               </div>
               <div className="text-center md:text-right">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Order Amount</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tighter">Rs. {order.totalAmount}</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tighter">
+                  {order.amounts.currency} {order.amounts.totalAmount.toFixed(2)}
+                </p>
               </div>
             </div>
 
@@ -119,7 +140,7 @@ export default function TrackOrderPage() {
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <h4 className={`font-black uppercase tracking-tight ${idx === 0 ? 'text-slate-900 text-lg' : 'text-slate-500'}`}>
-                          {step.status}
+                          {step.status.replace(/_/g, ' ')}
                         </h4>
                         <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
                           {new Date(step.timestamp).toLocaleString()}
@@ -151,7 +172,7 @@ export default function TrackOrderPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-black text-orange-400">×{item.quantity}</p>
-                      <p className="text-sm font-bold">Rs. {item.price}</p>
+                      <p className="text-sm font-bold">{order.amounts.currency} {item.unitPrice.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -163,3 +184,12 @@ export default function TrackOrderPage() {
     </div>
   );
 }
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TrackOrderContent />
+    </Suspense>
+  );
+}
+
