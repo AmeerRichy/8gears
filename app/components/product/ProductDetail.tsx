@@ -27,6 +27,18 @@ export default function ProductDetail({
 
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [reviewStats, setReviewStats] = useState({
+    reviewCount: product?.reviews?.reviewCount || 0,
+    rating: product?.reviews?.rating || 0,
+  });
+
+  // Sync with product prop if it changes
+  useEffect(() => {
+    setReviewStats({
+      reviewCount: product?.reviews?.reviewCount || 0,
+      rating: product?.reviews?.rating || 0,
+    });
+  }, [product?.reviews]);
 
   const variants = useMemo(() => {
     return Array.isArray(product?.variants) ? product.variants : [];
@@ -135,7 +147,10 @@ export default function ProductDetail({
   return (
     <div className="min-h-screen bg-white text-black">
       <ProductHero
-        product={product}
+        product={{
+          ...product,
+          reviews: reviewStats
+        }}
         selectedColor={selectedColor}
         setSelectedColor={setSelectedColor}
         selectedSize={selectedSize}
@@ -156,7 +171,17 @@ export default function ProductDetail({
 
       <ProductStyleAesthetics product={product} isCMS={isCMS} />
 
-      {product._id && <ProductReviewsSection productId={product._id} />}
+      {product._id && (
+        <ProductReviewsSection
+          productId={product._id}
+          onReviewSubmitted={(stats) => {
+            setReviewStats({
+              reviewCount: stats.count,
+              rating: stats.avg,
+            });
+          }}
+        />
+      )}
 
       <ProductEvolutionGallery product={product} />
     </div>

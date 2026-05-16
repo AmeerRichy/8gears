@@ -24,6 +24,7 @@ interface Review {
 
 interface ProductReviewsProps {
     productId: string;
+    onReviewSubmitted?: (stats: { count: number; avg: number }) => void;
 }
 
 const NAME_LIMIT = 24;
@@ -39,7 +40,7 @@ function limitText(value: string = "", limit: number) {
     return `${clean.slice(0, limit).trim()}...`;
 }
 
-export default function ProductReviews({ productId }: ProductReviewsProps) {
+export default function ProductReviews({ productId, onReviewSubmitted }: ProductReviewsProps) {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -70,6 +71,15 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
             if (Array.isArray(data)) {
                 setReviews(data);
+                
+                // Calculate stats immediately to notify parent
+                if (onReviewSubmitted && data.length > 0) {
+                    const total = data.reduce((acc: number, r: any) => acc + r.rating, 0);
+                    onReviewSubmitted({
+                        count: data.length,
+                        avg: Number((total / data.length).toFixed(1))
+                    });
+                }
             }
         } catch (error) {
             console.error("Failed to fetch reviews:", error);

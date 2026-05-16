@@ -63,6 +63,22 @@ export async function POST(req: Request) {
       isVerified: false
     });
 
+    // Update product aggregated stats
+    const allReviews = await Review.find({ 
+      productId: new mongoose.Types.ObjectId(productId), 
+      status: 'approved' 
+    });
+    
+    const count = allReviews.length;
+    const avg = count > 0 
+      ? allReviews.reduce((acc, r) => acc + r.rating, 0) / count 
+      : 0;
+
+    await Product.findByIdAndUpdate(productId, {
+      'reviews.rating': avg,
+      'reviews.reviewCount': count
+    });
+
     return NextResponse.json(review, { status: 201 });
   } catch (error) {
     console.error('Review Post Error:', error);

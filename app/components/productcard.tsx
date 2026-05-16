@@ -21,8 +21,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const mainImage = mainVariant.images?.[0] || "/placeholder.png";
   const price = Number(mainVariant.price || 0);
   const currencySymbol = (product as any)?.currencySymbol || "$";
-  const reviewCount = (product as any)?.reviews?.reviewCount || 100;
-  const rating = Number((product as any)?.reviews?.rating || 5);
+  const reviewCount = (product as any)?.reviews?.reviewCount || 0;
+  const rating = Number((product as any)?.reviews?.rating || 0);
   const isOutOfStock = mainVariant.stockQuantity === 0;
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 
@@ -43,12 +44,15 @@ export default function Footer() {
   return (
     <footer className="w-full bg-[#ffffff]">
       <div className="mx-auto flex min-h-[264px] w-full max-w-[1920px] flex-col items-center justify-start px-6 pb-[28px] pt-[38px]">
-        {/* Logo Text */}
-        <Link
-          href="/"
-          className="mb-[35px] text-center text-[41px] font-bold leading-none tracking-[-0.035em] text-[#1c1c1c]"
-        >
-          8-Gear
+        {/* Logo Image */}
+        <Link href="/" className="mb-[32px] flex items-center justify-center">
+          <Image
+            src="/logo.png"
+            alt="8 Gears"
+            width={145}
+            height={80}
+            className="h-auto w-[145px] object-contain"
+          />
         </Link>
 
         {/* Footer Menu */}
