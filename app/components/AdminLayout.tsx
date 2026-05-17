@@ -4,15 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { 
-  LayoutDashboard, 
-  Package, 
-  FolderTree, 
-  ExternalLink, 
-  LogOut, 
-  Menu, 
-  X, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  ExternalLink,
+  LogOut,
+  Menu,
+  X,
+  Settings,
   ShieldCheck,
   Truck,
   MessageSquare
@@ -50,8 +50,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Orders', href: '/admin/orders', icon: Truck },
-    { name: 'Leads', href: '/admin/leads', icon: LayoutDashboard },
-    { name: 'Subscribers', href: '/admin/subscribers', icon: MessageSquare },
+    // { name: 'Leads', href: '/admin/leads', icon: LayoutDashboard },
+    // { name: 'Subscribers', href: '/admin/subscribers', icon: MessageSquare },
     { name: 'Categories', href: '/admin/categories', icon: FolderTree },
     { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
   ];
@@ -86,8 +86,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 className={`
                   flex items-center gap-4 px-4 py-4 rounded-2xl transition-all font-bold group
-                  ${isActive(item.href) 
-                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' 
+                  ${isActive(item.href)
+                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
                 `}
               >

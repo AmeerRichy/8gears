@@ -11,8 +11,8 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (
-          credentials?.username === 'admin' &&
-          credentials?.password === '8gears2024'
+          credentials?.username === process.env.ADMIN_USERNAME &&
+          credentials?.password === process.env.ADMIN_PASSWORD
         ) {
           return { id: '1', name: 'Admin', email: 'admin@8gears.com' };
         }
