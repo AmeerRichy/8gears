@@ -71,8 +71,8 @@ export default function EngagementManager() {
   }, [cartCount]);
 
   const triggerNotification = (title: string, options: NotificationOptions) => {
-    if (Notification.permission === 'granted') {
-      new Notification(title, {
+    if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted') {
+      new window.Notification(title, {
         icon: '/logo.png',
         badge: '/logo.png',
         ...options
@@ -82,9 +82,9 @@ export default function EngagementManager() {
 
   // 4. Request Permission
   useEffect(() => {
-    if (typeof window !== 'undefined' && Notification.permission === 'default' && cartCount > 0) {
+    if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'default' && cartCount > 0) {
       const timer = setTimeout(() => {
-        Notification.requestPermission();
+        window.Notification.requestPermission();
       }, 5000);
       return () => clearTimeout(timer);
     }
