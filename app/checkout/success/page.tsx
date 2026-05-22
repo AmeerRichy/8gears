@@ -66,6 +66,21 @@ function SuccessContent() {
     );
   }
 
+  if (order.paymentStatus !== 'paid') {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-6">
+          <Loader2 className="animate-spin" size={40} />
+        </div>
+        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Payment Pending</h2>
+        <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">Your payment is still processing or was incomplete. We will update your order once the payment clears.</p>
+        <Link href="/" className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-black transition-all hover:bg-orange-600 active:scale-95">
+          Return to Storefront
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 py-20 px-4">
       <div className="max-w-3xl mx-auto text-center">
