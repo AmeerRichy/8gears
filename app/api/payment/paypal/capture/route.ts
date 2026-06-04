@@ -4,6 +4,7 @@ import client from '@/lib/paypal';
 import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
+import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmationEmail';
 
 export async function POST(req: Request) {
   try {
@@ -79,6 +80,13 @@ export async function POST(req: Request) {
     }
 
     await order.save();
+
+    // Send order confirmation email (non-blocking)
+    try {
+      await sendOrderConfirmationEmail(order);
+    } catch (emailError) {
+      console.error('[Email] Failed to send order confirmation email:', emailError);
+    }
 
     return NextResponse.json({
       orderId: order.orderId,

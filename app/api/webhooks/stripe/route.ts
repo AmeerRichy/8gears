@@ -4,6 +4,7 @@ import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
 import Stripe from 'stripe';
+import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmationEmail';
 
 export async function POST(req: Request) {
   const payload = await req.text();
@@ -76,6 +77,13 @@ export async function POST(req: Request) {
           }
 
           await order.save();
+
+          // Send order confirmation email (non-blocking)
+          try {
+            await sendOrderConfirmationEmail(order);
+          } catch (emailError) {
+            console.error('[Email] Failed to send order confirmation email:', emailError);
+          }
         }
       }
     } catch (dbError) {

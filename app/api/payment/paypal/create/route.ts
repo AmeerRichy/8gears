@@ -40,7 +40,7 @@ export async function POST(req: Request) {
         paymentStatus: 'pending',
       },
       linkedCheckoutLeadId: leadId,
-      orderStatus: 'order_received',
+      orderStatus: 'pending_payment',
       fulfillmentStatus: 'pending',
       trackingTimeline: [
         {

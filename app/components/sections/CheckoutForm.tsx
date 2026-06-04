@@ -18,6 +18,7 @@ type Step = 'personal' | 'payment' | 'confirm';
 declare global {
   interface Window {
     paypal?: any;
+    __paymentRedirectInProgress?: boolean;
   }
 }
 
@@ -36,6 +37,22 @@ export default function CheckoutForm() {
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'Stripe' | 'PayPal' | 'Test'>('Stripe');
   const [leadId, setLeadId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    company: '',
+    address: '',
+    apartment: '',
+    country: 'United States',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
+    subscribe: false,
+  });
+
+  const shipping = 0;
 
   const saveLead = async (statusOverride?: string) => {
     try {
@@ -65,7 +82,9 @@ export default function CheckoutForm() {
           subscribe: form.subscribe,
         }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
         setLeadId(data.leadId);
       }
@@ -76,6 +95,7 @@ export default function CheckoutForm() {
 
   const handleSubscriber = async () => {
     if (!form.subscribe) return;
+
     try {
       await fetch('/api/subscribers', {
         method: 'POST',
@@ -92,31 +112,11 @@ export default function CheckoutForm() {
     }
   };
 
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    company: '',
-    address: '',
-    apartment: '',
-    country: 'United States',
-    city: '',
-    state: '',
-    zip: '',
-    phone: '',
-    subscribe: false,
-  });
-
-  const shipping = 10;
-
   const itemCount = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
   }, [cart]);
 
   const firstItem = cart[0];
-
-  const orderNumber = useMemo(() => {
-    return `#8G-${Math.floor(10000 + Math.random() * 90000)}`;
-  }, []);
 
   useEffect(() => {
     if (paymentMethod !== 'PayPal') return;
@@ -261,6 +261,7 @@ export default function CheckoutForm() {
     form.zip,
     form.country,
     clearCart,
+    leadId,
   ]);
 
   const handleChange = (
@@ -270,10 +271,12 @@ export default function CheckoutForm() {
 
     if (type === 'checkbox') {
       const target = e.target as HTMLInputElement;
+
       setForm((prev) => ({
         ...prev,
         [name]: target.checked,
       }));
+
       return;
     }
 
@@ -286,14 +289,17 @@ export default function CheckoutForm() {
   const validatePersonal = () => {
     if (!form.name.trim()) return 'Please enter your full name.';
     if (!form.email.trim()) return 'Please enter your email.';
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       return 'Please enter a valid email address.';
     }
+
     if (!form.address.trim()) return 'Please enter your address.';
     if (!form.city.trim()) return 'Please enter your city.';
     if (!form.state.trim()) return 'Please enter your state.';
     if (!form.zip.trim()) return 'Please enter your ZIP code.';
     if (!form.phone.trim()) return 'Please enter your phone number.';
+
     return null;
   };
 
@@ -318,12 +324,16 @@ export default function CheckoutForm() {
     saveLead('payment_started');
   };
 
-
   const handleStripeCheckout = async () => {
     setLoading(true);
     setError('');
 
+    let stripeTab: Window | null = null;
+
     try {
+      // Open blank tab immediately from user click, so browser does not block it.
+      stripeTab = window.open('', '_blank');
+
       const res = await fetch('/api/payment/stripe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,11 +363,30 @@ export default function CheckoutForm() {
       const data = await res.json();
 
       if (!res.ok || !data.url) {
+        if (stripeTab && !stripeTab.closed) {
+          stripeTab.close();
+        }
+
         throw new Error(data.error || 'Failed to start Stripe checkout.');
       }
 
+      window.__paymentRedirectInProgress = true;
+      sessionStorage.setItem('payment_redirect_in_progress', 'true');
+
+      // Best case: Stripe opens in new tab, checkout page stays open.
+      if (stripeTab && !stripeTab.closed) {
+        stripeTab.location.href = data.url;
+        setLoading(false);
+        return;
+      }
+
+      // Fallback: if popup/new tab was blocked, redirect same tab without beforeunload popup.
       window.location.href = data.url;
     } catch (err: any) {
+      if (stripeTab && !stripeTab.closed) {
+        stripeTab.close();
+      }
+
       setError(err.message || 'Something went wrong.');
       setLoading(false);
     }
@@ -410,7 +439,6 @@ export default function CheckoutForm() {
       setLoading(false);
     }
   };
-
 
   if (cart.length === 0 && !successOpen) {
     return (
@@ -611,8 +639,7 @@ export default function CheckoutForm() {
                         </div>
 
                         <p className="mt-2 max-w-[360px] text-[12px] leading-[1.45] text-black/50">
-                          You will be redirected to Stripe&apos;s secure checkout
-                          page to complete your payment.
+                          Stripe checkout will open in a new secure payment tab.
                         </p>
                       </div>
                     </div>
@@ -657,40 +684,6 @@ export default function CheckoutForm() {
                       Pay<span className="text-[#009cde]">Pal</span>
                     </span>
                   </button>
-
-                  {process.env.NEXT_PUBLIC_ENABLE_TEST_PAYMENT === 'true' && (
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('Test')}
-                      className="flex w-full items-center justify-between border-t border-black/20 bg-[#fffbeb] px-4 py-4 text-left"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="mt-[3px] flex h-[12px] w-[12px] items-center justify-center rounded-full border border-black/30">
-                          {paymentMethod === 'Test' && (
-                            <span className="h-[7px] w-[7px] rounded-full bg-black" />
-                          )}
-                        </span>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[14px] font-bold text-amber-900">
-                              Test Payment / Manual Confirm
-                            </span>
-                            <span className="rounded-sm bg-amber-200 px-2 py-[3px] text-[9px] font-black text-amber-900 uppercase">
-                              Development Only
-                            </span>
-                          </div>
-
-                          <p className="mt-2 max-w-[360px] text-[12px] leading-[1.45] text-amber-800/70">
-                            Use this to simulate a successful purchase without
-                            live credentials. Stock will be reduced.
-                          </p>
-                        </div>
-                      </div>
-
-                      <HelpCircle size={18} className="text-amber-600" />
-                    </button>
-                  )}
                 </div>
 
                 <p className="mt-4 text-[12px] font-medium italic text-black/45">
@@ -751,10 +744,8 @@ export default function CheckoutForm() {
                       <CreditCard size={17} />
                       {paymentMethod === 'Stripe' ? (
                         <span>Credit/Debit Card via Stripe</span>
-                      ) : paymentMethod === 'PayPal' ? (
-                        <span>PayPal</span>
                       ) : (
-                        <span className="text-amber-600 font-bold">Test Payment / Manual Confirm</span>
+                        <span>PayPal</span>
                       )}
                     </div>
                   </div>
@@ -815,7 +806,6 @@ export default function CheckoutForm() {
                     )}
                   </button>
                 )}
-
               </div>
             )}
 
@@ -849,8 +839,12 @@ export default function CheckoutForm() {
             </p>
 
             <div className="mt-5 rounded-lg bg-gray-50 p-4 text-left">
-              <p className="text-[12px] font-semibold text-black/45 uppercase">Tracking ID</p>
-              <p className="text-[16px] font-bold text-black">{successData.trackingId}</p>
+              <p className="text-[12px] font-semibold text-black/45 uppercase">
+                Tracking ID
+              </p>
+              <p className="text-[16px] font-bold text-black">
+                {successData.trackingId}
+              </p>
             </div>
 
             <button

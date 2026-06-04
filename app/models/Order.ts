@@ -46,6 +46,7 @@ export interface IOrder extends Document {
   };
   linkedCheckoutLeadId?: string;
   orderStatus:
+  | 'pending_payment'
   | 'order_received'
   | 'payment_confirmed'
   | 'processing'
@@ -128,6 +129,7 @@ const OrderSchema: Schema = new Schema(
     orderStatus: {
       type: String,
       enum: [
+        'pending_payment',
         'order_received',
         'payment_confirmed',
         'processing',
@@ -138,7 +140,7 @@ const OrderSchema: Schema = new Schema(
         'cancelled',
         'refunded',
       ],
-      default: 'order_received',
+      default: 'pending_payment',
     },
     fulfillmentStatus: {
       type: String,
