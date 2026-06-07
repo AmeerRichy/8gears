@@ -1,18 +1,22 @@
 "use client";
 
 import {
-  AlertCircle,
+  Bike,
   Box,
-  CheckCircle,
-  Clock,
+  CheckCircle2,
+  Clock3,
+  MapPin,
   Package,
+  RotateCcw,
+  Settings2,
   ShieldCheck,
   Truck,
-  UserCheck,
+  XCircle,
   type LucideIcon,
 } from "lucide-react";
 
 type OrderStatus =
+  | "pending_payment"
   | "order_received"
   | "payment_confirmed"
   | "processing"
@@ -26,8 +30,9 @@ type OrderStatus =
 
 type TrackingStep = {
   status: OrderStatus;
-  message: string;
-  timestamp: string;
+  message?: string;
+  timestamp?: string;
+  updatedBy?: "system" | "admin";
 };
 
 type OrderItem = {
@@ -37,17 +42,48 @@ type OrderItem = {
   size?: string;
   quantity: number;
   unitPrice: number;
+  lineTotal?: number;
+};
+
+type ShippingAddress = {
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+};
+
+type ShippingDetails = {
+  courierName?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
 };
 
 export type TrackedOrder = {
+  orderId?: string;
   trackingId?: string;
   orderStatus: OrderStatus;
-  amounts: {
-    currency: string;
-    totalAmount: number;
+  paymentStatus?: string;
+
+  customer?: {
+    name?: string;
   };
-  trackingTimeline: TrackingStep[];
-  items: OrderItem[];
+
+  shippingAddress?: ShippingAddress;
+
+  shipping?: ShippingDetails;
+
+  amounts: {
+    subtotal?: number;
+    shippingAmount?: number;
+    totalAmount: number;
+    currency: string;
+  };
+
+  trackingTimeline?: TrackingStep[];
+  items?: OrderItem[];
+  createdAt?: string;
 };
 
 type TrackOrderResultProps = {
@@ -55,227 +91,539 @@ type TrackOrderResultProps = {
 };
 
 type StatusDesign = {
+  label: string;
+  description: string;
   icon: LucideIcon;
-  iconClassName: string;
-  backgroundClassName: string;
 };
 
 const statusDesigns: Record<string, StatusDesign> = {
+  pending_payment: {
+    label: "Pending Payment",
+    description: "Your order is waiting for payment confirmation.",
+    icon: Clock3,
+  },
+
   order_received: {
-    icon: Clock,
-    iconClassName: "text-[#3b82f6]",
-    backgroundClassName: "bg-[#eaf2ff]",
-  },
-  payment_confirmed: {
-    icon: ShieldCheck,
-    iconClassName: "text-[#16a66b]",
-    backgroundClassName: "bg-[#e8f8f0]",
-  },
-  processing: {
+    label: "Order Received",
+    description: "Your order has been received successfully.",
     icon: Package,
-    iconClassName: "text-[#8b5cf6]",
-    backgroundClassName: "bg-[#f1ebff]",
   },
+
+  payment_confirmed: {
+    label: "Payment Confirmed",
+    description: "Your payment has been confirmed successfully.",
+    icon: ShieldCheck,
+  },
+
+  processing: {
+    label: "Processing",
+    description: "Your order is being prepared for shipment.",
+    icon: Settings2,
+  },
+
   packed: {
+    label: "Packed",
+    description: "Your order has been packed and is ready to ship.",
     icon: Box,
-    iconClassName: "text-[#5865d8]",
-    backgroundClassName: "bg-[#ebedff]",
   },
+
   shipped: {
+    label: "Shipped",
+    description: "Your package has left our warehouse.",
     icon: Truck,
-    iconClassName: "text-[#f36b2b]",
-    backgroundClassName: "bg-[#fff0e8]",
   },
+
   out_for_delivery: {
-    icon: UserCheck,
-    iconClassName: "text-[#e49a16]",
-    backgroundClassName: "bg-[#fff7df]",
+    label: "Out for Delivery",
+    description: "Your package is on its way to your address.",
+    icon: Bike,
   },
+
   delivered: {
-    icon: CheckCircle,
-    iconClassName: "text-[#16a66b]",
-    backgroundClassName: "bg-[#e8f8f0]",
+    label: "Delivered",
+    description: "Your package has been delivered successfully.",
+    icon: CheckCircle2,
   },
+
   cancelled: {
-    icon: AlertCircle,
-    iconClassName: "text-[#e05252]",
-    backgroundClassName: "bg-[#ffecec]",
+    label: "Cancelled",
+    description: "This order has been cancelled.",
+    icon: XCircle,
   },
+
   refunded: {
-    icon: AlertCircle,
-    iconClassName: "text-[#7b8799]",
-    backgroundClassName: "bg-[#edf0f4]",
+    label: "Refunded",
+    description: "The payment for this order has been refunded.",
+    icon: RotateCcw,
   },
 };
 
-const fallbackStatusDesign: StatusDesign = {
-  icon: Clock,
-  iconClassName: "text-[#7b8799]",
-  backgroundClassName: "bg-[#edf0f4]",
+const progressPercentages: Record<string, number> = {
+  pending_payment: 5,
+  order_received: 16,
+  payment_confirmed: 28,
+  processing: 42,
+  packed: 56,
+  shipped: 72,
+  out_for_delivery: 88,
+  delivered: 100,
+  cancelled: 0,
+  refunded: 0,
 };
 
-function formatStatus(status: string) {
-  return status.replace(/_/g, " ");
+function normalizeStatus(status: string) {
+  return status.trim().toLowerCase().replace(/[\s-]+/g, "_");
 }
 
-function StatusIcon({
+function getStatusDesign(status: string): StatusDesign {
+  const normalizedStatus = normalizeStatus(status);
+
+  return (
+    statusDesigns[normalizedStatus] || {
+      label: normalizedStatus
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (character) => character.toUpperCase()),
+
+      description: "Your order status has been updated.",
+
+      icon: Clock3,
+    }
+  );
+}
+
+function getProgressPercentage(status: string) {
+  return progressPercentages[normalizeStatus(status)] ?? 10;
+}
+
+function isNegativeStatus(status: string) {
+  const normalizedStatus = normalizeStatus(status);
+
+  return (
+    normalizedStatus === "cancelled" ||
+    normalizedStatus === "refunded"
+  );
+}
+
+function getTimestampMilliseconds(timestamp?: string) {
+  if (!timestamp) return 0;
+
+  const milliseconds = new Date(timestamp).getTime();
+
+  return Number.isNaN(milliseconds) ? 0 : milliseconds;
+}
+
+function getVisibleTimeline(order: TrackedOrder): TrackingStep[] {
+  const sortedTimeline = [...(order.trackingTimeline || [])]
+    .filter((step) => Boolean(step.status))
+    .sort(
+      (firstStep, secondStep) =>
+        getTimestampMilliseconds(firstStep.timestamp) -
+        getTimestampMilliseconds(secondStep.timestamp)
+    );
+
+  const cleanedTimeline: TrackingStep[] = [];
+
+  sortedTimeline.forEach((step) => {
+    const previousStep = cleanedTimeline[cleanedTimeline.length - 1];
+
+    if (
+      previousStep &&
+      normalizeStatus(previousStep.status) ===
+        normalizeStatus(step.status)
+    ) {
+      cleanedTimeline[cleanedTimeline.length - 1] = step;
+      return;
+    }
+
+    cleanedTimeline.push(step);
+  });
+
+  if (cleanedTimeline.length > 0) {
+    return cleanedTimeline;
+  }
+
+  return [
+    {
+      status: order.orderStatus,
+      message: getStatusDesign(order.orderStatus).description,
+      timestamp: order.createdAt,
+    },
+  ];
+}
+
+function formatMoney(currency: string, amount: number) {
+  if (/^[A-Za-z]{3}$/.test(currency)) {
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency.toUpperCase(),
+        minimumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return `${currency} ${amount.toFixed(2)}`;
+    }
+  }
+
+  return `${currency}${amount.toFixed(2)}`;
+}
+
+function formatTimelineDate(timestamp?: string) {
+  if (!timestamp) return "-";
+
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatLastUpdatedTime(timestamp?: string) {
+  if (!timestamp) return "-";
+
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
+}
+
+function getAddressLines(address?: ShippingAddress) {
+  if (!address) return [];
+
+  const cityLine = [address.city, address.state, address.zip]
+    .filter(Boolean)
+    .join(", ");
+
+  return [
+    address.address,
+    address.apartment,
+    cityLine,
+    address.country,
+  ].filter((line): line is string => Boolean(line));
+}
+
+function TimelineStatusIcon({
   status,
-  size = 21,
+  isCurrent,
 }: {
   status: string;
-  size?: number;
+  isCurrent: boolean;
 }) {
-  const design = statusDesigns[status] || fallbackStatusDesign;
+  const design = getStatusDesign(status);
   const Icon = design.icon;
+  const hasNegativeStatus = isNegativeStatus(status);
 
   return (
     <div
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${design.backgroundClassName}`}
+      className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] ${
+        hasNegativeStatus
+          ? "bg-[#9f3218]"
+          : isCurrent
+            ? "bg-black"
+            : "bg-[#222222]"
+      }`}
     >
-      <Icon size={size} strokeWidth={2.1} className={design.iconClassName} />
+      <Icon
+        size={18}
+        strokeWidth={1.7}
+        className="text-white"
+      />
     </div>
   );
 }
 
-export default function TrackOrderResult({ order }: TrackOrderResultProps) {
-  const reversedTimeline = [...order.trackingTimeline].reverse();
+export default function TrackOrderResult({
+  order,
+}: TrackOrderResultProps) {
+  const timeline = getVisibleTimeline(order);
+  const items = order.items || [];
+
+  const currentTimelineIndex = timeline.length - 1;
+  const latestTimelineStep = timeline[currentTimelineIndex];
+
+  const latestTimestamp =
+    latestTimelineStep?.timestamp || order.createdAt;
+
+  const addressLines = getAddressLines(order.shippingAddress);
+
+  const hasCourierDetails =
+    Boolean(order.shipping?.courierName) ||
+    Boolean(order.shipping?.trackingNumber);
+
+  const hasNegativeCurrentStatus = isNegativeStatus(
+    order.orderStatus
+  );
 
   return (
-    <section className="mt-10 animate-[fadeUp_550ms_ease-out]">
-      <div className="grid gap-5 md:grid-cols-[1fr_250px]">
-        <div className="rounded-[26px] border border-[#e8edf4] bg-white p-6 shadow-[0_16px_45px_rgba(23,38,71,0.06)] sm:p-7">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9aa5b5]">
-            Current Status
+    <section className="mt-8 animate-[fadeUp_450ms_ease-out] sm:mt-9">
+      {/* ORDER STATUS */}
+      <div className="rounded-[30px] border border-white/60 bg-[#F0EFEF]/30 px-5 py-5 shadow-[0_14px_42px_rgba(0,0,0,0.045)] backdrop-blur-[20px] sm:px-6">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-[16px] font-semibold tracking-[0.015em] text-[#111111]">
+            Order Status
+          </h2>
+
+          <span
+            className={`shrink-0 rounded-full px-4 py-2 text-[9px] font-medium leading-none sm:px-5 sm:text-[10px] ${
+              hasNegativeCurrentStatus
+                ? "bg-[#9f3218] text-white"
+                : "bg-black text-white"
+            }`}
+          >
+            {getStatusDesign(order.orderStatus).label}
+          </span>
+        </div>
+
+        <div className="mt-6 h-[7px] overflow-hidden rounded-full bg-white/45">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${
+              hasNegativeCurrentStatus
+                ? "bg-[#9f3218]"
+                : "bg-black"
+            }`}
+            style={{
+              width: `${getProgressPercentage(order.orderStatus)}%`,
+            }}
+          />
+        </div>
+
+        <div className="mt-6 flex items-center gap-2 text-[#aaaaaa]">
+          <Clock3 size={14} strokeWidth={1.5} />
+
+          <p className="text-[11px] font-normal tracking-[0.035em]">
+            Last Updated: {formatLastUpdatedTime(latestTimestamp)}
           </p>
+        </div>
+      </div>
 
-          <div className="mt-4 flex items-center gap-4">
-            <StatusIcon status={order.orderStatus} size={22} />
+      {/* REAL SAVED TRACKING HISTORY ONLY */}
+      <div className="mt-6 rounded-[30px] border border-white/60 bg-[#F0EFEF]/30 px-5 py-6 shadow-[0_14px_42px_rgba(0,0,0,0.045)] backdrop-blur-[20px] sm:px-6">
+        <h3 className="text-[16px] font-semibold tracking-[0.015em] text-[#111111]">
+          Tracking Timeline
+        </h3>
 
-            <h2 className="text-[22px] font-black capitalize leading-tight tracking-[-0.6px] text-[#0c172f] sm:text-[28px]">
-              {formatStatus(order.orderStatus)}
-            </h2>
+        <div className="relative mt-6">
+          {timeline.length > 1 && (
+            <div
+              className={`absolute bottom-[20px] left-[19px] top-[20px] w-[2px] ${
+                hasNegativeCurrentStatus
+                  ? "bg-[#9f3218]/40"
+                  : "bg-black"
+              }`}
+            />
+          )}
+
+          <div className="space-y-[22px]">
+            {timeline.map((step, index) => {
+              const isCurrent = index === currentTimelineIndex;
+              const design = getStatusDesign(step.status);
+
+              return (
+                <div
+                  key={`${step.status}-${step.timestamp || index}`}
+                  className="relative flex min-h-[56px] items-start gap-4"
+                >
+                  <TimelineStatusIcon
+                    status={step.status}
+                    isCurrent={isCurrent}
+                  />
+
+                  <div className="min-w-0 flex-1 pt-[1px]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-[14px] font-semibold tracking-[0.02em] text-[#111111]">
+                        {design.label}
+                      </h4>
+
+                      {isCurrent ? (
+                        <span
+                          className={`rounded-full px-3 py-1 text-[9px] font-medium leading-none ${
+                            isNegativeStatus(step.status)
+                              ? "bg-[#9f3218]/10 text-[#9f3218]"
+                              : "bg-white/65 text-[#333333]"
+                          }`}
+                        >
+                          Current
+                        </span>
+                      ) : (
+                        <CheckCircle2
+                          size={15}
+                          strokeWidth={2}
+                          className="text-[#20c768]"
+                        />
+                      )}
+                    </div>
+
+                    <p className="mt-1 text-[11px] font-normal leading-4 tracking-[0.01em] text-[#aaaaaa]">
+                      {step.message || design.description}
+                    </p>
+
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[#aaaaaa]">
+                      <Clock3 size={12} strokeWidth={1.4} />
+
+                      <span className="text-[10px] font-normal tracking-[0.015em]">
+                        {formatTimelineDate(step.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-
-        <div className="rounded-[26px] border border-[#e8edf4] bg-white p-6 shadow-[0_16px_45px_rgba(23,38,71,0.06)] sm:p-7">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9aa5b5]">
-            Order Amount
-          </p>
-
-          <p className="mt-5 text-[25px] font-black tracking-[-1px] text-[#0c172f]">
-            {order.amounts.currency} {order.amounts.totalAmount.toFixed(2)}
-          </p>
-        </div>
       </div>
 
-      <div className="mt-5 rounded-[26px] border border-[#e8edf4] bg-white p-6 shadow-[0_16px_45px_rgba(23,38,71,0.06)] sm:p-8">
-        <div className="flex items-center gap-3">
-          <span className="h-7 w-[4px] rounded-full bg-[#f36b2b]" />
+      {/* ORDER DETAILS */}
+      <div className="mt-6 rounded-[30px] border border-white/60 bg-[#F0EFEF]/30 px-5 py-6 shadow-[0_14px_42px_rgba(0,0,0,0.045)] backdrop-blur-[20px] sm:px-6">
+        <h3 className="text-[16px] font-semibold tracking-[0.015em] text-[#111111]">
+          Order Details
+        </h3>
 
-          <h3 className="text-[18px] font-black tracking-[-0.4px] text-[#0c172f]">
-            Tracking Timeline
-          </h3>
-        </div>
+        <div className="mt-5 space-y-4">
+          {items.length > 0 ? (
+            items.map((item, index) => (
+              <div
+                key={`${item.title}-${index}`}
+                className="flex items-center justify-between gap-3 sm:gap-4"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-[51px] w-[51px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/55 sm:h-[53px] sm:w-[53px]">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Package
+                        size={20}
+                        strokeWidth={1.5}
+                        className="text-[#999999]"
+                      />
+                    )}
+                  </div>
 
-        <div className="relative mt-8 space-y-8">
-          <div className="absolute bottom-5 left-[21px] top-5 w-px bg-[#e4e9f0]" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold tracking-[0.01em] text-[#111111] sm:text-[14px]">
+                      {item.title}
+                    </p>
 
-          {reversedTimeline.map((step, index) => (
-            <div
-              key={`${step.status}-${step.timestamp}-${index}`}
-              className="relative flex gap-4"
-            >
-              <div className="relative z-10">
-                <StatusIcon status={step.status} size={19} />
-              </div>
+                    <p className="mt-1 text-[11px] font-normal text-[#555555]">
+                      {[item.color, item.size]
+                        .filter(Boolean)
+                        .join(" / ") || "Standard variant"}
+                    </p>
 
-              <div className="min-w-0 flex-1 pt-1">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <h4
-                    className={`text-[14px] font-black capitalize tracking-[-0.1px] ${
-                      index === 0 ? "text-[#0c172f]" : "text-[#687488]"
-                    }`}
-                  >
-                    {formatStatus(step.status)}
-                  </h4>
-
-                  <span className="shrink-0 text-[10px] font-semibold text-[#a0a9b7]">
-                    {new Date(step.timestamp).toLocaleString()}
-                  </span>
+                    <p className="mt-1 text-[11px] font-normal text-[#333333]">
+                      Quantity: {item.quantity}
+                    </p>
+                  </div>
                 </div>
 
-                <p className="mt-1.5 text-[13px] font-medium leading-5 text-[#8b96a6]">
-                  {step.message}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5 overflow-hidden rounded-[26px] bg-[#0c172f] p-6 shadow-[0_18px_45px_rgba(12,23,47,0.16)] sm:p-8">
-        <div className="flex items-center gap-3">
-          <Package size={20} strokeWidth={2.2} className="text-[#f36b2b]" />
-
-          <h3 className="text-[17px] font-black tracking-[-0.3px] text-white">
-            Package Contents
-          </h3>
-        </div>
-
-        <div className="mt-6 divide-y divide-white/10">
-          {order.items.map((item, index) => (
-            <div
-              key={`${item.title}-${index}`}
-              className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
-            >
-              <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-white/10">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Box
-                      size={21}
-                      strokeWidth={1.8}
-                      className="text-white/50"
-                    />
+                <p className="shrink-0 text-[16px] font-semibold tracking-[-0.01em] text-[#111111] sm:text-[18px]">
+                  {formatMoney(
+                    order.amounts.currency,
+                    item.lineTotal ??
+                      item.unitPrice * item.quantity
                   )}
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-bold text-white">
-                    {item.title}
-                  </p>
-
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/45">
-                    {[item.color, item.size].filter(Boolean).join(" / ") ||
-                      "Standard variant"}
-                  </p>
-                </div>
+                </p>
               </div>
+            ))
+          ) : (
+            <p className="text-[12px] font-normal text-[#aaaaaa]">
+              No order items are available.
+            </p>
+          )}
+        </div>
 
-              <div className="shrink-0 text-right">
-                <p className="text-[11px] font-bold text-[#f58b55]">
-                  ×{item.quantity}
-                </p>
+        <div className="mt-5 border-t border-white/75 pt-5">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-[14px] font-semibold text-[#111111]">
+              Total
+            </p>
 
-                <p className="mt-1 text-[13px] font-bold text-white">
-                  {order.amounts.currency} {item.unitPrice.toFixed(2)}
-                </p>
+            <p className="text-[18px] font-semibold tracking-[-0.01em] text-[#111111] sm:text-[19px]">
+              {formatMoney(
+                order.amounts.currency,
+                order.amounts.totalAmount
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SHIPPING ADDRESS */}
+      <div className="mt-6 rounded-[30px] border border-white/60 bg-[#F0EFEF]/30 px-5 py-6 shadow-[0_14px_42px_rgba(0,0,0,0.045)] backdrop-blur-[20px] sm:px-6">
+        <h3 className="text-[16px] font-semibold tracking-[0.015em] text-[#111111]">
+          Shipping Address
+        </h3>
+
+        <div className="mt-5 flex items-start gap-3">
+          <MapPin
+            size={17}
+            strokeWidth={1.7}
+            className="mt-[1px] shrink-0 text-[#555555]"
+          />
+
+          {addressLines.length > 0 ? (
+            <div>
+              <p className="text-[13px] font-semibold text-[#222222]">
+                {order.customer?.name || "Customer"}
+              </p>
+
+              <div className="mt-1 space-y-[2px]">
+                {addressLines.map((line, index) => (
+                  <p
+                    key={`${line}-${index}`}
+                    className="text-[11px] font-normal leading-4 text-[#aaaaaa]"
+                  >
+                    {line}
+                  </p>
+                ))}
               </div>
             </div>
-          ))}
+          ) : (
+            <p className="text-[12px] font-normal leading-5 text-[#aaaaaa]">
+              Shipping address details are unavailable.
+            </p>
+          )}
         </div>
+
+        {hasCourierDetails && (
+          <div className="mt-5 border-t border-white/75 pt-5">
+            <p className="text-[13px] font-semibold text-[#222222]">
+              Courier Details
+            </p>
+
+            {order.shipping?.courierName && (
+              <p className="mt-2 text-[11px] font-normal text-[#777777]">
+                Courier: {order.shipping.courierName}
+              </p>
+            )}
+
+            {order.shipping?.trackingNumber && (
+              <p className="mt-1 text-[11px] font-normal text-[#777777]">
+                Tracking Number: {order.shipping.trackingNumber}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <style jsx>{`
         @keyframes fadeUp {
           from {
             opacity: 0;
-            transform: translateY(18px);
+            transform: translateY(14px);
           }
 
           to {
