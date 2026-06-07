@@ -33,6 +33,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    const shouldSendConfirmationEmail = !order.orderConfirmationEmailSentAt;
+
     // 3. Update order status
     if (order.payment.paymentStatus !== 'paid') {
       order.payment.paymentStatus = 'paid';
@@ -81,11 +83,14 @@ export async function POST(req: Request) {
 
     await order.save();
 
-    // Send order confirmation email (non-blocking)
-    try {
-      await sendOrderConfirmationEmail(order);
-    } catch (emailError) {
-      console.error('[Email] Failed to send order confirmation email:', emailError);
+    if (shouldSendConfirmationEmail) {
+      try {
+        await sendOrderConfirmationEmail(order);
+        order.orderConfirmationEmailSentAt = new Date();
+        await order.save();
+      } catch (emailError) {
+        console.error('[Email] Failed to send order confirmation email:', emailError);
+      }
     }
 
     return NextResponse.json({

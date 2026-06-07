@@ -33,6 +33,8 @@ export async function POST(req: Request) {
 
       if (order) {
         if (session.payment_status === 'paid') {
+          const shouldSendConfirmationEmail = !order.orderConfirmationEmailSentAt;
+
           // Update order status if not already paid
           if (order.payment.paymentStatus !== 'paid') {
             order.payment.paymentStatus = 'paid';
@@ -78,11 +80,14 @@ export async function POST(req: Request) {
 
           await order.save();
 
-          // Send order confirmation email (non-blocking)
-          try {
-            await sendOrderConfirmationEmail(order);
-          } catch (emailError) {
-            console.error('[Email] Failed to send order confirmation email:', emailError);
+          if (shouldSendConfirmationEmail) {
+            try {
+              await sendOrderConfirmationEmail(order);
+              order.orderConfirmationEmailSentAt = new Date();
+              await order.save();
+            } catch (emailError) {
+              console.error('[Email] Failed to send order confirmation email:', emailError);
+            }
           }
         }
       }

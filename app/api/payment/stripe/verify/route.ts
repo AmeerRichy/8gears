@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
+import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmationEmail';
 
 export async function POST(req: Request) {
   try {
@@ -39,6 +40,8 @@ export async function POST(req: Request) {
 
     // 4. Check payment status
     if (session.payment_status === 'paid') {
+      const shouldSendConfirmationEmail = !order.orderConfirmationEmailSentAt;
+
       // Update order status if not already paid
       if (order.payment.paymentStatus !== 'paid') {
         order.payment.paymentStatus = 'paid';
@@ -83,6 +86,16 @@ export async function POST(req: Request) {
       }
 
       await order.save();
+
+      if (shouldSendConfirmationEmail) {
+        try {
+          await sendOrderConfirmationEmail(order);
+          order.orderConfirmationEmailSentAt = new Date();
+          await order.save();
+        } catch (emailError) {
+          console.error('[Email] Failed to send order confirmation email:', emailError);
+        }
+      }
     }
 
     return NextResponse.json({

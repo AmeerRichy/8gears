@@ -1,12 +1,20 @@
 import nodemailer from 'nodemailer';
 import { IOrder } from '@/models/Order';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.SMTP_USER!;
+const requiredSmtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'] as const;
+
+function assertEmailConfig() {
+  const missingVars = requiredSmtpVars.filter((key) => !process.env[key]);
+
+  if (missingVars.length > 0) {
+    throw new Error(`Missing email configuration: ${missingVars.join(', ')}`);
+  }
+}
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+  secure: Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -355,6 +363,8 @@ function buildAdminEmailHTML(order: IOrder): string {
 }
 
 export async function sendOrderConfirmationEmail(order: IOrder): Promise<void> {
+  assertEmailConfig();
+
   const customerHtml = buildEmailHTML(order);
   const adminHtml = buildAdminEmailHTML(order);
 

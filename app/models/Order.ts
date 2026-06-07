@@ -64,6 +64,7 @@ export interface IOrder extends Document {
   };
   adminNotes?: string;
   stockReduced: boolean;
+  orderConfirmationEmailSentAt?: Date;
   trackingTimeline: Array<{
     status: string;
     message: string;
@@ -154,6 +155,7 @@ const OrderSchema: Schema = new Schema(
     },
     adminNotes: { type: String },
     stockReduced: { type: Boolean, default: false },
+    orderConfirmationEmailSentAt: { type: Date },
     trackingTimeline: [
       {
         status: { type: String, required: true },
@@ -172,4 +174,3 @@ if (mongoose.models.Order) {
 }
 
 export default mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
-
