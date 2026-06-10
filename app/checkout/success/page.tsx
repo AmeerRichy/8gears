@@ -1,36 +1,60 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, Package, Truck, ArrowRight, Loader2 } from 'lucide-react';
+import {
+  CheckCircle,
+  ArrowRight,
+  Loader2,
+  XCircle,
+  Clock3,
+  PackageCheck,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
+
+type OrderData = {
+  orderId: string;
+  trackingId: string;
+  paymentStatus: string;
+};
+
+function SuccessBackground() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 top-1/2 z-0 h-[320px] -translate-y-1/2 overflow-hidden"
+      aria-hidden="true"
+    >
+      <img
+        src="/assets/images/track-order-bg-lines.png"
+        alt=""
+        className="absolute left-1/2 top-1/2 h-auto w-[980px] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-100 sm:w-[1400px] lg:w-full"
+      />
+    </div>
+  );
+}
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [order, setOrder] = useState<any>(null);
+
+  const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
+
   const sessionId = searchParams.get('session_id');
 
-  useEffect(() => {
-    if (sessionId) {
-      verifyOrder();
-    } else {
-      router.push('/');
-    }
-  }, [sessionId]);
-
-  const verifyOrder = async () => {
+  const verifyOrder = useCallback(async () => {
     try {
       const res = await fetch('/api/payment/stripe/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
         setOrder(data);
-        // Clear cart after successful order
         localStorage.removeItem('cart');
         window.dispatchEvent(new Event('storage'));
       }
@@ -39,110 +63,300 @@ function SuccessContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      router.push('/');
+      return;
+    }
+
+    verifyOrder();
+  }, [sessionId, router, verifyOrder]);
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-6">
-        <Loader2 className="w-16 h-16 text-orange-600 animate-spin" />
-        <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Securing Your Order...</h2>
-        <p className="text-slate-500 font-medium">Verifying payment with Stripe and synchronizing inventory.</p>
-      </div>
+      <main
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-4 pb-12 pt-[122px] sm:px-6 sm:pb-16 sm:pt-[136px] lg:pt-[148px]"
+        style={{ fontFamily: 'var(--font-sf-pro)' }}
+      >
+        <SuccessBackground />
+
+        <motion.section
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 mx-auto w-full max-w-[650px] rounded-[40px] border border-white/60 bg-[#F0EFEF]/30 px-5 pb-8 pt-8 text-center shadow-[0_18px_60px_rgba(0,0,0,0.055)] backdrop-blur-[22px] sm:px-8 sm:pb-10 sm:pt-10"
+        >
+          <div className="mx-auto flex h-[74px] w-[74px] items-center justify-center rounded-full bg-white/70 shadow-[0_14px_42px_rgba(0,0,0,0.055)]">
+            <Loader2 className="h-8 w-8 animate-spin text-black" />
+          </div>
+
+          <h1 className="mt-7 text-[33px] font-bold leading-[1.05] tracking-[0.01em] text-black sm:text-[41px]">
+            Securing Your Order
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-[520px] text-[14px] font-normal leading-6 tracking-[0.025em] text-[#111111] sm:text-[17px]">
+            Verifying your payment and preparing your order details.
+          </p>
+        </motion.section>
+      </main>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 mb-6">
-          <CheckCircle size={40} />
-        </div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Something went wrong.</h2>
-        <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">We couldn't verify your payment. If you've been charged, please contact our support with your payment ID.</p>
-        <Link href="/" className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-black transition-all hover:bg-orange-600 active:scale-95">
-          Return to Storefront
-        </Link>
-      </div>
+      <main
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-4 pb-12 pt-[122px] sm:px-6 sm:pb-16 sm:pt-[136px] lg:pt-[148px]"
+        style={{ fontFamily: 'var(--font-sf-pro)' }}
+      >
+        <SuccessBackground />
+
+        <motion.section
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 mx-auto w-full max-w-[650px] rounded-[40px] border border-white/60 bg-[#F0EFEF]/30 px-5 pb-8 pt-8 text-center shadow-[0_18px_60px_rgba(0,0,0,0.055)] backdrop-blur-[22px] sm:px-8 sm:pb-10 sm:pt-10"
+        >
+          <div className="mx-auto flex h-[74px] w-[74px] items-center justify-center rounded-full bg-[#fff0f0]">
+            <XCircle size={34} strokeWidth={1.8} className="text-[#d65353]" />
+          </div>
+
+          <h1 className="mt-7 text-[33px] font-bold leading-[1.05] tracking-[0.01em] text-black sm:text-[41px]">
+            Payment Not Verified
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-[560px] text-[14px] font-normal leading-6 tracking-[0.025em] text-[#111111] sm:text-[17px]">
+            We couldn't verify your payment. If you've been charged, please
+            contact support with your payment ID.
+          </p>
+
+          <Link
+            href="/"
+            className="mx-auto mt-8 inline-flex h-[52px] items-center justify-center rounded-full bg-black px-8 text-[14px] font-semibold tracking-[0.02em] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Return to Storefront
+          </Link>
+        </motion.section>
+      </main>
     );
   }
 
   if (order.paymentStatus !== 'paid') {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mb-6">
-          <Loader2 className="animate-spin" size={40} />
-        </div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Payment Pending</h2>
-        <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">Your payment is still processing or was incomplete. We will update your order once the payment clears.</p>
-        <Link href="/" className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-black transition-all hover:bg-orange-600 active:scale-95">
-          Return to Storefront
-        </Link>
-      </div>
+      <main
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-4 pb-12 pt-[122px] sm:px-6 sm:pb-16 sm:pt-[136px] lg:pt-[148px]"
+        style={{ fontFamily: 'var(--font-sf-pro)' }}
+      >
+        <SuccessBackground />
+
+        <motion.section
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 mx-auto w-full max-w-[650px] rounded-[40px] border border-white/60 bg-[#F0EFEF]/30 px-5 pb-8 pt-8 text-center shadow-[0_18px_60px_rgba(0,0,0,0.055)] backdrop-blur-[22px] sm:px-8 sm:pb-10 sm:pt-10"
+        >
+          <div className="mx-auto flex h-[74px] w-[74px] items-center justify-center rounded-full bg-[#fff8e8]">
+            <Clock3 size={32} strokeWidth={1.8} className="text-[#c88920]" />
+          </div>
+
+          <h1 className="mt-7 text-[33px] font-bold leading-[1.05] tracking-[0.01em] text-black sm:text-[41px]">
+            Payment Pending
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-[560px] text-[14px] font-normal leading-6 tracking-[0.025em] text-[#111111] sm:text-[17px]">
+            Your payment is still processing or was incomplete. We will update
+            your order once the payment clears.
+          </p>
+
+          <Link
+            href="/"
+            className="mx-auto mt-8 inline-flex h-[52px] items-center justify-center rounded-full bg-black px-8 text-[14px] font-semibold tracking-[0.02em] text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Return to Storefront
+          </Link>
+        </motion.section>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-20 px-4">
-      <div className="max-w-3xl mx-auto text-center">
-        <div className="mb-10 inline-flex items-center justify-center w-24 h-24 bg-emerald-100 rounded-[2.5rem] text-emerald-600 shadow-xl shadow-emerald-900/10 animate-bounce">
-          <CheckCircle size={48} />
-        </div>
-        
-        <h1 className="text-6xl font-black text-slate-900 tracking-tighter mb-2">Order Confirmed!</h1>
-        <p className="text-xl text-slate-500 font-medium italic mb-10">Your gear is being prepped for deployment.</p>
+    <main
+      className="relative min-h-screen overflow-hidden bg-white px-4 pb-12 pt-[122px] sm:px-6 sm:pb-16 sm:pt-[136px] lg:pt-[148px]"
+      style={{ fontFamily: 'var(--font-sf-pro)' }}
+    >
+      <SuccessBackground />
 
-        <div className="bg-white rounded-[3rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100 text-left relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/5 rounded-full -mr-16 -mt-16"></div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-10 border-b border-slate-100">
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Assigned Order ID</p>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tighter">{order.orderId}</h2>
-            </div>
-            <Link 
-              href={`/track-order?trackingId=${order.trackingId}`}
-              className="group flex items-center gap-3 px-6 py-4 bg-orange-50 text-orange-600 rounded-2xl font-black text-sm hover:bg-orange-600 hover:text-white transition-all active:scale-95"
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-182px)] w-full max-w-[650px] items-center justify-center sm:min-h-[calc(100vh-216px)]">
+        <div className="w-full">
+          <motion.section
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-[40px] border border-white/60 bg-[#F0EFEF]/30 px-5 pb-6 pt-7 text-center shadow-[0_18px_60px_rgba(0,0,0,0.055)] backdrop-blur-[22px] sm:px-7 sm:pb-7 sm:pt-8 lg:px-8"
+          >
+            <motion.div
+              initial={{ scale: 0.4, opacity: 0, rotate: -12 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+              whileHover={{ scale: 1.06 }}
+              className="mx-auto flex h-[86px] w-[86px] items-center justify-center rounded-full bg-white/80 shadow-[0_18px_55px_rgba(1,129,117,0.18)]"
             >
-              Track Live Progress
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{
+                  delay: 0.18,
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 16,
+                }}
+                className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-[#effaf8]"
+              >
+                <motion.div
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.32, duration: 0.35 }}
+                >
+                  <CheckCircle
+                    size={40}
+                    strokeWidth={1.9}
+                    className="text-[#018175]"
+                  />
+                </motion.div>
+              </motion.div>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28, duration: 0.45 }}
+              className="mt-7 text-[33px] font-bold leading-[1.05] tracking-[0.01em] text-black sm:text-[41px]"
+            >
+              Order Confirmed
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38, duration: 0.45 }}
+              className="mx-auto mt-4 max-w-[650px] text-[14px] font-normal leading-6 tracking-[0.025em] text-[#111111] sm:mt-5 sm:text-[17px]"
+            >
+              Your order has been placed successfully. You can track the latest
+              status using your tracking ID.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.48, duration: 0.45 }}
+              className="mt-7 rounded-[32px] border border-white/60 bg-white/45 px-5 py-5 text-left shadow-[0_14px_42px_rgba(0,0,0,0.045)] backdrop-blur-[18px] sm:mt-10 sm:px-6 sm:py-6"
+            >
+              <div className="flex items-start gap-3">
+                <motion.div
+                  whileHover={{ scale: 1.08, rotate: 3 }}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#effaf8]"
+                >
+                  <PackageCheck
+                    size={20}
+                    strokeWidth={1.8}
+                    className="text-[#018175]"
+                  />
+                </motion.div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-normal leading-5 tracking-[0.015em] text-[#999999]">
+                    Assigned Order ID
+                  </p>
+
+                  <p className="mt-1 break-words text-[20px] font-semibold leading-7 text-[#222222] sm:text-[24px]">
+                    {order.orderId}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <motion.div
+                  whileHover={{ y: -3 }}
+                  className="rounded-[24px] border border-white/70 bg-[#F0EFEF]/35 px-4 py-4 transition-shadow hover:shadow-[0_12px_30px_rgba(0,0,0,0.055)]"
+                >
+                  <p className="text-[11px] font-normal leading-5 tracking-[0.015em] text-[#aaaaaa]">
+                    Tracking ID
+                  </p>
+
+                  <p className="mt-1 break-words text-[14px] font-semibold leading-6 text-[#222222]">
+                    {order.trackingId}
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -3 }}
+                  className="rounded-[24px] border border-white/70 bg-[#F0EFEF]/35 px-4 py-4 transition-shadow hover:shadow-[0_12px_30px_rgba(0,0,0,0.055)]"
+                >
+                  <p className="text-[11px] font-normal leading-5 tracking-[0.015em] text-[#aaaaaa]">
+                    Delivery ETA
+                  </p>
+
+                  <p className="mt-1 text-[14px] font-semibold leading-6 text-[#222222]">
+                    2 - 4 Business Days
+                  </p>
+                </motion.div>
+              </div>
+
+              <Link
+                href={`/track-order?trackingId=${order.trackingId}`}
+                className="group mt-5 flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-black px-6 text-[14px] font-semibold tracking-[0.02em] text-white shadow-[0_14px_34px_rgba(0,0,0,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_18px_46px_rgba(0,0,0,0.24)] active:translate-y-0 active:scale-[0.98]"
+              >
+                Track Live Progress
+                <ArrowRight
+                  size={17}
+                  strokeWidth={1.8}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </motion.div>
+          </motion.section>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.72, duration: 0.4 }}
+            className="mt-3 flex flex-col items-center justify-center gap-2 px-3 text-center sm:flex-row sm:gap-3"
+          >
+            <Link
+              href="/"
+              className="text-[12px] font-normal leading-5 tracking-[0.015em] text-[#aaaaaa] transition-colors hover:text-black"
+            >
+              Continue Shopping
             </Link>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div>
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                Tracking ID
-              </h3>
-              <p className="text-slate-900 font-bold leading-relaxed">{order.trackingId}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <div className="w-1 h-4 bg-slate-400 rounded-full"></div>
-                Deployment ETA
-              </h3>
-              <p className="text-slate-900 font-bold">2 - 4 Business Days</p>
-              <p className="text-xs text-slate-400 font-medium mt-1 italic">Standard Logistics Track</p>
-            </div>
-          </div>
-        </div>
+            <span className="hidden h-1 w-1 rounded-full bg-[#d9d9d9] sm:block" />
 
-        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
-          <Link href="/" className="text-slate-400 font-bold hover:text-slate-900 transition-colors">
-            Continue Shopping
-          </Link>
-          <div className="w-2 h-2 bg-slate-200 rounded-full hidden sm:block"></div>
-          <p className="text-slate-500 font-medium">Need help? <span className="text-orange-600 font-black cursor-pointer">Contact Support</span></p>
+            <Link
+              href="/contact"
+              className="text-[12px] font-normal leading-5 tracking-[0.015em] text-[#aaaaaa] transition-colors hover:text-black"
+            >
+              Need help? Contact Support
+            </Link>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
-
 export default function SuccessPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div
+          className="flex min-h-screen items-center justify-center bg-white"
+          style={{ fontFamily: 'var(--font-sf-pro)' }}
+        >
+          <Loader2 className="h-7 w-7 animate-spin text-black" />
+        </div>
+      }
+    >
       <SuccessContent />
     </Suspense>
   );
