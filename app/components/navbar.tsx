@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MessageSquareText, ShoppingBag, UserRound, Menu, X } from "lucide-react";
@@ -12,6 +12,16 @@ export default function Navbar() {
   const { cartCount } = useCart();
   const [mobileMenu, setMobileMenu] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateNavbar = () => setIsScrolled(window.scrollY > 20);
+
+    updateNavbar();
+    window.addEventListener("scroll", updateNavbar, { passive: true });
+
+    return () => window.removeEventListener("scroll", updateNavbar);
+  }, []);
 
   const menuItems = [
     { name: "Home", link: "/" },
@@ -27,7 +37,14 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed left-0 top-0 z-[100] w-full bg-white">
+      <nav
+        className={cn(
+          "fixed left-0 top-0 z-[100] w-full transition-all duration-300",
+          isScrolled
+            ? "border-b border-white/35 bg-white/70 shadow-[0_8px_32px_rgba(15,23,42,0.10)] backdrop-blur-xl backdrop-saturate-150"
+            : "bg-white"
+        )}
+      >
         <div className="mx-auto flex h-[95px] w-full max-w-[1920px] items-center justify-between px-[62px] max-lg:px-6 max-sm:h-[78px] max-sm:px-5">
           {/* Logo Image */}
           <Link href="/" className="flex shrink-0 items-center">

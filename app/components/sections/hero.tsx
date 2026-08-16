@@ -68,7 +68,7 @@ const Hero = () => {
   const router = useRouter();
 
   return (
-    <section className="relative w-full overflow-hidden bg-black">
+    <section className="relative w-full overflow-hidden bg-black pt-[78px] sm:pt-[95px]">
       <Swiper
         modules={[Pagination, Autoplay]}
         slidesPerView={1}
@@ -85,7 +85,7 @@ const Hero = () => {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div className="relative h-[100svh] min-h-[680px] w-full overflow-hidden lg:min-h-[760px]">
+            <div className="relative h-[calc(100svh-78px)] min-h-[602px] w-full overflow-hidden sm:h-[calc(100svh-95px)] sm:min-h-[585px] lg:min-h-[665px]">
               {/* Background image */}
               <img
                 src={slide.image}

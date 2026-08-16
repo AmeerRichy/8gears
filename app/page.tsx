@@ -1,6 +1,5 @@
 
 import Footer from "@/components/footer";
-import Navbar from "@/components/navbar";
 import Categories from "@/components/sections/categories";
 import CustomerCare from "@/components/sections/customercare";
 import Hero from "@/components/sections/hero";
@@ -13,7 +12,6 @@ import CafeRacer from "./components/sections/CafeRacer";
 export default function Home() {
   return (
     <>
-      <Navbar />
       <Hero />
       <ProductFeatureBanner/>
       <DenimFeature/>
@@ -27,5 +25,4 @@ export default function Home() {
     </>
   );
 }
-
 
