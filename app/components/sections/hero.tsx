@@ -10,7 +10,7 @@ import "swiper/css/pagination";
 
 const slides = [
   {
-    image: "/images/riding-hero.webp",
+    image: "/assets/images/h1m.png",
     title: (
       <>
         Intelligent Riding
