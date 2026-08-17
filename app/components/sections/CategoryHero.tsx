@@ -29,7 +29,7 @@ const benefits = [
 
 export default function CategoryHero() {
   return (
-    <section className="relative isolate mt-[80px] min-h-[620px] w-full overflow-hidden bg-black">
+    <section className="relative isolate min-h-[620px] w-full overflow-hidden bg-black">
       {/* Background Image */}
       <div className="absolute inset-0 -z-20">
         <Image
@@ -37,7 +37,7 @@ export default function CategoryHero() {
           alt="Motorcycle rider wearing protective riding gear"
           fill
           priority
-          className="object-cover object-center"
+          className="object-cover object-top"
           sizes="100vw"
         />
       </div>

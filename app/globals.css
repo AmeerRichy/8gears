@@ -21,6 +21,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Keep the existing fixed navbar directly beneath the announcement ticker. */
+.announcement-navbar-offset nav {
+  top: 52px;
+}
+
+.announcement-ticker--hidden ~ .announcement-navbar-offset nav {
+  top: 0;
+}
+
+@media (min-width: 640px) {
+  .announcement-navbar-offset nav {
+    top: 60px;
+  }
+
+  .announcement-ticker--hidden ~ .announcement-navbar-offset nav {
+    top: 0;
+  }
+}
+
 /* Custom Swiper Styles */
 .thumbs-swiper .swiper-slide-thumb-active .aspect-square {
   border-color: #ea580c !important;
