@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  MapPin,
-  Search,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { MapPin, Search } from "lucide-react";
 import {
   Map as PigeonMap,
   Overlay,
@@ -39,8 +33,7 @@ const dealers: Dealer[] = [
   {
     id: 1,
     name: "Laval MOTO Inc",
-    address:
-      "315 Bd Cartier O, Laval, QC H7N 2J3",
+    address: "315 Bd Cartier O, Laval, QC H7N 2J3",
     mapQuery:
       "315 Bd Cartier O, Laval, QC H7N 2J3, Canada",
   },
@@ -110,14 +103,10 @@ const dealers: Dealer[] = [
   },
 ];
 
-const CACHE_KEY =
-  "8gears-dealer-coordinates-v2";
+const CACHE_KEY = "8gears-dealer-coordinates-v2";
 
 /* =========================================================
-   CONVERT LAT/LNG TO MAP PIXELS
-
-   Used only for figuring out which markers are
-   visually close enough to become a cluster.
+   LAT/LNG -> MAP PIXEL POSITION
 ========================================================= */
 
 function latLngToPixel(
@@ -126,18 +115,14 @@ function latLngToPixel(
 ) {
   const [lat, lng] = coordinate;
 
-  const worldSize =
-    256 * Math.pow(2, zoom);
+  const worldSize = 256 * Math.pow(2, zoom);
 
   const x =
-    ((lng + 180) / 360) *
-    worldSize;
+    ((lng + 180) / 360) * worldSize;
 
   const sinLatitude = Math.min(
     Math.max(
-      Math.sin(
-        (lat * Math.PI) / 180
-      ),
+      Math.sin((lat * Math.PI) / 180),
       -0.9999
     ),
     0.9999
@@ -159,14 +144,7 @@ function latLngToPixel(
 }
 
 /* =========================================================
-   CREATE CLUSTERS
-
-   Low zoom:
-      ● 5
-      ● 3
-
-   High zoom:
-      individual dealer pins
+   CREATE DEALER CLUSTERS
 ========================================================= */
 
 function createClusters(
@@ -177,9 +155,6 @@ function createClusters(
     return [];
   }
 
-  /*
-   * Larger radius when zoomed far out.
-   */
   let clusterRadius = 72;
 
   if (zoom <= 3) {
@@ -191,8 +166,8 @@ function createClusters(
   }
 
   /*
-   * At close zoom levels we want all
-   * individual pins visible.
+   * At closer zoom levels:
+   * show every dealer as its own blip.
    */
   if (zoom >= 11) {
     return points.map(
@@ -206,29 +181,22 @@ function createClusters(
 
   const remaining = [...points];
 
-  const clusters: DealerCluster[] =
-    [];
+  const clusters: DealerCluster[] = [];
 
   while (remaining.length > 0) {
-    const first =
-      remaining.shift();
+    const first = remaining.shift();
 
     if (!first) break;
 
-    const firstPixel =
-      latLngToPixel(
-        first.coordinate,
-        zoom
-      );
+    const firstPixel = latLngToPixel(
+      first.coordinate,
+      zoom
+    );
 
     const grouped: DealerPoint[] = [
       first,
     ];
 
-    /*
-     * Find dealers visually close
-     * to the first point.
-     */
     for (
       let index =
         remaining.length - 1;
@@ -257,21 +225,13 @@ function createClusters(
           deltaY * deltaY
       );
 
-      if (
-        distance <= clusterRadius
-      ) {
+      if (distance <= clusterRadius) {
         grouped.push(candidate);
 
-        remaining.splice(
-          index,
-          1
-        );
+        remaining.splice(index, 1);
       }
     }
 
-    /*
-     * Center cluster between all dealers.
-     */
     const averageLat =
       grouped.reduce(
         (total, item) =>
@@ -290,13 +250,8 @@ function createClusters(
 
     clusters.push({
       id: grouped
-        .map(
-          (item) =>
-            item.dealer.id
-        )
-        .sort(
-          (a, b) => a - b
-        )
+        .map((item) => item.dealer.id)
+        .sort((a, b) => a - b)
         .join("-"),
 
       coordinate: [
@@ -305,8 +260,7 @@ function createClusters(
       ],
 
       dealers: grouped.map(
-        (item) =>
-          item.dealer
+        (item) => item.dealer
       ),
     });
   }
@@ -318,9 +272,7 @@ export default function DealerLocator() {
   const [
     selectedDealer,
     setSelectedDealer,
-  ] = useState<Dealer>(
-    dealers[0]
-  );
+  ] = useState<Dealer>(dealers[0]);
 
   const [search, setSearch] =
     useState("");
@@ -329,10 +281,7 @@ export default function DealerLocator() {
     dealerCoords,
     setDealerCoords,
   ] = useState<
-    Record<
-      number,
-      Coordinates
-    >
+    Record<number, Coordinates>
   >({});
 
   const [center, setCenter] =
@@ -350,7 +299,7 @@ export default function DealerLocator() {
   ] = useState(true);
 
   /* =========================================================
-     FILTER LEFT LIST
+     FILTER LEFT DEALER LIST
   ========================================================= */
 
   const filteredDealers =
@@ -375,7 +324,7 @@ export default function DealerLocator() {
     }, [search]);
 
   /* =========================================================
-     CREATE DEALER POINTS
+     DEALERS WITH COORDINATES
   ========================================================= */
 
   const dealerPoints =
@@ -405,7 +354,7 @@ export default function DealerLocator() {
     }, [dealerCoords]);
 
   /* =========================================================
-     CLUSTER BASED ON CURRENT ZOOM
+     CLUSTER ACCORDING TO CURRENT ZOOM
   ========================================================= */
 
   const clusters = useMemo(
@@ -414,32 +363,21 @@ export default function DealerLocator() {
         dealerPoints,
         zoom
       ),
-    [
-      dealerPoints,
-      zoom,
-    ]
+    [dealerPoints, zoom]
   );
 
   /* =========================================================
      GET COORDINATES
-
-     NO GOOGLE
+     OPENSTREETMAP NOMINATIM
      NO API KEY
-
-     OpenStreetMap Nominatim
   ========================================================= */
 
   useEffect(() => {
     let cancelled = false;
 
-    const sleep = (
-      ms: number
-    ) =>
+    const sleep = (ms: number) =>
       new Promise((resolve) =>
-        setTimeout(
-          resolve,
-          ms
-        )
+        setTimeout(resolve, ms)
       );
 
     const loadCoordinates =
@@ -449,9 +387,9 @@ export default function DealerLocator() {
           Coordinates
         > = {};
 
-        /* =============================================
-           READ LOCAL CACHE
-        ============================================= */
+        /* ==============================
+           CACHE
+        ============================== */
 
         try {
           const saved =
@@ -470,13 +408,8 @@ export default function DealerLocator() {
             }
           }
         } catch {
-          storedCoordinates =
-            {};
+          storedCoordinates = {};
         }
-
-        /* =============================================
-           ONLY LOOKUP MISSING LOCATIONS
-        ============================================= */
 
         const missingDealers =
           dealers.filter(
@@ -487,8 +420,7 @@ export default function DealerLocator() {
           );
 
         if (
-          missingDealers.length ===
-          0
+          missingDealers.length === 0
         ) {
           if (!cancelled) {
             setLocationsLoading(
@@ -499,9 +431,9 @@ export default function DealerLocator() {
           return;
         }
 
-        /* =============================================
-           GET EACH LOCATION
-        ============================================= */
+        /* ==============================
+           LOOK UP MISSING LOCATIONS
+        ============================== */
 
         for (
           let index = 0;
@@ -509,9 +441,7 @@ export default function DealerLocator() {
           missingDealers.length;
           index++
         ) {
-          if (cancelled) {
-            return;
-          }
+          if (cancelled) return;
 
           const dealer =
             missingDealers[index];
@@ -535,9 +465,7 @@ export default function DealerLocator() {
                 }
               );
 
-            if (
-              !response.ok
-            ) {
+            if (!response.ok) {
               throw new Error(
                 "Location lookup failed"
               );
@@ -547,50 +475,34 @@ export default function DealerLocator() {
               await response.json();
 
             if (
-              Array.isArray(
-                results
-              ) &&
+              Array.isArray(results) &&
               results.length > 0
             ) {
-              const lat =
-                Number(
-                  results[0]
-                    .lat
-                );
+              const lat = Number(
+                results[0].lat
+              );
 
-              const lng =
-                Number(
-                  results[0]
-                    .lon
-                );
+              const lng = Number(
+                results[0].lon
+              );
 
               if (
-                Number.isFinite(
-                  lat
-                ) &&
-                Number.isFinite(
-                  lng
-                )
+                Number.isFinite(lat) &&
+                Number.isFinite(lng)
               ) {
-                storedCoordinates =
-                  {
+                storedCoordinates = {
+                  ...storedCoordinates,
+
+                  [dealer.id]: [
+                    lat,
+                    lng,
+                  ],
+                };
+
+                if (!cancelled) {
+                  setDealerCoords({
                     ...storedCoordinates,
-
-                    [dealer.id]:
-                      [
-                        lat,
-                        lng,
-                      ],
-                  };
-
-                if (
-                  !cancelled
-                ) {
-                  setDealerCoords(
-                    {
-                      ...storedCoordinates,
-                    }
-                  );
+                  });
                 }
 
                 try {
@@ -601,38 +513,27 @@ export default function DealerLocator() {
                     )
                   );
                 } catch {
-                  // Ignore storage errors
+                  // Ignore localStorage errors
                 }
               }
             }
-          } catch (
-            error
-          ) {
+          } catch (error) {
             console.error(
               `Could not locate ${dealer.name}:`,
               error
             );
           }
 
-          /*
-           * Small delay between
-           * address lookups.
-           */
           if (
             index <
-            missingDealers.length -
-              1
+            missingDealers.length - 1
           ) {
-            await sleep(
-              1100
-            );
+            await sleep(1100);
           }
         }
 
         if (!cancelled) {
-          setLocationsLoading(
-            false
-          );
+          setLocationsLoading(false);
         }
       };
 
@@ -644,10 +545,7 @@ export default function DealerLocator() {
   }, []);
 
   /* =========================================================
-     INITIAL SELECTED DEALER
-
-     Once its coordinate loads,
-     position map on it.
+     CURRENT SELECTED COORDINATE
   ========================================================= */
 
   const selectedCoordinate =
@@ -655,10 +553,12 @@ export default function DealerLocator() {
       selectedDealer.id
     ];
 
+  /* =========================================================
+     INITIAL POSITION
+  ========================================================= */
+
   useEffect(() => {
-    if (
-      !selectedCoordinate
-    ) {
+    if (!selectedCoordinate) {
       return;
     }
 
@@ -674,68 +574,51 @@ export default function DealerLocator() {
   ]);
 
   /* =========================================================
-     CLICK DEALER IN LEFT LIST
+     CLICK DEALER FROM LEFT
   ========================================================= */
 
   const handleDealerClick = (
     dealer: Dealer
   ) => {
-    setSelectedDealer(
-      dealer
-    );
+    setSelectedDealer(dealer);
 
     const coordinate =
       dealerCoords[
         dealer.id
       ];
 
-    if (!coordinate) {
-      return;
-    }
+    if (!coordinate) return;
 
-    setCenter(
-      coordinate
-    );
+    setCenter(coordinate);
 
     setZoom(14);
   };
 
   /* =========================================================
-     CLICK INDIVIDUAL MAP PIN
+     CLICK BLIP ON MAP
   ========================================================= */
 
   const handlePinClick = (
     dealer: Dealer
   ) => {
-    setSelectedDealer(
-      dealer
-    );
+    setSelectedDealer(dealer);
 
     const coordinate =
       dealerCoords[
         dealer.id
       ];
 
-    if (!coordinate) {
-      return;
-    }
+    if (!coordinate) return;
 
-    setCenter(
-      coordinate
-    );
+    setCenter(coordinate);
 
-    /*
-     * Don't force zoom if already close.
-     */
     if (zoom < 13) {
       setZoom(13);
     }
   };
 
   /* =========================================================
-     CLICK CLUSTER
-
-     Move to cluster + zoom in.
+     CLICK NUMBER CLUSTER
   ========================================================= */
 
   const handleClusterClick = (
@@ -758,26 +641,20 @@ export default function DealerLocator() {
       <div className="mx-auto w-full max-w-[1600px] px-[20px] py-[60px] sm:px-[35px] lg:px-[60px] lg:py-[90px]">
         <div className="grid grid-cols-1 lg:grid-cols-[41%_59%]">
           {/* =================================================
-              LEFT SIDE
+              LEFT
           ================================================= */}
 
           <div className="flex min-h-0 flex-col bg-white lg:h-[790px] lg:pr-[30px]">
-            {/* =============================================
-                SEARCH
-            ============================================= */}
+            {/* SEARCH */}
 
             <div className="pb-[20px] lg:pb-[26px]">
               <div className="relative">
                 <input
                   type="text"
                   value={search}
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setSearch(
-                      event
-                        .target
-                        .value
+                      event.target.value
                     )
                   }
                   placeholder="Address..."
@@ -792,9 +669,7 @@ export default function DealerLocator() {
               </div>
             </div>
 
-            {/* =============================================
-                DEALER LIST
-            ============================================= */}
+            {/* DEALERS */}
 
             <div
               className="
@@ -847,11 +722,9 @@ export default function DealerLocator() {
                           px-[6px]
                           py-[30px]
                           text-left
-                          transition-all
+                          transition-colors
                           duration-200
-
                           hover:bg-[#f7f7f7]
-
                           sm:px-[8px]
                           lg:py-[34px]
 
@@ -864,9 +737,7 @@ export default function DealerLocator() {
                       >
                         <div className="pt-[1px]">
                           <MapPin
-                            size={
-                              29
-                            }
+                            size={29}
                             strokeWidth={
                               2.2
                             }
@@ -880,15 +751,11 @@ export default function DealerLocator() {
 
                         <div className="min-w-0 flex-1">
                           <h3 className="font-[var(--font-sf-pro)] text-[21px] font-semibold leading-[1.15] text-black sm:text-[24px]">
-                            {
-                              dealer.name
-                            }
+                            {dealer.name}
                           </h3>
 
                           <p className="mt-[14px] max-w-[470px] font-[var(--font-sf-pro)] text-[16px] font-normal leading-[1.32] text-[#7a7a7a] sm:text-[18px]">
-                            {
-                              dealer.address
-                            }
+                            {dealer.address}
                           </p>
                         </div>
                       </button>
@@ -898,8 +765,7 @@ export default function DealerLocator() {
               ) : (
                 <div className="flex h-[180px] items-center justify-center px-[20px] text-center">
                   <p className="font-[var(--font-sf-pro)] text-[16px] text-[#777777]">
-                    No dealers
-                    found.
+                    No dealers found.
                   </p>
                 </div>
               )}
@@ -907,7 +773,7 @@ export default function DealerLocator() {
           </div>
 
           {/* =================================================
-              MAP
+              RIGHT MAP
           ================================================= */}
 
           <div className="relative mt-[32px] h-[500px] w-full overflow-hidden bg-[#e7edef] lg:mt-0 lg:h-[790px]">
@@ -917,54 +783,44 @@ export default function DealerLocator() {
               minZoom={2}
               maxZoom={18}
               animate
-              metaWheelZoom={
-                false
-              }
+              metaWheelZoom={false}
               attribution={
                 <span className="font-[var(--font-sf-pro)] text-[10px]">
-                  © OpenStreetMap
-                  contributors
+                  © OpenStreetMap contributors
                 </span>
               }
               onBoundsChanged={({
-                center:
-                  newCenter,
+                center: newCenter,
                 zoom: newZoom,
               }) => {
                 setCenter(
                   newCenter as Coordinates
                 );
 
-                setZoom(
-                  newZoom
-                );
+                setZoom(newZoom);
               }}
             >
               <ZoomControl />
 
-              {/* ===========================================
-                  CUSTOM CLUSTERS + PINS
-
-                  No Marker component.
-
-                  Overlay lets us make the exact
-                  Tailwind design we want.
-              =========================================== */}
+              {/* =================================================
+                  CLUSTERS / BLIPS
+              ================================================= */}
 
               {clusters.map(
                 (cluster) => {
                   const isCluster =
-                    cluster
-                      .dealers
+                    cluster.dealers
                       .length > 1;
 
-                  /* =======================================
-                     BLACK NUMBER CLUSTER
-                  ======================================= */
+                  /* =========================================
+                     NUMBER CLUSTER
+                  ========================================= */
 
-                  if (
-                    isCluster
-                  ) {
+                  if (isCluster) {
+                    const count =
+                      cluster.dealers
+                        .length;
+
                     return (
                       <Overlay
                         key={`cluster-${cluster.id}`}
@@ -978,7 +834,7 @@ export default function DealerLocator() {
                       >
                         <button
                           type="button"
-                          aria-label={`Zoom into ${cluster.dealers.length} dealers`}
+                          aria-label={`Zoom into ${count} dealers`}
                           onClick={(
                             event
                           ) => {
@@ -989,8 +845,6 @@ export default function DealerLocator() {
                             );
                           }}
                           className="
-                            group
-                            relative
                             flex
                             h-[68px]
                             w-[68px]
@@ -1000,39 +854,35 @@ export default function DealerLocator() {
                             rounded-full
                             border-[7px]
                             border-black/20
-                            bg-[#2b2b2b]
+                            bg-[#292929]
                             font-[var(--font-sf-pro)]
                             text-[18px]
                             font-semibold
                             text-white
-                            shadow-[0_5px_18px_rgba(0,0,0,0.20)]
+                            shadow-[0_5px_18px_rgba(0,0,0,0.22)]
                             transition-all
                             duration-200
 
-                            hover:scale-110
+                            hover:scale-[1.08]
                             hover:bg-black
-                            hover:shadow-[0_8px_24px_rgba(0,0,0,0.28)]
+                            hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)]
 
                             active:scale-95
                           "
                         >
-                          {
-                            cluster
-                              .dealers
-                              .length
-                          }
+                          {count}
                         </button>
                       </Overlay>
                     );
                   }
 
-                  /* =======================================
-                     INDIVIDUAL DEALER PIN
-                  ======================================= */
+                  /* =========================================
+                     SINGLE DEALER
+                     USE YOUR BLIP.PNG
+                  ========================================= */
 
                   const dealer =
-                    cluster
-                      .dealers[0];
+                    cluster.dealers[0];
 
                   const active =
                     selectedDealer.id ===
@@ -1044,9 +894,16 @@ export default function DealerLocator() {
                       anchor={
                         cluster.coordinate
                       }
+                      /*
+                       * Width approx 54
+                       * Height approx 70
+                       *
+                       * Offset anchors the BOTTOM TIP
+                       * to the exact dealer coordinate.
+                       */
                       offset={[
-                        25,
-                        54,
+                        27,
+                        66,
                       ]}
                     >
                       <button
@@ -1066,27 +923,42 @@ export default function DealerLocator() {
                             dealer
                           );
                         }}
-                        className="
+                        className={`
                           group
                           relative
-                          h-[54px]
-                          w-[50px]
+                          flex
+                          h-[66px]
+                          w-[54px]
                           cursor-pointer
+                          items-end
+                          justify-center
                           border-0
                           bg-transparent
                           p-0
                           outline-none
-                        "
+
+                          transition-transform
+                          duration-200
+
+                          ${
+                            active
+                              ? "scale-[1.12]"
+                              : "scale-100"
+                          }
+
+                          hover:scale-[1.14]
+                          active:scale-[0.98]
+                        `}
                       >
-                        {/* MARKER SHADOW */}
+                        {/* BLIP SHADOW */}
 
                         <span
                           className="
                             absolute
-                            bottom-[1px]
+                            bottom-[-1px]
                             left-1/2
-                            h-[8px]
-                            w-[24px]
+                            h-[7px]
+                            w-[25px]
                             -translate-x-1/2
                             rounded-full
                             bg-black/20
@@ -1094,62 +966,33 @@ export default function DealerLocator() {
                           "
                         />
 
-                        {/* TEARDROP */}
+                        {/* YOUR EXACT BLIP */}
 
-                        <span
+                        <Image
+                          src="/assets/images/blip.png"
+                          alt=""
+                          width={54}
+                          height={66}
+                          draggable={false}
                           className={`
-                            absolute
-                            left-1/2
-                            top-0
-                            flex
-                            h-[44px]
-                            w-[44px]
-                            -translate-x-1/2
-                            rotate-[-45deg]
-                            items-center
-                            justify-center
-
-                            rounded-[50%_50%_50%_7px]
-
-                            bg-black
-
-                            shadow-[0_5px_15px_rgba(0,0,0,0.28)]
+                            relative
+                            z-[2]
+                            h-auto
+                            w-[54px]
+                            select-none
+                            object-contain
+                            drop-shadow-[0_6px_8px_rgba(0,0,0,0.23)]
 
                             transition-all
                             duration-200
 
-                            group-hover:scale-110
-                            group-hover:shadow-[0_8px_22px_rgba(0,0,0,0.35)]
-
                             ${
                               active
-                                ? "ring-[5px] ring-black/15"
+                                ? "drop-shadow-[0_8px_12px_rgba(0,0,0,0.32)]"
                                 : ""
                             }
                           `}
-                        >
-                          {/* WHITE INNER LOGO AREA */}
-
-                          <span
-                            className="
-                              flex
-                              h-[23px]
-                              w-[23px]
-                              rotate-[45deg]
-                              items-center
-                              justify-center
-                              rounded-[7px]
-                              bg-white
-                              font-[var(--font-sf-pro)]
-                              text-[14px]
-                              font-black
-                              leading-none
-                              text-black
-                            "
-                          >
-                            8
-                          </span>
-                        </span>
+                        />
                       </button>
                     </Overlay>
                   );
@@ -1158,7 +1001,7 @@ export default function DealerLocator() {
             </PigeonMap>
 
             {/* =================================================
-                SELECTED DEALER BADGE
+                SELECTED DEALER INFO
             ================================================= */}
 
             <div className="pointer-events-none absolute left-[18px] top-[18px] z-20 hidden max-w-[290px] rounded-[10px] bg-white/95 px-[16px] py-[13px] shadow-[0_4px_18px_rgba(0,0,0,0.14)] backdrop-blur-md sm:block">
@@ -1166,42 +1009,24 @@ export default function DealerLocator() {
                 <div className="mt-[2px] flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-black text-white">
                   <MapPin
                     size={16}
-                    strokeWidth={
-                      2
-                    }
+                    strokeWidth={2}
                   />
                 </div>
 
                 <div className="min-w-0">
                   <p className="font-[var(--font-sf-pro)] text-[15px] font-semibold leading-tight text-black">
-                    {
-                      selectedDealer.name
-                    }
+                    {selectedDealer.name}
                   </p>
 
                   <p className="mt-[5px] font-[var(--font-sf-pro)] text-[11px] font-normal leading-[1.35] text-[#666666]">
-                    {
-                      selectedDealer.address
-                    }
+                    {selectedDealer.address}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* =================================================
-                ZOOM LEVEL DEBUG
-                REMOVE IF YOU DON'T WANT IT
-            ================================================= */}
-
-            <div className="pointer-events-none absolute bottom-[18px] left-[18px] z-20 rounded-full bg-black/80 px-[12px] py-[7px] font-[var(--font-sf-pro)] text-[10px] font-medium text-white backdrop-blur-md">
-              Zoom{" "}
-              {Math.round(
-                zoom * 10
-              ) / 10}
-            </div>
-
-            {/* =================================================
-                INITIAL LOCATION LOADER
+                LOCATION LOADER
             ================================================= */}
 
             {locationsLoading &&
@@ -1212,8 +1037,7 @@ export default function DealerLocator() {
                     <div className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-black/20 border-t-black" />
 
                     <span className="whitespace-nowrap font-[var(--font-sf-pro)] text-[12px] font-medium text-black">
-                      Locating
-                      dealers...
+                      Locating dealers...
                     </span>
                   </div>
                 </div>
