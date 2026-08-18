@@ -30,7 +30,7 @@ export default function DealerHero() {
           <div className="relative text-center">
 
             <h1 className="relative font-[var(--font-sf-pro)] text-[48px] font-normal leading-[1] tracking-[-2px] text-black sm:text-[60px] lg:text-[72px] xl:text-[76px]">
-              <span className="font-bold">Dealers</span>{" "}
+              <span className="font-bold">Dealer</span>{" "}
               <span className="font-normal">Locator</span>
             </h1>
           </div>
