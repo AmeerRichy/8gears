@@ -15,7 +15,7 @@ const exploreLinks = [
 ];
 
 const supportLinks = [
-  { name: "Terms & Conditions", href: "/terms-and-conditions" },
+  { name: "Terms & Conditions", href: "/tncs" },
   { name: "Privacy Policy", href: "/privacy-policy" },
   { name: "About 8Gear", href: "/about" },
   { name: "Contact", href: "/contact" },
