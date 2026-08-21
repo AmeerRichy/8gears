@@ -13,6 +13,8 @@ import ProductCinematicHero from "@/app/components/product/ProductCinematicHero"
 import ProductStyleAesthetics from "@/app/components/product/ProductStyleAesthetics";
 import ProductReviewsSection from "@/app/components/product/ProductReviewsSection";
 import ProductEvolutionGallery from "@/app/components/product/ProductEvolutionGallery";
+import ContactSection from "../ContactSection";
+import Footer from "../footer";
 
 export default function ProductDetail({
   product,
@@ -189,6 +191,8 @@ export default function ProductDetail({
       )}
 
       <ProductEvolutionGallery product={product} />
+      <ContactSection/>
+      <Footer/>
     </div>
   );
 }

@@ -30,8 +30,8 @@ const contactItems: ContactItem[] = [
   },
   {
     title: "RETURN & EXCHANGE",
-    linkText: "INITIATE",
-    href: "/returns",
+    linkText: "See Details",
+    href: "/return-policy",
     icon: Package,
   },
   {
