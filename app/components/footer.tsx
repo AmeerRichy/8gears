@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   Facebook,
@@ -54,7 +55,7 @@ const socialLinks = [
   },
 ];
 
-export default function Footer() {
+function FooterContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -493,5 +494,13 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+export default function Footer() {
+  return (
+    <Suspense fallback={null}>
+      <FooterContent />
+    </Suspense>
   );
 }

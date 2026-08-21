@@ -4,9 +4,9 @@ import Product from "@/app/models/Product";
 import ProductDetail from "@/app/components/product/ProductDetail";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {

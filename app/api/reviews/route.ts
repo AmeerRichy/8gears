@@ -4,7 +4,7 @@ import Review from '@/models/Review';
 import Product from '@/models/Product';
 import mongoose from 'mongoose';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/lib/auth';
 
 export async function GET(req: Request) {
   try {
