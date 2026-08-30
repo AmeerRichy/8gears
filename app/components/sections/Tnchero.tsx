@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default function TermsHero() {
+export default function TncHero() {
   return (
     <section className="relative w-full overflow-hidden bg-white">
       <div className="relative min-h-[620px] w-full sm:min-h-[680px] lg:h-[760px]">
@@ -16,7 +16,7 @@ export default function TermsHero() {
             bg-contain
             bg-center
             bg-no-repeat
-            opacity-60
+            opacity-100
           "
           style={{
             backgroundImage:
@@ -24,30 +24,6 @@ export default function TermsHero() {
           }}
         />
 
-        {/* Faint 8 behind heading */}
-        <div
-          className="
-            pointer-events-none
-            absolute
-            left-1/2
-            top-[220px]
-            z-[1]
-            -translate-x-1/2
-            font-[var(--font-sf-pro)]
-            text-[96px]
-            font-semibold
-            leading-none
-            text-black/[0.045]
-
-            sm:top-[230px]
-            sm:text-[104px]
-
-            lg:top-[255px]
-            lg:text-[112px]
-          "
-        >
-          8
-        </div>
 
         {/* Back To Home */}
         <Link

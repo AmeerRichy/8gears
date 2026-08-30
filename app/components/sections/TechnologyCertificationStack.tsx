@@ -5,6 +5,9 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* ============================================================
@@ -34,6 +37,10 @@ const cards = [
   },
 ];
 
+/* ============================================================
+   MAIN COMPONENT
+============================================================ */
+
 export default function TechnologyCertificationStack() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -45,26 +52,18 @@ export default function TechnologyCertificationStack() {
       const mm = gsap.matchMedia();
 
       /* =====================================================
-         DESKTOP / TABLET
+         DESKTOP / TABLET STACK
       ====================================================== */
 
       mm.add("(min-width: 768px)", () => {
-        const cardElements =
-          gsap.utils.toArray<HTMLElement>(".certification-stack-card");
+        const cardElements = gsap.utils.toArray<HTMLElement>(
+          ".certification-stack-card-desktop"
+        );
 
         if (cardElements.length < 3) return;
 
         /* =================================================
            INITIAL STATE
-
-           Only Class A is visible.
-
-           AA + AAA stay inside the stage but are:
-           - invisible
-           - slightly lower
-           - blurred
-
-           This means NO overflow clipping is required.
         ================================================= */
 
         gsap.set(cardElements[0], {
@@ -101,30 +100,17 @@ export default function TechnologyCertificationStack() {
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: sectionRef.current,
-
             start: "top top",
-
-            // Fast / responsive
             end: "+=1000",
-
             pin: true,
-
-            // Smooth without feeling delayed
             scrub: 0.32,
-
             anticipatePin: 1,
-
             invalidateOnRefresh: true,
           },
         });
 
         /* =================================================
            CLASS AA ENTERS
-
-           Full card remains visible.
-           No clipping.
-           Blur -> sharp.
-           Fade -> solid.
         ================================================= */
 
         timeline.to(
@@ -139,8 +125,6 @@ export default function TechnologyCertificationStack() {
           },
           0
         );
-
-        /* Slight depth on A */
 
         timeline.to(
           cardElements[0],
@@ -169,8 +153,6 @@ export default function TechnologyCertificationStack() {
           1
         );
 
-        /* AA moves slightly into background */
-
         timeline.to(
           cardElements[1],
           {
@@ -180,8 +162,6 @@ export default function TechnologyCertificationStack() {
           },
           1
         );
-
-        /* A moves slightly further back */
 
         timeline.to(
           cardElements[0],
@@ -193,33 +173,10 @@ export default function TechnologyCertificationStack() {
           1
         );
 
-        /* =================================================
-           SMALL END HOLD
-
-           Prevents the section from releasing instantly
-           after AAA becomes fully visible.
-        ================================================= */
-
         timeline.to({}, { duration: 0.12 });
 
         requestAnimationFrame(() => {
           ScrollTrigger.refresh();
-        });
-      });
-
-      /* =====================================================
-         MOBILE
-
-         Normal static layout.
-      ====================================================== */
-
-      mm.add("(max-width: 767px)", () => {
-        const cardElements =
-          gsap.utils.toArray<HTMLElement>(".certification-stack-card");
-
-        gsap.set(cardElements, {
-          clearProps:
-            "transform,zIndex,opacity,visibility,filter,willChange",
         });
       });
 
@@ -239,26 +196,86 @@ export default function TechnologyCertificationStack() {
       className="
         relative
         w-full
+        overflow-hidden
         bg-white
 
-        py-[50px]
+        py-[38px]
 
         md:flex
         md:h-screen
         md:min-h-[650px]
         md:items-center
         md:justify-center
+        md:overflow-visible
         md:py-0
       "
     >
       {/* =====================================================
-          STAGE
+          MOBILE SLIDER
+      ====================================================== */}
 
-          IMPORTANT:
-          No overflow-hidden here.
+      <div className="w-full md:hidden">
+        <Swiper
+          slidesPerView={1.18}
+          spaceBetween={12}
+          grabCursor
+          className="
+            certification-mobile-swiper
+            !overflow-visible
+            !px-[18px]
+          "
+          breakpoints={{
+            390: {
+              slidesPerView: 1.22,
+              spaceBetween: 14,
+            },
+            480: {
+              slidesPerView: 1.4,
+              spaceBetween: 16,
+            },
+            640: {
+              slidesPerView: 1.7,
+              spaceBetween: 18,
+            },
+          }}
+        >
+          {cards.map((card, index) => (
+            <SwiperSlide
+              key={card.title}
+              className="!h-auto"
+            >
+              <MobileCertificationCard
+                {...card}
+                index={index}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-          Upcoming cards are hidden by GSAP instead,
-          so their bottoms never get cut during animation.
+        {/* MOBILE SWIPE HINT */}
+        <div
+          className="
+            mt-[16px]
+            flex
+            items-center
+            justify-center
+            gap-[6px]
+
+            font-[var(--font-sf-pro)]
+            text-[10px]
+            font-medium
+            uppercase
+            tracking-[0.12em]
+            text-black/40
+          "
+        >
+          <span>Swipe to explore</span>
+          <span className="text-[13px]">→</span>
+        </div>
+      </div>
+
+      {/* =====================================================
+          DESKTOP / TABLET STACK
       ====================================================== */}
 
       <div
@@ -267,28 +284,21 @@ export default function TechnologyCertificationStack() {
           relative
           mx-auto
 
-          flex
+          hidden
           w-full
-          flex-col
-          gap-[18px]
-
-          px-[16px]
-
-          sm:px-[24px]
 
           md:block
           md:h-[520px]
           md:w-[92%]
           md:max-w-[1500px]
-          md:px-0
 
           lg:h-[535px]
 
           xl:h-[550px]
-      "
+        "
       >
         {cards.map((card, index) => (
-          <CertificationCard
+          <DesktopCertificationCard
             key={card.title}
             {...card}
             index={index}
@@ -300,7 +310,7 @@ export default function TechnologyCertificationStack() {
 }
 
 /* ============================================================
-   CARD
+   MOBILE CARD
 ============================================================ */
 
 type CertificationCardProps = {
@@ -310,7 +320,175 @@ type CertificationCardProps = {
   index: number;
 };
 
-function CertificationCard({
+function MobileCertificationCard({
+  title,
+  description,
+  image,
+  index,
+}: CertificationCardProps) {
+  return (
+    <article
+      className="
+        flex
+        h-[390px]
+        w-full
+        flex-col
+        overflow-hidden
+
+        rounded-[18px]
+
+        border
+        border-[#E3E3E3]
+
+        bg-[#FFFCFC]
+      "
+    >
+      {/* =====================================================
+          MOBILE IMAGE
+      ====================================================== */}
+
+      <div
+        className="
+          relative
+          h-[178px]
+          w-full
+          shrink-0
+
+          overflow-hidden
+
+          bg-[#fafafa]
+        "
+      >
+        {/* SOFT BACKGROUND */}
+        <div
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+
+            bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(249,249,249,1)_55%,rgba(244,244,244,1)_100%)]
+          "
+        />
+
+        {/* CLASS BADGE */}
+        <div
+          className="
+            absolute
+            left-[14px]
+            top-[14px]
+            z-20
+
+            flex
+            h-[30px]
+            min-w-[54px]
+            items-center
+            justify-center
+
+            rounded-full
+
+            border
+            border-black/[0.07]
+
+            bg-white
+
+            px-[11px]
+
+            font-[var(--font-sf-pro)]
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-[0.08em]
+
+            text-black
+          "
+        >
+          {index === 0
+            ? "A"
+            : index === 1
+            ? "AA"
+            : "AAA"}
+        </div>
+
+        {/* IMAGE */}
+        <div
+          className="
+            absolute
+            inset-x-[15px]
+            bottom-[6px]
+            top-[10px]
+            z-10
+          "
+        >
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="80vw"
+            className="
+              object-contain
+              object-center
+            "
+          />
+        </div>
+      </div>
+
+      {/* =====================================================
+          MOBILE CONTENT
+      ====================================================== */}
+
+      <div
+        className="
+          flex
+          flex-1
+          flex-col
+
+          px-[18px]
+          pb-[18px]
+          pt-[17px]
+        "
+      >
+        <h2
+          className="
+            font-[var(--font-sf-pro)]
+
+            text-[17px]
+            font-semibold
+            leading-[1.2]
+            tracking-[-0.3px]
+
+            text-black
+          "
+        >
+          {title}
+        </h2>
+
+        <p
+          className="
+            mt-[11px]
+
+            line-clamp-6
+
+            font-[var(--font-sf-pro)]
+
+            text-[12px]
+            font-normal
+            leading-[1.5]
+
+            text-black/65
+          "
+        >
+          {description}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+/* ============================================================
+   DESKTOP CARD
+============================================================ */
+
+function DesktopCertificationCard({
   title,
   description,
   image,
@@ -318,15 +496,20 @@ function CertificationCard({
   return (
     <article
       className="
-        certification-stack-card
+        certification-stack-card-desktop
 
-        relative
+        absolute
+        left-0
+        top-0
+
+        h-[430px]
         w-full
+
         overflow-hidden
 
-        rounded-[22px]
+        rounded-[28px]
 
-        border-[2px]
+        border-[3px]
         border-[#E3E3E3]
 
         bg-[#FFFCFC]
@@ -334,15 +517,6 @@ function CertificationCard({
         [backface-visibility:hidden]
         [transform:translateZ(0)]
         [will-change:transform,opacity,filter]
-
-        md:absolute
-        md:left-0
-        md:top-0
-
-        md:h-[430px]
-
-        md:rounded-[28px]
-        md:border-[3px]
 
         lg:h-[445px]
 
@@ -354,9 +528,8 @@ function CertificationCard({
           grid
           h-full
           w-full
-          grid-cols-1
 
-          md:grid-cols-[1.03fr_0.97fr]
+          grid-cols-[1.03fr_0.97fr]
         "
       >
         {/* =====================================================
@@ -368,16 +541,8 @@ function CertificationCard({
             flex
             items-center
 
-            px-[24px]
-            pb-[24px]
-            pt-[32px]
-
-            sm:px-[34px]
-            sm:pb-[30px]
-            sm:pt-[40px]
-
-            md:px-[50px]
-            md:py-[35px]
+            px-[50px]
+            py-[35px]
 
             lg:px-[64px]
 
@@ -386,27 +551,20 @@ function CertificationCard({
         >
           <div
             className="
-              mx-auto
               w-full
               max-w-[610px]
-
-              md:mx-0
             "
           >
             <h2
               className="
                 font-[var(--font-sf-pro)]
 
-                text-[22px]
+                text-[26px]
                 font-semibold
                 leading-[1.2]
                 tracking-[-0.45px]
 
                 text-black
-
-                sm:text-[25px]
-
-                md:text-[26px]
 
                 lg:text-[29px]
 
@@ -423,13 +581,11 @@ function CertificationCard({
 
                 font-[var(--font-sf-pro)]
 
-                text-[14px]
+                text-[15px]
                 font-normal
                 leading-[1.55]
 
                 text-black/80
-
-                sm:text-[15px]
 
                 lg:text-[16px]
                 lg:leading-[1.6]
@@ -449,26 +605,17 @@ function CertificationCard({
             relative
 
             flex
-            min-h-[310px]
+            min-h-0
             items-center
             justify-center
 
-            px-[18px]
-            pb-[28px]
-
-            sm:min-h-[360px]
-
-            md:min-h-0
-            md:px-[24px]
-            md:py-[22px]
+            px-[24px]
+            py-[22px]
 
             lg:px-[30px]
           "
         >
-          {/* =================================================
-              SOFT CENTER FADE
-          ================================================= */}
-
+          {/* SOFT CENTER FADE */}
           <div
             className="
               pointer-events-none
@@ -479,24 +626,15 @@ function CertificationCard({
             "
           />
 
-          {/* =================================================
-              IMAGE
-          ================================================= */}
-
+          {/* IMAGE */}
           <div
             className="
               relative
               z-10
 
-              h-[285px]
+              h-[340px]
               w-full
-              max-w-[440px]
-
-              sm:h-[330px]
-              sm:max-w-[500px]
-
-              md:h-[340px]
-              md:max-w-[470px]
+              max-w-[470px]
 
               lg:h-[355px]
               lg:max-w-[500px]
@@ -510,7 +648,6 @@ function CertificationCard({
               alt={title}
               fill
               sizes="
-                (max-width: 767px) 90vw,
                 (max-width: 1200px) 45vw,
                 520px
               "

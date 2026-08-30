@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.20",
     "@hookform/resolvers": "^5.2.2",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "cloudinary": "^2.10.0",

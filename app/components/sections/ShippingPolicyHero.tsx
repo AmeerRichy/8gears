@@ -155,7 +155,7 @@ export default function ShippingPolicyHero() {
                 lg:text-[20px]
               "
             >
-              How and when we ship your 8Gear order.
+              How and when we ship your 8Gear order.    
             </p>
           </div>
         </div>

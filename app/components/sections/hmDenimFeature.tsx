@@ -13,24 +13,101 @@ const DenimFeature = () => {
 
   return (
     <section className="w-full bg-white">
-      <div className="mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-[40px] px-[24px] py-[70px] sm:px-[40px] lg:grid-cols-2 lg:items-stretch lg:gap-[76px] lg:px-[70px] lg:py-[110px] xl:px-[72px]">
+      <div
+        className="
+          mx-auto
+          grid
+          w-full
+          max-w-[1920px]
+          grid-cols-1
+
+          gap-[28px]
+
+          px-[20px]
+          py-[52px]
+
+          sm:gap-[40px]
+          sm:px-[40px]
+          sm:py-[70px]
+
+          lg:grid-cols-2
+          lg:items-stretch
+          lg:gap-[76px]
+          lg:px-[70px]
+          lg:py-[110px]
+
+          xl:px-[72px]
+        "
+      >
         {/* LEFT COLUMN */}
         <div className="flex min-w-0 flex-col">
           {/* CONTENT */}
           <div>
-            <h2 className="font-[var(--font-sf-pro)] text-[36px] font-medium leading-[1.08] tracking-[-1.2px] text-black sm:text-[42px] lg:text-[48px]">
+            <h2
+              className="
+                font-[var(--font-sf-pro)]
+
+                text-[30px]
+                font-medium
+                leading-[1.08]
+                tracking-[-0.9px]
+                text-black
+
+                sm:text-[42px]
+                sm:tracking-[-1.2px]
+
+                lg:text-[48px]
+              "
+            >
               Denim Engineered for Every Ride
             </h2>
 
-            <div className="mt-[30px] flex flex-col gap-[13px]">
+            <div
+              className="
+                mt-[24px]
+                flex
+                flex-col
+                gap-[11px]
+
+                sm:mt-[30px]
+                sm:gap-[13px]
+              "
+            >
               {features.map((feature) => (
                 <div
                   key={feature}
-                  className="flex items-start gap-[18px]"
+                  className="flex items-start gap-[13px] sm:gap-[18px]"
                 >
-                  <span className="mt-[15px] h-[2px] w-[22px] shrink-0 bg-[#aa7447]" />
+                  <span
+                    className="
+                      mt-[10px]
+                      h-[2px]
+                      w-[17px]
+                      shrink-0
+                      bg-[#aa7447]
 
-                  <p className="font-[var(--font-sf-pro)] text-[18px] font-semibold leading-[1.3] text-[#1c1c1c] sm:text-[20px] lg:text-[24px]">
+                      sm:mt-[13px]
+                      sm:w-[22px]
+
+                      lg:mt-[15px]
+                    "
+                  />
+
+                  <p
+                    className="
+                      font-[var(--font-sf-pro)]
+
+                      text-[15px]
+                      font-semibold
+                      leading-[1.35]
+                      text-[#1c1c1c]
+
+                      sm:text-[20px]
+
+                      lg:text-[24px]
+                      lg:leading-[1.3]
+                    "
+                  >
                     {feature}
                   </p>
                 </div>
@@ -38,20 +115,83 @@ const DenimFeature = () => {
             </div>
 
             <button
+              type="button"
               onClick={() => router.push("/category?cat=all")}
-              className="mt-[34px] flex h-[50px] w-[200px] items-center justify-center gap-[10px] rounded-full bg-black font-[var(--font-sf-pro)] text-[14px] font-medium text-white transition-colors duration-300 hover:bg-[#222]"
+              className="
+                mt-[26px]
+
+                flex
+                h-[45px]
+                w-[170px]
+
+                items-center
+                justify-center
+                gap-[9px]
+
+                rounded-full
+                bg-black
+
+                font-[var(--font-sf-pro)]
+                text-[13px]
+                font-medium
+                text-white
+
+                transition-colors
+                duration-300
+
+                hover:bg-[#222]
+
+                sm:mt-[34px]
+                sm:h-[50px]
+                sm:w-[200px]
+                sm:text-[14px]
+              "
             >
               Learn More
-              <span className="text-[17px] leading-none">→</span>
+
+              <span className="text-[16px] leading-none sm:text-[17px]">
+                →
+              </span>
             </button>
           </div>
 
-          {/* FIXED GAP BETWEEN CONTENT + IMAGE */}
-          <div className="h-[54px] shrink-0 lg:h-[64px]" />
+          {/* CONTENT → IMAGE GAP */}
+          <div
+            className="
+              h-[34px]
+              shrink-0
+
+              sm:h-[54px]
+
+              lg:h-[64px]
+            "
+          />
 
           {/* LEFT IMAGE */}
-          <div className="mt-auto w-full overflow-hidden rounded-[44px]">
-            <div className="aspect-[850/793] w-full">
+          <div
+            className="
+              w-full
+              overflow-hidden
+
+              rounded-[22px]
+
+              sm:rounded-[32px]
+
+              lg:mt-auto
+              lg:rounded-[44px]
+            "
+          >
+            <div
+              className="
+                h-[300px]
+                w-full
+
+                sm:h-auto
+                sm:aspect-[850/793]
+
+                lg:aspect-[850/793]
+              "
+            >
               <img
                 src="/assets/images/denim-feature-left.png"
                 alt="8Gears rider wearing protective apparel"
@@ -64,7 +204,22 @@ const DenimFeature = () => {
 
         {/* RIGHT COLUMN */}
         <div className="min-w-0 lg:h-full">
-          <div className="h-full min-h-[700px] w-full overflow-hidden rounded-[44px]">
+          <div
+            className="
+              h-[360px]
+              w-full
+              overflow-hidden
+
+              rounded-[22px]
+
+              sm:h-[520px]
+              sm:rounded-[32px]
+
+              lg:h-full
+              lg:min-h-[700px]
+              lg:rounded-[44px]
+            "
+          >
             <img
               src="/assets/images/denim-feature-right.png"
               alt="8Gears water repellent protective hoodie"

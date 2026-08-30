@@ -121,9 +121,12 @@ export default function TechnologyWashSteps() {
         w-full
         overflow-hidden
         bg-white
-        py-[48px]
 
-        sm:py-[58px]
+        py-[30px]
+
+        sm:py-[42px]
+
+        md:py-[52px]
 
         lg:py-[70px]
       "
@@ -142,26 +145,34 @@ export default function TechnologyWashSteps() {
         watchSlidesProgress={true}
         observer={true}
         observeParents={true}
-        slidesPerView={1.25}
-        spaceBetween={14}
+
+        /* MOBILE */
+        slidesPerView={2.05}
+        spaceBetween={10}
+
         breakpoints={{
-          420: {
-            slidesPerView: 1.45,
-            spaceBetween: 16,
+          390: {
+            slidesPerView: 2.15,
+            spaceBetween: 10,
+          },
+
+          480: {
+            slidesPerView: 2.35,
+            spaceBetween: 12,
           },
 
           520: {
-            slidesPerView: 1.8,
-            spaceBetween: 16,
+            slidesPerView: 2.5,
+            spaceBetween: 14,
           },
 
           640: {
-            slidesPerView: 2.25,
-            spaceBetween: 18,
+            slidesPerView: 2.8,
+            spaceBetween: 16,
           },
 
           768: {
-            slidesPerView: 2.8,
+            slidesPerView: 3.2,
             spaceBetween: 20,
           },
 
@@ -187,22 +198,21 @@ export default function TechnologyWashSteps() {
         }}
         onSwiper={(swiper) => {
           if (swiper.wrapperEl) {
-            swiper.wrapperEl.style.transitionTimingFunction =
-              "linear";
+            swiper.wrapperEl.style.transitionTimingFunction = "linear";
           }
         }}
         onSetTransition={(swiper) => {
           if (swiper.wrapperEl) {
-            swiper.wrapperEl.style.transitionTimingFunction =
-              "linear";
+            swiper.wrapperEl.style.transitionTimingFunction = "linear";
           }
         }}
         className="
           technology-wash-swiper
           !overflow-visible
-          px-[18px]
 
-          sm:px-[24px]
+          px-[14px]
+
+          sm:px-[20px]
 
           lg:px-[50px]
         "
@@ -218,23 +228,31 @@ export default function TechnologyWashSteps() {
               <article
                 className="
                   flex
-                  h-[315px]
+                  h-[218px]
                   w-full
                   flex-col
                   items-center
-                  rounded-[18px]
+
+                  rounded-[13px]
+
                   bg-[#F1F1F3]
-                  px-[18px]
-                  pb-[28px]
-                  pt-[30px]
+
+                  px-[10px]
+                  pb-[16px]
+                  pt-[16px]
+
                   text-center
 
-                  sm:h-[335px]
-                  sm:px-[20px]
-                  sm:pb-[30px]
-                  sm:pt-[32px]
+                  sm:h-[260px]
+                  sm:rounded-[16px]
+                  sm:px-[16px]
+                  sm:pb-[22px]
+                  sm:pt-[22px]
+
+                  md:h-[300px]
 
                   lg:h-[350px]
+                  lg:rounded-[18px]
                   lg:px-[22px]
                   lg:pb-[32px]
                   lg:pt-[34px]
@@ -247,24 +265,34 @@ export default function TechnologyWashSteps() {
                 <div
                   className="
                     flex
-                    h-[64px]
-                    w-[64px]
+                    h-[42px]
+                    w-[42px]
                     shrink-0
+
                     items-center
                     justify-center
+
                     rounded-full
+
                     border
                     border-black/[0.06]
+
                     bg-white
+
                     font-[var(--font-sf-pro)]
-                    text-[26px]
+
+                    text-[18px]
                     font-medium
                     leading-none
                     text-black
 
-                    sm:h-[68px]
-                    sm:w-[68px]
-                    sm:text-[28px]
+                    sm:h-[52px]
+                    sm:w-[52px]
+                    sm:text-[21px]
+
+                    md:h-[60px]
+                    md:w-[60px]
+                    md:text-[24px]
 
                     lg:h-[70px]
                     lg:w-[70px]
@@ -288,17 +316,20 @@ export default function TechnologyWashSteps() {
                 >
                   <Icon
                     className="
-                      h-[48px]
-                      w-[48px]
+                      h-[34px]
+                      w-[34px]
                       text-black
 
-                      sm:h-[52px]
-                      sm:w-[52px]
+                      sm:h-[40px]
+                      sm:w-[40px]
+
+                      md:h-[48px]
+                      md:w-[48px]
 
                       lg:h-[56px]
                       lg:w-[56px]
                     "
-                    strokeWidth={1.8}
+                    strokeWidth={1.7}
                   />
                 </div>
 
@@ -309,20 +340,30 @@ export default function TechnologyWashSteps() {
                 <div
                   className="
                     flex
-                    min-h-[58px]
+                    min-h-[42px]
                     flex-col
                     items-center
                     justify-center
+
                     font-[var(--font-sf-pro)]
-                    text-[16px]
-                    font-medium
-                    leading-[1.4]
-                    tracking-[-0.1px]
+
+                    text-[11px]
+                    font-semibold
+                    leading-[1.3]
+                    tracking-[-0.05px]
+
                     text-black
 
-                    sm:text-[17px]
+                    sm:min-h-[48px]
+                    sm:text-[13px]
 
+                    md:min-h-[54px]
+                    md:text-[15px]
+
+                    lg:min-h-[58px]
                     lg:text-[18px]
+                    lg:font-medium
+                    lg:leading-[1.4]
                   "
                 >
                   <span>{step.line1}</span>

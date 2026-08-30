@@ -24,7 +24,7 @@ export default function LatestProducts() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Failed to fetch products:", err);
         setLoading(false);
       });
   }, []);
@@ -32,58 +32,306 @@ export default function LatestProducts() {
   const latestProducts = [...products].slice(-4).reverse();
 
   return (
-    <section className="w-full bg-white">
-      <div className="mx-auto w-full max-w-[1920px] px-[24px] py-[72px] sm:px-[40px] md:py-[88px] lg:px-[70px] lg:py-[100px] xl:px-[72px]">
-        {/* HEADER */}
-        <div className="mb-[42px] flex items-center justify-between gap-[30px]">
-          {/* Title */}
-          <h2 className="font-[var(--font-sf-pro)] text-[34px] font-normal leading-none tracking-[-1px] text-black sm:text-[40px] lg:text-[44px]">
+    <section className="w-full overflow-hidden bg-white">
+      <div
+        className="
+          mx-auto
+          w-full
+          max-w-[1920px]
+
+          py-[48px]
+
+          sm:px-[40px]
+          sm:py-[72px]
+
+          md:py-[88px]
+
+          lg:px-[70px]
+          lg:py-[100px]
+
+          xl:px-[72px]
+        "
+      >
+        {/* =====================================================
+            HEADER
+        ====================================================== */}
+
+        <div
+          className="
+            mb-[26px]
+            flex
+            items-center
+            justify-between
+            gap-[20px]
+
+            px-[20px]
+
+            sm:mb-[38px]
+            sm:px-0
+
+            lg:mb-[42px]
+          "
+        >
+          {/* TITLE */}
+          <h2
+            className="
+              font-[var(--font-sf-pro)]
+
+              text-[27px]
+              font-normal
+              leading-none
+              tracking-[-0.7px]
+              text-black
+
+              sm:text-[36px]
+              sm:tracking-[-0.9px]
+
+              lg:text-[44px]
+              lg:tracking-[-1px]
+            "
+          >
             Latest{" "}
             <span className="font-bold">
               Showcase
             </span>
           </h2>
 
-          {/* Explore More - Desktop */}
+          {/* EXPLORE MORE - DESKTOP */}
           <button
+            type="button"
             onClick={() => router.push("/category?cat=all")}
-            className="group hidden h-[52px] w-[205px] items-center justify-center gap-[12px] rounded-full border border-black bg-transparent font-[var(--font-sf-pro)] text-[14px] font-medium text-black transition-all duration-300 hover:bg-black hover:text-white sm:flex"
+            className="
+              group
+
+              hidden
+
+              h-[50px]
+              w-[190px]
+
+              items-center
+              justify-center
+              gap-[10px]
+
+              rounded-full
+
+              border
+              border-black
+
+              bg-transparent
+
+              font-[var(--font-sf-pro)]
+              text-[14px]
+              font-medium
+              text-black
+
+              transition-all
+              duration-300
+
+              hover:bg-black
+              hover:text-white
+
+              sm:flex
+
+              lg:h-[52px]
+              lg:w-[205px]
+              lg:gap-[12px]
+            "
           >
             <span>Explore More</span>
 
-            <span className="text-[17px] leading-none transition-transform duration-300 group-hover:translate-x-[4px]">
+            <span
+              className="
+                text-[17px]
+                leading-none
+
+                transition-transform
+                duration-300
+
+                group-hover:translate-x-[4px]
+              "
+            >
               →
             </span>
           </button>
         </div>
 
-        {/* PRODUCTS GRID */}
-        <div className="grid grid-cols-1 gap-x-[28px] gap-y-[42px] sm:grid-cols-2 lg:grid-cols-4">
+        {/* =====================================================
+            PRODUCTS
+            Mobile: horizontal swipe
+            Desktop: normal grid
+        ====================================================== */}
+
+        <div
+          className="
+            flex
+            w-full
+
+            snap-x
+            snap-mandatory
+
+            gap-[14px]
+
+            overflow-x-auto
+            overscroll-x-contain
+
+            px-[20px]
+            pb-[8px]
+
+            [scrollbar-width:none]
+            [&::-webkit-scrollbar]:hidden
+
+            sm:grid
+            sm:grid-cols-2
+            sm:gap-x-[22px]
+            sm:gap-y-[38px]
+            sm:overflow-visible
+            sm:px-0
+            sm:pb-0
+            sm:snap-none
+
+            lg:grid-cols-4
+            lg:gap-x-[28px]
+            lg:gap-y-[42px]
+          "
+        >
           {loading
             ? [...Array(4)].map((_, index) => (
-                <div key={index} className="w-full">
+                <div
+                  key={index}
+                  className="
+                    w-[74vw]
+                    max-w-[285px]
+                    shrink-0
+                    snap-start
+
+                    sm:w-full
+                    sm:max-w-none
+                    sm:shrink
+                  "
+                >
                   <ProductSkeleton />
                 </div>
               ))
             : latestProducts.map((product) => (
                 <div
                   key={product._id}
-                  className="w-full min-w-0"
+                  className="
+                    w-[74vw]
+                    max-w-[285px]
+                    shrink-0
+                    snap-start
+
+                    sm:w-full
+                    sm:max-w-none
+                    sm:shrink
+                    sm:min-w-0
+                  "
                 >
                   <ProductCard product={product} />
                 </div>
               ))}
         </div>
 
-        {/* MOBILE EXPLORE BUTTON */}
-        <div className="mt-[38px] flex justify-center sm:hidden">
-          <button
-            onClick={() => router.push("/category?cat=all")}
-            className="group flex h-[50px] w-[200px] items-center justify-center gap-[10px] rounded-full border border-black bg-transparent font-[var(--font-sf-pro)] text-[14px] font-medium text-black transition-all duration-300 hover:bg-black hover:text-white"
-          >
-            Explore More
+        {/* =====================================================
+            MOBILE SWIPE HINT
+        ====================================================== */}
 
-            <span className="text-[17px] leading-none transition-transform duration-300 group-hover:translate-x-[4px]">
+        {!loading && latestProducts.length > 1 && (
+          <div
+            className="
+              mt-[14px]
+              flex
+              items-center
+              justify-center
+              gap-[6px]
+
+              px-[20px]
+
+              sm:hidden
+            "
+          >
+            <span
+              className="
+                font-[var(--font-sf-pro)]
+                text-[10px]
+                font-normal
+                uppercase
+                tracking-[0.12em]
+                text-[#8d8d8d]
+              "
+            >
+              Swipe to explore
+            </span>
+
+            <span className="text-[13px] text-[#8d8d8d]">
+              →
+            </span>
+          </div>
+        )}
+
+        {/* =====================================================
+            MOBILE EXPLORE BUTTON
+        ====================================================== */}
+
+        <div
+          className="
+            mt-[28px]
+            flex
+            justify-center
+
+            px-[20px]
+
+            sm:hidden
+          "
+        >
+          <button
+            type="button"
+            onClick={() => router.push("/category?cat=all")}
+            className="
+              group
+
+              flex
+              h-[46px]
+              w-[180px]
+
+              items-center
+              justify-center
+              gap-[9px]
+
+              rounded-full
+
+              border
+              border-black
+
+              bg-transparent
+
+              font-[var(--font-sf-pro)]
+              text-[13px]
+              font-medium
+              text-black
+
+              transition-all
+              duration-300
+
+              active:scale-[0.98]
+
+              hover:bg-black
+              hover:text-white
+            "
+          >
+            <span>Explore More</span>
+
+            <span
+              className="
+                text-[16px]
+                leading-none
+
+                transition-transform
+                duration-300
+
+                group-hover:translate-x-[4px]
+              "
+            >
               →
             </span>
           </button>

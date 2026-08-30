@@ -28,16 +28,68 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/product/${product.slug}`}
-      className="group block w-full max-w-[420px]"
+      className="group block w-full"
     >
-      <article className="relative h-[705px] w-full max-w-[420px] overflow-hidden bg-white">
+      <article
+        className="
+          relative
+          w-full
+          overflow-hidden
+          bg-white
+
+          sm:max-w-[420px]
+        "
+      >
+        {/* OUT OF STOCK */}
         {isOutOfStock && (
-          <div className="absolute left-[14px] top-[14px] z-20 rounded-full bg-black px-4 py-2 text-[10px] font-medium uppercase tracking-[0.12em] text-white">
+          <div
+            className="
+              absolute
+              left-2.5
+              top-2.5
+              z-20
+
+              rounded-full
+              bg-black
+
+              px-3
+              py-1.5
+
+              text-[8px]
+              font-medium
+              uppercase
+              tracking-[0.1em]
+              text-white
+
+              sm:left-[14px]
+              sm:top-[14px]
+              sm:px-4
+              sm:py-2
+              sm:text-[10px]
+            "
+          >
             Out of Stock
           </div>
         )}
 
-        <div className="relative h-[562px] w-full overflow-hidden rounded-[14px] bg-[#eeeeee]">
+        {/* IMAGE */}
+        <div
+          className="
+            relative
+            aspect-[0.78]
+            w-full
+            overflow-hidden
+
+            rounded-[10px]
+            bg-[#eeeeee]
+
+            sm:h-[420px]
+            sm:aspect-auto
+            sm:rounded-[14px]
+
+            lg:h-[562px]
+          "
+        >
           <Image
             src={mainImage}
             alt={product.title}
@@ -46,40 +98,100 @@ export default function ProductCard({ product }: { product: Product }) {
               "object-cover transition-transform duration-700 group-hover:scale-[1.035]",
               isOutOfStock && "grayscale opacity-80"
             )}
-            sizes="(max-width: 640px) 100vw, 423px"
+            sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 423px"
             priority={false}
           />
         </div>
 
-        <div className="pt-[20px]">
-          <div className="flex items-start justify-between gap-[14px]">
-            <h3 className="line-clamp-1 max-w-[280px] font-[var(--font-sf-pro)] text-[20px] font-[510] leading-[1.15] tracking-[-0.35px] text-black">
+        {/* CONTENT */}
+        <div className="pt-3 sm:pt-[18px] lg:pt-[20px]">
+          {/* TITLE + PRICE */}
+          <div className="flex items-start justify-between gap-2">
+            <h3
+              className="
+                line-clamp-1
+                min-w-0
+                flex-1
+
+                font-[var(--font-sf-pro)]
+
+                text-[14px]
+                font-[510]
+                leading-[1.2]
+                tracking-[-0.2px]
+                text-black
+
+                sm:text-[17px]
+
+                lg:text-[20px]
+                lg:tracking-[-0.35px]
+              "
+            >
               {product.title}
             </h3>
 
-            <p className="shrink-0 font-[var(--font-sf-pro)] text-[20px] font-semibold leading-[1.15] tracking-[-0.25px] text-black">
+            <p
+              className="
+                shrink-0
+
+                font-[var(--font-sf-pro)]
+
+                text-[14px]
+                font-semibold
+                leading-[1.2]
+                tracking-[-0.15px]
+                text-black
+
+                sm:text-[17px]
+
+                lg:text-[20px]
+              "
+            >
               {currencySymbol}
               {price.toFixed(2)}
             </p>
           </div>
 
-          <div className="mt-[8px] flex items-center gap-[4px]">
+          {/* RATING */}
+          <div className="mt-1.5 flex items-center gap-1 sm:mt-2">
             <div className="flex items-center gap-[1px] text-[#f5b400]">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  size={16}
+                  className="
+                    h-[12px]
+                    w-[12px]
+
+                    sm:h-[14px]
+                    sm:w-[14px]
+
+                    lg:h-[16px]
+                    lg:w-[16px]
+                  "
                   strokeWidth={1.3}
                   fill={star <= Math.round(rating) ? "currentColor" : "none"}
                 />
               ))}
             </div>
 
-            <span className="font-[var(--font-sf-pro)] text-[14px] font-normal leading-none text-[#5a5a5a]">
+            <span
+              className="
+                font-[var(--font-sf-pro)]
+
+                text-[11px]
+                font-normal
+                leading-none
+                text-[#5a5a5a]
+
+                sm:text-[13px]
+                lg:text-[14px]
+              "
+            >
               ({reviewCount})
             </span>
           </div>
 
+          {/* BUTTON */}
           <button
             type="button"
             onClick={(e) => {
@@ -103,7 +215,36 @@ export default function ProductCard({ product }: { product: Product }) {
             }}
             disabled={isOutOfStock}
             className={cn(
-              "mt-[24px] flex h-[53px] w-full items-center justify-center rounded-[50px] px-[99px] font-[var(--font-sf-pro)] text-[16px] font-normal leading-none transition-all duration-300 active:scale-[0.985]",
+              `
+                mt-3
+                flex
+                h-[40px]
+                w-full
+                items-center
+                justify-center
+
+                rounded-full
+
+                px-4
+
+                font-[var(--font-sf-pro)]
+                text-[13px]
+                font-normal
+                leading-none
+
+                transition-all
+                duration-300
+
+                active:scale-[0.985]
+
+                sm:mt-5
+                sm:h-[48px]
+                sm:text-[15px]
+
+                lg:mt-[24px]
+                lg:h-[53px]
+                lg:text-[16px]
+              `,
               isOutOfStock
                 ? "cursor-not-allowed bg-[#d9d9d9] text-[#777777]"
                 : "bg-black text-white hover:bg-[#222222]"
