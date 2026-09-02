@@ -13,6 +13,7 @@ function cn(...inputs: ClassValue[]) {
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/AdminLayout';
+import { getOptimizedCloudinaryImage } from '@/lib/cloudinaryImage';
 
 export default function AdminProductsPage() {
   const { data: session, status } = useSession();
@@ -191,7 +192,7 @@ export default function AdminProductsPage() {
                           <div className="flex items-center">
                             <div className="h-16 w-16 rounded-2xl overflow-hidden bg-slate-100 mr-5 border border-slate-100 shadow-sm transition-transform group-hover:rotate-2 duration-300">
                               {product.variants[0]?.images[0] ? (
-                                <img src={product.variants[0].images[0]} alt="" className="h-full w-full object-cover" />
+                                <img src={getOptimizedCloudinaryImage(product.variants[0].images[0], 160)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-slate-300">
                                   <Package size={24} />

@@ -1,16 +1,17 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import { EditableText, EditableImage } from "@/app/components/admin/CMSComponents";
+import { EditableText } from "@/app/components/admin/CMSComponents";
+import type { Product } from "@/app/types/product";
+import ProductSectionImage from "./ProductSectionImage";
 
 type ProductStyleAestheticsProps = {
-    product: any;
+    product: Partial<Product>;
     isCMS?: boolean;
 };
 
 export default function ProductStyleAesthetics({
     product,
-    isCMS = false,
 }: ProductStyleAestheticsProps) {
     const formContext = useFormContext();
     const isEditing = !!formContext;
@@ -38,14 +39,14 @@ export default function ProductStyleAesthetics({
                                     <EditableText
                                         value={stylish?.title || ""}
                                         path="stylishSection.title"
-                                        className="max-w-[780px] font-[var(--font-sf-pro)] text-[48px] font-medium leading-[1.08] tracking-[-1.2px] text-black"
+                                        className="max-w-[780px] font-[var(--font-sf-pro)] text-[30px] font-medium leading-[1.08] tracking-[-1.2px] text-black min-[481px]:text-[36px] min-[769px]:text-[48px]"
                                         placeholder="Style Title"
                                     />
                                     <EditableText
                                         value={stylish?.description || ""}
                                         path="stylishSection.description"
                                         multiline
-                                        className="max-w-[820px] font-[var(--font-sf-pro)] text-[20px] font-normal leading-[1.35] tracking-[-0.2px] text-black"
+                                        className="max-w-[820px] font-[var(--font-sf-pro)] text-[15px] font-normal leading-[1.35] tracking-[-0.2px] text-black min-[481px]:text-[17px] min-[769px]:text-[20px]"
                                         placeholder="Style narrative..."
                                     />
                                 </div>
@@ -66,41 +67,13 @@ export default function ProductStyleAesthetics({
                         </div>
 
                         <div className="h-[880px] w-full max-w-[850px] overflow-hidden rounded-[27px] bg-[#eeeeee] max-[1500px]:h-[760px] max-[1200px]:h-[620px] max-[1050px]:mx-auto max-[1050px]:h-[780px] max-[640px]:h-[560px] max-[480px]:h-[440px]">
-                            {isEditing ? (
-                                <EditableImage
-                                    src={stylish?.mainImage || ""}
-                                    path="stylishSection.mainImage"
-                                    className="h-full w-full"
-                                />
-                            ) : (
-                                stylish?.mainImage && (
-                                    <img
-                                        src={stylish.mainImage}
-                                        alt={stylish?.title || product?.title || "Product style image"}
-                                        className="h-full w-full object-cover"
-                                    />
-                                )
-                            )}
+                            <ProductSectionImage src={stylish?.mainImage || ""} alt={stylish?.title || product?.title || "Product style image"} editablePath="stylishSection.mainImage" guidelineKey="stylishMain" fit="cover" className="h-full w-full" />
                         </div>
                     </div>
 
                     {/* Right image */}
                     <div className="h-[1132px] w-full max-w-[850px] overflow-hidden rounded-[27px] bg-[#eeeeee] max-[1500px]:h-[980px] max-[1200px]:h-[820px] max-[1050px]:mx-auto max-[1050px]:h-[780px] max-[640px]:h-[560px] max-[480px]:h-[440px]">
-                        {isEditing ? (
-                            <EditableImage
-                                src={stylish?.secondaryImage || ""}
-                                path="stylishSection.secondaryImage"
-                                className="h-full w-full"
-                            />
-                        ) : (
-                            stylish?.secondaryImage && (
-                                <img
-                                    src={stylish.secondaryImage}
-                                    alt={stylish?.title || product?.title || "Product style image"}
-                                    className="h-full w-full object-cover"
-                                />
-                            )
-                        )}
+                        <ProductSectionImage src={stylish?.secondaryImage || ""} alt={stylish?.title || product?.title || "Product style image"} editablePath="stylishSection.secondaryImage" guidelineKey="stylishSecondary" fit="cover" className="h-full w-full" />
                     </div>
                 </div>
             </div>

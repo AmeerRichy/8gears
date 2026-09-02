@@ -3,11 +3,12 @@
 import { useFormContext } from "react-hook-form";
 import {
   EditableArray,
-  EditableImage,
 } from "@/app/components/admin/CMSComponents";
+import type { Product } from "@/app/types/product";
+import ProductSectionImage from "./ProductSectionImage";
 
 type ProductEvolutionGalleryProps = {
-  product: any;
+  product: Partial<Product>;
 };
 
 function isValidImage(image: unknown): image is string {
@@ -80,28 +81,25 @@ export default function ProductEvolutionGallery({
             ADMIN VISUAL CMS ONLY:
             Keep horizontal cards, sortable order, and four-image limit.
           */
-          <div className="rounded-[2.5rem] border border-dashed border-gray-200 bg-slate-50 p-5 sm:p-7">
+          <div className="rounded-[2.5rem] border border-dashed border-gray-200 bg-slate-50 p-3 sm:p-5">
             <EditableArray
               items={cmsImages}
               path="bottomGallery"
               label="Gallery Shot"
               newItemTemplate=""
-              layout="horizontal"
-              itemClassName="w-[78vw] max-w-[390px] shrink-0 sm:w-[360px]"
+              layout="masonry"
+              gridClassName={`${masonryColumnsClass} gap-[20px]`}
+              itemClassName="mb-[20px] break-inside-avoid"
               sortable
               maxItems={4}
               helperText="Maximum four images. Click an image to replace it. Hold and drag an image onto another card to switch its position. You can also use the arrow controls."
               renderItem={(image: string, index: number) => (
-                <div
+                <figure
                   key={index}
-                  className="aspect-[4/5] overflow-hidden rounded-[18px] border border-white bg-white shadow-lg"
+                  className={`overflow-hidden rounded-[20px] border border-white bg-[#eeeeee] shadow-lg ${image ? '' : 'aspect-[3/4]'}`}
                 >
-                  <EditableImage
-                    src={image}
-                    path={`bottomGallery[${index}]`}
-                    className="h-full w-full"
-                  />
-                </div>
+                  <ProductSectionImage src={image} alt={`${product?.title || "Product"} gallery image ${index + 1}`} editablePath={`bottomGallery[${index}]`} guidelineKey="gallery" fit="natural" className="w-full" />
+                </figure>
               )}
             />
           </div>
@@ -117,14 +115,7 @@ export default function ProductEvolutionGallery({
                 key={`${image}-${index}`}
                 className="mb-[20px] break-inside-avoid overflow-hidden rounded-[20px] bg-[#eeeeee]"
               >
-                <img
-                  src={image}
-                  alt={`${product?.title || "Product"} gallery image ${
-                    index + 1
-                  }`}
-                  loading="lazy"
-                  className="block h-auto w-full"
-                />
+                <ProductSectionImage src={image} alt={`${product?.title || "Product"} gallery image ${index + 1}`} guidelineKey="gallery" fit="natural" className="w-full" />
               </figure>
             ))}
           </div>

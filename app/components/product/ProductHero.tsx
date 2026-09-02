@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { EditableText } from "@/app/components/admin/CMSComponents";
+import { getCloudinarySrcSet, getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 
 type ProductHeroProps = {
     product: any;
@@ -173,10 +174,12 @@ export default function ProductHero({
                                                     }`}
                                             >
                                                 <img
-                                                    src={image}
+                                                    src={getOptimizedCloudinaryImage(image, 160)}
                                                     alt={`${product?.title || "Product"} thumbnail ${index + 1
                                                         }`}
                                                     className="h-full w-full object-cover"
+                                                    loading="lazy"
+                                                    decoding="async"
                                                 />
                                             </button>
                                         ))}
@@ -186,21 +189,28 @@ export default function ProductHero({
                                 {/* Main Images */}
                                 <div className="grid grid-cols-[minmax(0,602px)_minmax(0,602px)] gap-[12px] max-[1500px]:grid-cols-2 max-[760px]:grid-cols-1">
                                     {firstImage && (
-                                        <div className="h-[799px] w-full overflow-hidden rounded-[20px] bg-[#ececec] shadow-[0_2px_7px_rgba(0,0,0,0.18)] max-[1500px]:h-[720px] max-[1180px]:h-[620px] max-[980px]:h-[680px] max-[640px]:h-[520px] max-[420px]:h-[430px]">
+                                        <div className="aspect-[3/4] w-full overflow-hidden rounded-[20px] bg-[#ececec] shadow-[0_2px_7px_rgba(0,0,0,0.18)]">
                                             <img
-                                                src={firstImage}
+                                                src={getOptimizedCloudinaryImage(firstImage, 1080)}
+                                                srcSet={getCloudinarySrcSet(firstImage)}
+                                                sizes="(max-width: 760px) 100vw, 42vw"
                                                 alt={product?.title || "Product image"}
-                                                className="h-full w-full object-cover"
+                                                className="h-full w-full object-contain min-[1201px]:object-cover"
+                                                decoding="async"
                                             />
                                         </div>
                                     )}
 
                                     {secondImage && (
-                                        <div className="h-[799px] w-full overflow-hidden rounded-[20px] bg-[#ececec] shadow-[0_2px_7px_rgba(0,0,0,0.14)] max-[1500px]:h-[720px] max-[1180px]:h-[620px] max-[980px]:h-[680px] max-[760px]:hidden">
+                                        <div className="aspect-[3/4] w-full overflow-hidden rounded-[20px] bg-[#ececec] shadow-[0_2px_7px_rgba(0,0,0,0.14)] max-[760px]:hidden">
                                             <img
-                                                src={secondImage}
+                                                src={getOptimizedCloudinaryImage(secondImage, 1080)}
+                                                srcSet={getCloudinarySrcSet(secondImage)}
+                                                sizes="42vw"
                                                 alt={`${product?.title || "Product"} detail`}
                                                 className="h-full w-full object-contain"
+                                                loading="lazy"
+                                                decoding="async"
                                             />
                                         </div>
                                     )}
@@ -245,7 +255,7 @@ export default function ProductHero({
                                     />
                                 ) : (
                                     product?.title && (
-                                        <h1 className="text-[30px] font-medium leading-[1.05] tracking-[-0.7px] text-black max-[640px]:text-[32px]">
+                                        <h1 className="break-words text-[30px] font-medium leading-[1.05] tracking-[-0.7px] text-black max-[640px]:text-[28px]">
                                             {product.title}
                                         </h1>
                                     )
@@ -348,7 +358,7 @@ export default function ProductHero({
                                 type="button"
                                 onClick={handleAddToCart}
                                 disabled={!selectedVariant || selectedVariant.stockQuantity === 0}
-                                className="mt-[30px] h-[36px] w-full rounded-full bg-black text-[10px] font-semibold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:bg-[#1f1f1f] disabled:bg-[#dddddd] disabled:text-[#888888]"
+                                className="mt-[30px] h-[48px] w-full rounded-full bg-black text-[11px] font-semibold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:bg-[#1f1f1f] disabled:bg-[#dddddd] disabled:text-[#888888] min-[769px]:h-[36px] min-[769px]:text-[10px]"
                             >
                                 {selectedVariant?.stockQuantity > 0 ? "Add To Cart" : "Out Of Stock"}
                             </button>
@@ -520,9 +530,10 @@ export default function ProductHero({
 
                         <div className="max-h-[78vh] overflow-auto bg-white p-4">
                             <img
-                                src={sizeChartImage}
+                                src={getOptimizedCloudinaryImage(sizeChartImage, 1080)}
                                 alt={`${product?.title || "Product"} size chart`}
                                 className="mx-auto h-auto max-h-[72vh] w-auto max-w-full object-contain"
+                                decoding="async"
                             />
                         </div>
                     </div>

@@ -17,6 +17,12 @@ import {
 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import MediaManager from "./MediaManager";
+import {
+  getAspectDifference,
+  PRODUCT_IMAGE_GUIDELINES,
+  type ProductImageGuidelineKey,
+} from "@/lib/productImageGuidelines";
+import { getCloudinarySrcSet, getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 
 interface EditableTextProps {
   value: string;
@@ -113,6 +119,10 @@ interface EditableImageProps {
   path: string;
   className?: string;
   aspectRatio?: string;
+  imageClassName?: string;
+  fit?: "cover" | "contain" | "natural";
+  guidelineKey?: ProductImageGuidelineKey;
+  alt?: string;
 }
 
 export const EditableImage: React.FC<
@@ -122,17 +132,31 @@ export const EditableImage: React.FC<
   path,
   className = "",
   aspectRatio = "",
+  imageClassName = "",
+  fit = "cover",
+  guidelineKey,
+  alt = "",
 }) => {
   const formContext = useFormContext();
   const [isMediaOpen, setIsMediaOpen] =
     useState(false);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+  const guideline = guidelineKey ? PRODUCT_IMAGE_GUIDELINES[guidelineKey] : null;
+  const fitClass = fit === "contain" ? "object-contain" : fit === "natural" ? "h-auto object-contain" : "object-cover";
+  const showWarning = Boolean(
+    guideline && dimensions && getAspectDifference(dimensions.width, dimensions.height, guideline) > 0.12
+  );
 
   if (!formContext) {
     return (
       <img
-        src={src}
+        src={getOptimizedCloudinaryImage(src, 1080)}
+        srcSet={getCloudinarySrcSet(src)}
+        sizes="(max-width: 768px) 100vw, 50vw"
         className={`${aspectRatio} ${className}`}
-        alt=""
+        alt={alt}
+        loading="lazy"
+        decoding="async"
         draggable={false}
       />
     );
@@ -148,13 +172,18 @@ export const EditableImage: React.FC<
     <>
       <div
         data-sort-drag-area="true"
-        className={`group/img relative touch-none select-none overflow-hidden transition-all duration-500 hover:shadow-2xl ${aspectRatio} ${className}`}
+        className={`group/img relative touch-pan-y select-none overflow-hidden transition-all duration-500 hover:shadow-2xl ${aspectRatio} ${className}`}
       >
         {src ? (
           <img
-            src={src}
-            className="pointer-events-none h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-105"
-            alt=""
+            src={getOptimizedCloudinaryImage(src, 1080)}
+            srcSet={getCloudinarySrcSet(src)}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            onLoad={(event) => setDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+            className={`pointer-events-none block w-full ${fit === "natural" ? "h-auto" : "h-full"} ${fitClass} transition-transform duration-700 group-hover/img:scale-105 ${imageClassName}`}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
             draggable={false}
           />
         ) : (
@@ -164,6 +193,19 @@ export const EditableImage: React.FC<
             <span className="text-[10px] font-black uppercase tracking-widest">
               Empty Image Slot
             </span>
+          </div>
+        )}
+
+        {guideline && (
+          <div className="pointer-events-none absolute left-3 top-3 z-[35] max-w-[calc(100%-5.5rem)] rounded-lg bg-white/92 px-3 py-2 text-left shadow-lg backdrop-blur-sm">
+            <p className="text-[8px] font-black uppercase tracking-wider text-slate-800">{guideline.label}</p>
+            <p className="mt-0.5 text-[8px] font-semibold text-slate-500">Recommended {guideline.width} × {guideline.height}px · {guideline.aspectRatio}</p>
+          </div>
+        )}
+
+        {showWarning && dimensions && guideline && (
+          <div className="pointer-events-none absolute inset-x-3 bottom-3 z-[35] rounded-lg bg-amber-50/95 px-3 py-2 text-[8px] font-bold leading-4 text-amber-800 shadow-lg">
+            Recommended {guideline.aspectRatio}. This image is {dimensions.width} × {dimensions.height}px and may crop differently on smaller screens.
           </div>
         )}
 
@@ -208,6 +250,7 @@ export const EditableImage: React.FC<
 
           setIsMediaOpen(false);
         }}
+        guidelineKey={guidelineKey}
       />
     </>
   );
@@ -216,7 +259,8 @@ export const EditableImage: React.FC<
 type EditableArrayLayout =
   | "vertical"
   | "horizontal"
-  | "grid";
+  | "grid"
+  | "masonry";
 
 interface EditableArrayProps {
   items: any[];
@@ -837,6 +881,12 @@ export const EditableArray: React.FC<
                 index
               )
           )}
+        </div>
+      )}
+
+      {layout === "masonry" && (
+        <div className={gridClassName}>
+          {localItems.map((item, index) => renderEditableItem(item, index))}
         </div>
       )}
 

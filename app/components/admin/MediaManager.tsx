@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Search, Upload, Trash2, CheckCircle2, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
-import { CldUploadWidget } from 'next-cloudinary';
+import { getAspectDifference, PRODUCT_IMAGE_GUIDELINES, type ProductImageGuidelineKey } from '@/lib/productImageGuidelines';
+import { getOptimizedCloudinaryImage } from '@/lib/cloudinaryImage';
+import { optimizeImageUpload } from '@/lib/optimizeImageUpload';
 
 interface CloudinaryResource {
   public_id: string;
@@ -18,16 +20,21 @@ interface MediaManagerProps {
   onClose: () => void;
   onSelect: (url: string) => void;
   allowMultiple?: boolean;
+  guidelineKey?: ProductImageGuidelineKey;
 }
 
-export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple = false }: MediaManagerProps) {
+export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple = false, guidelineKey }: MediaManagerProps) {
   const [images, setImages] = useState<CloudinaryResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const fetchImages = useCallback(async (cursor?: string) => {
     setLoading(true);
@@ -40,8 +47,8 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
       
       setImages(prev => cursor ? [...prev, ...data.resources] : data.resources);
       setNextCursor(data.next_cursor || null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unable to load images');
     } finally {
       setLoading(false);
     }
@@ -68,10 +75,13 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
       
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      if (!data.deleted?.includes(img.public_id)) {
+        throw new Error('Cannot delete this image because it is currently used by a product.');
+      }
       
       setImages(prev => prev.filter(i => i.public_id !== img.public_id));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unable to delete image');
     } finally {
       setDeletingId(null);
     }
@@ -81,21 +91,83 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
     img.public_id.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sourceFile = event.target.files?.[0];
+    event.target.value = '';
+    if (!sourceFile) return;
+
+    setUploading(true);
+    setError(null);
+    try {
+      const file = await optimizeImageUpload(sourceFile, guideline ? { width: guideline.width, height: guideline.height } : undefined);
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/admin/cloudinary', { method: 'POST', body });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Image upload failed');
+      await fetchImages();
+      setSelectedUrl(data.secure_url || null);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const toggleDeleteSelection = (publicId: string) => {
+    setSelectedForDeletion((current) =>
+      current.includes(publicId) ? current.filter((id) => id !== publicId) : [...current, publicId]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    const selectedImages = images.filter((image) => selectedForDeletion.includes(image.public_id));
+    if (selectedImages.length === 0) return;
+    if (!window.confirm(`Permanently delete ${selectedImages.length} selected images? Images used by products will be protected and skipped.`)) return;
+
+    setBulkDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/admin/cloudinary', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: selectedImages.map((image) => ({ publicId: image.public_id, secureUrl: image.secure_url })) }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Bulk delete failed');
+      const deleted: string[] = data.deleted || [];
+      const blocked: string[] = data.blocked || [];
+      setImages((current) => current.filter((image) => !deleted.includes(image.public_id)));
+      setSelectedForDeletion(blocked);
+      if (blocked.length > 0) setError(`${blocked.length} selected image${blocked.length === 1 ? ' is' : 's are'} still used by products and were not deleted.`);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Bulk delete failed');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+  const guideline = guidelineKey ? PRODUCT_IMAGE_GUIDELINES[guidelineKey] : null;
+  const selectedImage = images.find((image) => image.secure_url === selectedUrl);
+  const selectedImageWarning = Boolean(
+    guideline && selectedImage && getAspectDifference(selectedImage.width, selectedImage.height, guideline) > 0.12
+  );
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-8">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-2 sm:p-4 md:p-8">
       <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative bg-white w-full max-w-6xl h-[85vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative flex h-[94dvh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-300 sm:h-[90vh] sm:rounded-[2.5rem] md:h-[85vh]">
         {/* Header */}
-        <div className="px-10 py-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 md:flex-nowrap md:px-10 md:py-6">
           <div>
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Asset <span className="text-orange-500">Command</span></h3>
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Manage Evolution Visuals</p>
+            {guideline && <p className="mt-1 text-[10px] font-semibold text-orange-600">{guideline.label}: {guideline.width} × {guideline.height}px · {guideline.aspectRatio}</p>}
           </div>
           
-          <div className="flex items-center gap-4 flex-1 max-w-xl mx-8">
+          <div className="order-3 flex w-full items-center gap-4 md:order-none md:mx-8 md:max-w-xl md:flex-1">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
@@ -108,21 +180,28 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <CldUploadWidget 
-              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-              onSuccess={() => fetchImages()}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {selectedForDeletion.length > 0 && (
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-[9px] font-black uppercase tracking-widest text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60 sm:px-5 sm:text-[10px]"
+              >
+                {bulkDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Delete {selectedForDeletion.length}
+              </button>
+            )}
+            <input ref={uploadInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleUpload} />
+            <button
+              type="button"
+              onClick={() => uploadInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 rounded-xl bg-orange-500 px-3 py-3 text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 disabled:cursor-wait disabled:opacity-60 sm:px-6 sm:text-[10px]"
             >
-              {({ open }) => (
-                <button 
-                  onClick={() => open()}
-                  className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
-                >
-                  <Upload size={14} />
-                  Deploy New
-                </button>
-              )}
-            </CldUploadWidget>
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              {uploading ? 'Uploading' : 'Deploy New'}
+            </button>
             <button onClick={onClose} className="p-3 text-gray-400 hover:text-red-500 transition-colors">
               <X size={24} />
             </button>
@@ -130,7 +209,7 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 md:p-10">
           {error && (
             <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 animate-in slide-in-from-top-2">
               <AlertCircle size={20} />
@@ -144,7 +223,7 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
               <p className="text-[10px] font-black uppercase tracking-widest">Scanning Grid...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-5 lg:gap-6">
               {filteredImages.map((img) => (
                 <div 
                   key={img.public_id}
@@ -153,7 +232,15 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
                     selectedUrl === img.secure_url ? 'ring-orange-500 shadow-2xl' : 'ring-transparent hover:ring-gray-100 shadow-sm'
                   }`}
                 >
-                  <img src={img.secure_url} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <button
+                    type="button"
+                    aria-label={`${selectedForDeletion.includes(img.public_id) ? 'Unselect' : 'Select'} ${img.public_id} for bulk deletion`}
+                    onClick={(event) => { event.stopPropagation(); toggleDeleteSelection(img.public_id); }}
+                    className={`absolute left-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-lg border-2 text-[11px] font-black transition ${selectedForDeletion.includes(img.public_id) ? 'border-red-600 bg-red-600 text-white' : 'border-white bg-slate-900/45 text-transparent hover:text-white'}`}
+                  >
+                    ✓
+                  </button>
+                  <img src={getOptimizedCloudinaryImage(img.secure_url, 160)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                   
                   {/* Overlays */}
                   <div className={`absolute inset-0 bg-slate-900/40 flex items-center justify-center transition-opacity duration-300 ${
@@ -203,21 +290,19 @@ export default function MediaManager({ isOpen, onClose, onSelect, allowMultiple 
         </div>
 
         {/* Footer */}
-        <div className="px-10 py-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            {images.length} Assets Loaded • Secure Cloud Storage
-          </p>
-          <div className="flex gap-4">
+        <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-6">
+          <div><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{images.length} Assets Loaded • Secure Cloud Storage</p>{guideline && <p className={`mt-1 text-[10px] font-semibold ${selectedImageWarning ? 'text-amber-700' : 'text-slate-500'}`}>{selectedImageWarning && selectedImage ? `Selected image is ${selectedImage.width} × ${selectedImage.height}px and may crop differently. ` : ''}{guideline.guidance}</p>}</div>
+          <div className="flex w-full gap-2 md:w-auto md:gap-4">
             <button 
               onClick={onClose}
-              className="px-8 py-3 text-gray-400 font-black text-[10px] uppercase tracking-widest hover:text-red-500"
+              className="flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 md:flex-none md:px-8"
             >
               Cancel
             </button>
             <button 
               onClick={() => selectedUrl && onSelect(selectedUrl)}
               disabled={!selectedUrl}
-              className="px-12 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl disabled:opacity-50 hover:bg-slate-800 transition-all"
+              className="flex-1 rounded-2xl bg-slate-900 px-4 py-4 text-[10px] font-black uppercase tracking-[0.15em] text-white shadow-2xl transition-all hover:bg-slate-800 disabled:opacity-50 md:flex-none md:px-12 md:tracking-[0.2em]"
             >
               Assign Selection
             </button>

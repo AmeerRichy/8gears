@@ -17,7 +17,6 @@ import {
   Plus,
   Save,
   Trash2,
-  Type,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,6 +24,8 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import ProductDetail from "./product/ProductDetail";
 import MediaManager from "./admin/MediaManager";
+import { PRODUCT_IMAGE_GUIDELINES, type ProductImageGuidelineKey } from "@/lib/productImageGuidelines";
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -633,6 +634,13 @@ export default function ProductForm({
     multiple: false,
   });
 
+  const mediaGuidelineKey: ProductImageGuidelineKey | undefined =
+    mediaManager.path === "sizeChart"
+      ? "sizeChart"
+      : mediaManager.path.startsWith("variants.")
+        ? "variant"
+        : undefined;
+
   const methods =
     useForm<ProductFormValues>({
       resolver:
@@ -956,11 +964,6 @@ export default function ProductForm({
   const onInvalid: SubmitErrorHandler<
     ProductFormValues
   > = (validationErrors) => {
-    console.error(
-      "Validation Errors:",
-      validationErrors
-    );
-
     const messages: string[] = [];
 
     /*
@@ -1004,6 +1007,10 @@ export default function ProductForm({
     findErrors(
       validationErrors
     );
+
+    if (messages.length > 0) {
+      console.warn("Product validation:", messages.join(" | "));
+    }
 
     if (
       messages.length === 0
@@ -1058,6 +1065,18 @@ export default function ProductForm({
 
   const watchedVariants =
     watch("variants") || [];
+
+  useEffect(() => {
+    watchedVariants.forEach((variant, index) => {
+      if (!variant?.sku && variant?.color && variant?.size) {
+        setValue(
+          `variants.${index}.sku`,
+          generateSKU(variant.color, variant.size),
+          { shouldDirty: false, shouldValidate: false }
+        );
+      }
+    });
+  }, [watchedVariants, setValue]);
 
   return (
     <FormProvider {...methods}>
@@ -1182,11 +1201,15 @@ export default function ProductForm({
         </div>
 
         {viewMode === "preview" ? (
-          <div className="relative mt-8 animate-in fade-in zoom-in-95 duration-700">
+          <div className="fixed inset-0 z-[1000] animate-in overflow-hidden bg-slate-900 fade-in duration-300">
             {/* PROFESSIONAL PREVIEW FRAME */}
-            <div className="overflow-hidden rounded-[3rem] border-[12px] border-slate-900 bg-white shadow-[0_60px_100px_-20px_rgba(0,0,0,0.3)] ring-1 ring-slate-900/10">
+            <div className="flex h-dvh w-full flex-col overflow-hidden bg-white">
               <div className="flex h-12 items-center justify-between border-b border-white/5 bg-slate-900 px-5 sm:px-10">
-                <div className="flex gap-2">
+                <button type="button" onClick={() => setViewMode("edit")} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[9px] font-black uppercase tracking-widest text-white/75 hover:bg-white/10 hover:text-white">
+                  <X size={15} /> Exit Preview
+                </button>
+
+                <div className="hidden gap-2 sm:flex">
                   <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
 
                   <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
@@ -1204,10 +1227,14 @@ export default function ProductForm({
                   <span className="text-[8px] font-black uppercase tracking-[0.16em] sm:text-[9px] sm:tracking-[0.2em]">
                     Editing Active
                   </span>
+
+                  <button type="button" onClick={handleSubmit(onSubmit, onInvalid)} disabled={loading} className="ml-2 rounded-lg bg-orange-500 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-white hover:bg-orange-600 disabled:opacity-50">
+                    {loading ? "Saving…" : "Save"}
+                  </button>
                 </div>
               </div>
 
-              <div className="custom-scrollbar max-h-[85vh] overflow-y-auto">
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
                 <ProductDetail
                   product={
                     watchedValues
@@ -1217,19 +1244,6 @@ export default function ProductForm({
               </div>
             </div>
 
-            {/* FLOATING HELP TIP */}
-            <div className="absolute -bottom-6 left-1/2 flex max-w-[calc(100%-24px)] -translate-x-1/2 items-center gap-3 rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white shadow-2xl backdrop-blur-md sm:gap-4 sm:px-6">
-              <Type
-                size={16}
-                className="shrink-0 text-orange-500"
-              />
-
-              <p className="text-center text-[8px] font-black uppercase tracking-[0.14em] sm:whitespace-nowrap sm:text-[10px] sm:tracking-[0.2em]">
-                Click any text or
-                image to modify the
-                interface
-              </p>
-            </div>
           </div>
         ) : (
           <div className="animate-in space-y-8 fade-in slide-in-from-bottom-4 duration-500">
@@ -1474,6 +1488,7 @@ export default function ProductForm({
                       <p className="text-[10px] font-medium uppercase text-slate-400">
                         Optional
                       </p>
+                      <ImageRequirement guidelineKey="sizeChart" />
                     </div>
 
                     {watch(
@@ -1482,11 +1497,11 @@ export default function ProductForm({
                       <div className="space-y-4">
                         <div className="group/chart relative aspect-video overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
                           <img
-                            src={watch(
-                              "sizeChart"
-                            )}
+                            src={getOptimizedCloudinaryImage(watch("sizeChart"), 1080)}
                             alt="Size Chart"
                             className="h-full w-full object-contain"
+                            loading="lazy"
+                            decoding="async"
                           />
 
                           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-slate-900/40 opacity-0 transition-opacity group-hover/chart:opacity-100">
@@ -1829,6 +1844,7 @@ export default function ProductForm({
                                   <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">
                                     Visual Matrix
                                   </label>
+                                  <ImageRequirement guidelineKey="variant" />
 
                                   <div className="grid grid-cols-2 gap-3">
                                     {watch(
@@ -1843,11 +1859,11 @@ export default function ProductForm({
                                           className="group/img relative aspect-square overflow-hidden rounded-2xl shadow-md"
                                         >
                                           <img
-                                            src={
-                                              url
-                                            }
+                                            src={getOptimizedCloudinaryImage(url, 420)}
                                             alt=""
                                             className="h-full w-full object-cover"
+                                            loading="lazy"
+                                            decoding="async"
                                           />
 
                                           <button
@@ -2331,10 +2347,22 @@ export default function ProductForm({
                   })
                 );
               }}
+              guidelineKey={mediaGuidelineKey}
             />
           </div>
         )}
       </div>
     </FormProvider>
+  );
+}
+
+function ImageRequirement({ guidelineKey }: { guidelineKey: ProductImageGuidelineKey }) {
+  const guideline = PRODUCT_IMAGE_GUIDELINES[guidelineKey];
+  return (
+    <p className="mt-2 text-[10px] font-medium normal-case leading-4 tracking-normal text-slate-500">
+      Recommended: {guideline.width} × {guideline.height}px · {guideline.aspectRatio}
+      <br />
+      {guideline.guidance}
+    </p>
   );
 }

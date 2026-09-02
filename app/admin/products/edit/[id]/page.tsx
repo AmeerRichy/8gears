@@ -30,7 +30,7 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4 md:px-8">
+    <div className="h-dvh overflow-y-auto overscroll-contain bg-white px-4 py-12 md:px-8">
       <div className="max-w-5xl mx-auto mb-10">
         <nav className="flex mb-4 text-sm text-gray-500 font-medium">
           <a href="/admin/products" className="hover:text-orange-600">Inventory</a>

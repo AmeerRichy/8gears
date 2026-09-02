@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       .lean();
 
     return (
-      <main className="pt-20">
+      <main>
         <ProductDetail
           product={JSON.parse(JSON.stringify(product))}
           relatedProducts={JSON.parse(JSON.stringify(relatedProducts))}

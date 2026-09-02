@@ -155,7 +155,7 @@ export default function ProductReviews({ productId, onReviewSubmitted }: Product
 
     if (loading) {
         return (
-            <section className="w-full bg-white">
+            <section className="w-full overflow-hidden bg-white">
                 <div className="mx-auto w-full max-w-[1800px] px-[54px] py-[70px] text-center max-[768px]:px-4">
                     <div className="text-[13px] font-normal tracking-[0.12em] text-[#999999]">
                         Loading reviews...
@@ -166,7 +166,7 @@ export default function ProductReviews({ productId, onReviewSubmitted }: Product
     }
 
     return (
-        <section className="w-full bg-white">
+        <section className="w-full overflow-hidden bg-white">
             <style jsx global>{`
         .product-reviews-swiper {
           padding-bottom: 0 !important;
@@ -187,7 +187,7 @@ export default function ProductReviews({ productId, onReviewSubmitted }: Product
       `}</style>
 
             <div className="mx-auto w-full max-w-[1800px] px-[54px] pb-[58px] pt-[52px] max-[1100px]:px-[32px] max-[768px]:px-4 max-[768px]:pt-[38px]">
-                <div className="flex items-center justify-between gap-[20px] max-[640px]:items-start">
+                <div className="flex items-center justify-between gap-[20px] max-[480px]:flex-col max-[480px]:items-start">
                     <h2 className="font-[var(--font-sf-pro)] text-[48px] font-medium leading-none tracking-[-1px] text-black max-[768px]:text-[38px] max-[480px]:text-[32px]">
                         Product Reviews
                     </h2>
@@ -292,7 +292,7 @@ export default function ProductReviews({ productId, onReviewSubmitted }: Product
                                 return (
                                     <SwiperSlide
                                         key={review._id}
-                                        className="!w-[360px] max-[480px]:!w-[310px]"
+                                        className="!w-[360px] max-[480px]:!w-[min(310px,calc(100vw-48px))]"
                                     >
                                         <article className="h-[185px] overflow-hidden rounded-[8px] border border-[#bdbdbd] bg-white px-[24px] py-[22px]">
                                             <div className="flex items-center gap-[4px] text-[#ff9f2f]">

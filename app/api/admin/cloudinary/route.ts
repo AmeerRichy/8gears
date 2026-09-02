@@ -27,9 +27,59 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Cloudinary Fetch Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to load images' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
+
+    const formData = await req.formData();
+    const file = formData.get('file');
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'An image file is required' }, { status: 400 });
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      return NextResponse.json({ error: 'Only JPG, PNG, and WebP images can be uploaded' }, { status: 400 });
+    }
+    if (file.size > 1024 * 1024) {
+      return NextResponse.json({ error: 'Optimized image must be 1 MB or smaller' }, { status: 413 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const result = await new Promise<{ secure_url: string; public_id: string; width: number; height: number }>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'image',
+          folder: 'products',
+          transformation: [
+            { width: 2400, height: 2400, crop: 'limit', quality: 'auto:good' },
+          ],
+        },
+        (error, uploaded) => {
+          if (error || !uploaded) return reject(error || new Error('Cloudinary upload failed'));
+          resolve({
+            secure_url: uploaded.secure_url,
+            public_id: uploaded.public_id,
+            width: uploaded.width,
+            height: uploaded.height,
+          });
+        }
+      );
+      stream.end(buffer);
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('Cloudinary Upload Error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Image upload failed' },
+      { status: 500 }
+    );
   }
 }
 
@@ -37,46 +87,52 @@ export async function DELETE(req: Request) {
   try {
     const auth = await requireAdminApi('/admin/products');
     if ('error' in auth) return auth.error;
-    const { publicId, secureUrl } = await req.json();
+    const body = await req.json();
+    const requestedItems: Array<{ publicId: string; secureUrl: string }> = Array.isArray(body.items)
+      ? body.items.slice(0, 100)
+      : [{ publicId: body.publicId, secureUrl: body.secureUrl }];
+    const items = requestedItems.filter((item) => item?.publicId && item?.secureUrl);
 
-    if (!publicId) {
-      return NextResponse.json({ error: 'Public ID is required' }, { status: 400 });
+    if (items.length === 0) {
+      return NextResponse.json({ error: 'At least one valid image is required' }, { status: 400 });
     }
 
     // Connect to DB to check usage
     await connectDB();
 
     // Check where this image is used across all products
-    const productsUsingImage = await Product.find({
+    const productsUsingImages = await Product.find({
       $or: [
-        { 'variants.images': secureUrl },
-        { 'closeUpSection.image': secureUrl },
-        { 'engineeredSection.image': secureUrl },
-        { 'lifestyleImage': secureUrl },
-        { 'stylishSection.mainImage': secureUrl },
-        { 'stylishSection.secondaryImage': secureUrl },
-        { 'bottomGallery': secureUrl },
-        { 'sizeChart': secureUrl }
+        { 'variants.images': { $in: items.map((item) => item.secureUrl) } },
+        { 'closeUpSection.image': { $in: items.map((item) => item.secureUrl) } },
+        { 'engineeredSection.image': { $in: items.map((item) => item.secureUrl) } },
+        { 'lifestyleImage': { $in: items.map((item) => item.secureUrl) } },
+        { 'stylishSection.mainImage': { $in: items.map((item) => item.secureUrl) } },
+        { 'stylishSection.secondaryImage': { $in: items.map((item) => item.secureUrl) } },
+        { 'bottomGallery': { $in: items.map((item) => item.secureUrl) } },
+        { 'sizeChart': { $in: items.map((item) => item.secureUrl) } }
       ]
-    }).select('title');
+    }).select('title variants.images closeUpSection.image engineeredSection.image lifestyleImage stylishSection.mainImage stylishSection.secondaryImage bottomGallery sizeChart').lean();
 
-    if (productsUsingImage.length > 0) {
-      const productNames = productsUsingImage.map(p => p.title).join(', ');
-      return NextResponse.json({ 
-        error: `Cannot delete. Image is currently used in these products: ${productNames}. Remove it from the products first.` 
-      }, { status: 400 });
+    const serializedProducts = JSON.stringify(productsUsingImages);
+    const blocked = items.filter((item) => serializedProducts.includes(item.secureUrl));
+    const deletable = items.filter((item) => !blocked.some((blockedItem) => blockedItem.publicId === item.publicId));
+
+    if (deletable.length > 0) {
+      await cloudinary.api.delete_resources(deletable.map((item) => item.publicId), {
+        resource_type: 'image',
+        type: 'upload',
+        invalidate: true,
+      });
     }
 
-    // Delete from Cloudinary
-    const result = await cloudinary.uploader.destroy(publicId);
-    
-    if (result.result !== 'ok') {
-      throw new Error(result.result || 'Failed to delete image');
-    }
-
-    return NextResponse.json({ message: 'Image deleted successfully' });
-  } catch (error: any) {
+    return NextResponse.json({
+      message: `${deletable.length} image${deletable.length === 1 ? '' : 's'} deleted`,
+      deleted: deletable.map((item) => item.publicId),
+      blocked: blocked.map((item) => item.publicId),
+    });
+  } catch (error: unknown) {
     console.error('Cloudinary Delete Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to delete image' }, { status: 500 });
   }
 }

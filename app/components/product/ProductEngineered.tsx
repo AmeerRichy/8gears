@@ -1,12 +1,14 @@
 import { useFormContext } from "react-hook-form";
-import { EditableText, EditableImage } from "@/app/components/admin/CMSComponents";
+import { EditableText } from "@/app/components/admin/CMSComponents";
+import type { Product } from "@/app/types/product";
+import ProductSectionImage from "./ProductSectionImage";
 
 type ProductEngineeredProps = {
-    product: any;
+    product: Partial<Product>;
     isCMS?: boolean;
 };
 
-export default function ProductEngineered({ product, isCMS = false }: ProductEngineeredProps) {
+export default function ProductEngineered({ product }: ProductEngineeredProps) {
     const formContext = useFormContext();
     const isEditing = !!formContext;
     const engineered = product?.engineeredSection;
@@ -25,14 +27,14 @@ export default function ProductEngineered({ product, isCMS = false }: ProductEng
                                 <EditableText 
                                     value={engineered?.title || ""} 
                                     path="engineeredSection.title" 
-                                    className="max-w-[560px] font-[var(--font-sf-pro)] text-[48px] font-medium leading-[1.08] tracking-[-1.2px] text-black"
+                                    className="max-w-[560px] font-[var(--font-sf-pro)] text-[30px] font-medium leading-[1.08] tracking-[-1.2px] text-black min-[481px]:text-[36px] min-[769px]:text-[48px]"
                                     placeholder="Section Title"
                                 />
                                 <EditableText 
                                     value={engineered?.description || ""} 
                                     path="engineeredSection.description" 
                                     multiline
-                                    className="max-w-[540px] font-[var(--font-sf-pro)] text-[20px] font-normal leading-[1.48] tracking-[-0.2px] text-black"
+                                    className="max-w-[540px] font-[var(--font-sf-pro)] text-[15px] font-normal leading-[1.48] tracking-[-0.2px] text-black min-[481px]:text-[17px] min-[769px]:text-[20px]"
                                     placeholder="Technical narrative..."
                                 />
                             </div>
@@ -53,22 +55,8 @@ export default function ProductEngineered({ product, isCMS = false }: ProductEng
                         )}
                     </div>
 
-                    <div className="h-[1100px] w-full max-w-[830px] overflow-hidden rounded-[27px] bg-[#eeeeee] max-[1500px]:h-[980px] max-[1200px]:h-[820px] max-[900px]:mx-auto max-[900px]:h-[900px] max-[640px]:h-[620px] max-[480px]:h-[500px]">
-                        {isEditing ? (
-                            <EditableImage 
-                                src={engineered?.image || ""} 
-                                path="engineeredSection.image"
-                                className="h-full w-full"
-                            />
-                        ) : (
-                            engineered?.image && (
-                                <img
-                                    src={engineered.image}
-                                    alt={engineered?.title || product?.title || "Product engineered image"}
-                                    className="h-full w-full object-cover"
-                                />
-                            )
-                        )}
+                    <div className="aspect-[3/4] w-full max-w-[830px] overflow-hidden rounded-[27px] bg-[#eeeeee] max-[900px]:mx-auto">
+                        <ProductSectionImage src={engineered?.image || ""} alt={engineered?.title || product?.title || "Product engineered image"} editablePath="engineeredSection.image" guidelineKey="engineered" fit="cover" className="h-full w-full" />
                     </div>
                 </div>
             </div>

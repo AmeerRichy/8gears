@@ -6,6 +6,7 @@ import { Star } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import type { Product } from "../types/product";
 import { cn } from "@/lib/utils";
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart();
@@ -91,7 +92,7 @@ export default function ProductCard({ product }: { product: Product }) {
           "
         >
           <Image
-            src={mainImage}
+            src={getOptimizedCloudinaryImage(mainImage, 720)}
             alt={product.title}
             fill
             className={cn(

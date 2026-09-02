@@ -3,9 +3,9 @@
 import { useFormContext } from "react-hook-form";
 import {
   EditableArray,
-  EditableImage,
   EditableText,
 } from "@/app/components/admin/CMSComponents";
+import ProductSectionImage from "./ProductSectionImage";
 
 type CloseUpItem = {
   image?: string;
@@ -79,48 +79,25 @@ export default function ProductCloseUp({
 
   const renderCloseUpItem = (
     item: CloseUpItem,
-    index: number,
-    compactCMSCard = false
+    index: number
   ) => (
     <article
       key={index}
-      className={`w-full ${
-        compactCMSCard ? "max-w-none" : "max-w-[570px]"
-      }`}
+      className="w-full max-w-[570px]"
     >
       <div
-        className={`w-full overflow-hidden rounded-[20px] bg-[#eeeeee] ${
-          compactCMSCard
-            ? "h-[390px] sm:h-[450px]"
-            : "h-[760px] max-w-[570px] max-[1400px]:h-[680px] max-[1200px]:h-[600px] max-[900px]:h-[760px] max-[640px]:h-[620px] max-[480px]:h-[500px]"
-        }`}
+        className="aspect-[3/4] w-full max-w-[570px] overflow-hidden rounded-[20px] bg-[#eeeeee]"
       >
-        {isEditing ? (
-          <EditableImage
-            src={item.image || ""}
-            path={`closeUpSection[${index}].image`}
-            className="h-full w-full"
-          />
-        ) : (
-          item.image && (
-            <img
-              src={item.image}
-              alt={item.title || "Product close up"}
-              className="h-full w-full object-cover"
-            />
-          )
-        )}
+        <ProductSectionImage src={item.image || ""} alt={item.title || "Product close up"} editablePath={`closeUpSection[${index}].image`} guidelineKey="closeUp" fit="cover" className="h-full w-full" />
       </div>
 
-      <div className={compactCMSCard ? "pt-4" : "pt-[22px]"}>
+      <div className="pt-[22px]">
         {isEditing ? (
           <div className="space-y-4">
             <EditableText
               value={item.title || ""}
               path={`closeUpSection[${index}].title`}
-              className={`font-[var(--font-sf-pro)] font-semibold leading-[1.12] tracking-[-0.55px] text-black ${
-                compactCMSCard ? "text-[22px]" : "text-[28px]"
-              }`}
+              className="font-[var(--font-sf-pro)] text-[22px] font-semibold leading-[1.12] tracking-[-0.55px] text-black min-[481px]:text-[25px] min-[769px]:text-[28px]"
               placeholder="Detail Title"
             />
 
@@ -128,9 +105,7 @@ export default function ProductCloseUp({
               value={item.description || ""}
               path={`closeUpSection[${index}].description`}
               multiline
-              className={`max-w-[520px] font-[var(--font-sf-pro)] font-normal leading-[1.45] tracking-[-0.1px] text-[#545454] ${
-                compactCMSCard ? "text-[14px]" : "text-[16px]"
-              }`}
+              className="max-w-[520px] font-[var(--font-sf-pro)] text-[14px] font-normal leading-[1.45] tracking-[-0.1px] text-[#545454] min-[481px]:text-[16px]"
               placeholder="Brief explanation..."
             />
           </div>
@@ -161,20 +136,21 @@ export default function ProductCloseUp({
         </h2>
 
         {isEditing ? (
-          <div className="mt-[48px] rounded-[2.5rem] border border-dashed border-gray-200 bg-slate-50 p-5 sm:p-7">
+          <div className="mt-[56px] rounded-[2.5rem] border border-dashed border-gray-200 bg-slate-50 p-3 sm:p-5">
             <EditableArray
               items={cmsItems}
               path="closeUpSection"
               label="Close Up Focus"
               newItemTemplate={createEmptyCloseUpItem()}
-              layout="horizontal"
-              itemClassName="w-[82vw] max-w-[430px] shrink-0 sm:w-[420px]"
+              layout="grid"
+              gridClassName="grid grid-cols-1 justify-items-center gap-[42px] min-[901px]:grid-cols-3 min-[901px]:gap-[22px] min-[1201px]:gap-[28px]"
+              itemClassName="w-full max-w-[570px]"
               sortable
               minItems={3}
               maxItems={3}
               helperText="Exactly three close-up cards are required. Replace the images, edit the text, or reorder the cards by dragging them."
               renderItem={(item: CloseUpItem, index: number) =>
-                renderCloseUpItem(item, index, true)
+                renderCloseUpItem(item, index)
               }
             />
           </div>
