@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAdminApi('/admin/orders');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { id } = await params;
 

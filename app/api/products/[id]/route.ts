@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Product from '@/models/Product';
 import { z } from 'zod';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 const variantSchema = z.object({
   color: z.string(),
@@ -56,6 +57,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     const { id } = await params;
     await connectDB();
     const body = await req.json();
@@ -76,6 +79,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     const { id } = await params;
     await connectDB();
     const product = await Product.findByIdAndDelete(id);

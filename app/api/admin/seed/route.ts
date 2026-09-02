@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
+import { requireAdminApi } from '@/lib/adminAuth';
 
-export async function GET() {
+export async function POST() {
   try {
+    const auth = await requireAdminApi('/admin/users', true);
+    if ('error' in auth) return auth.error;
     await connectDB();
     
     // Clear existing data

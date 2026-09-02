@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { requireAdminApi } from '@/lib/adminAuth';
 
 interface CartItem {
   id: string | number;
@@ -22,6 +23,8 @@ interface OrderPayload {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireAdminApi('/admin/orders');
+  if ('error' in auth) return auth.error;
   const { customer, items, total }: OrderPayload = await req.json();
 
   const transporter = nodemailer.createTransport({

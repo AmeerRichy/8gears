@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import connectDB from '@/lib/db/mongodb';
 import Product from '@/models/Product';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -12,6 +13,8 @@ cloudinary.config({
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     const { searchParams } = new URL(req.url);
     const nextCursor = searchParams.get('next_cursor');
 
@@ -32,6 +35,8 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     const { publicId, secureUrl } = await req.json();
 
     if (!publicId) {

@@ -3,8 +3,7 @@ import dbConnect from '@/lib/db/mongodb';
 import Review from '@/models/Review';
 import Product from '@/models/Product';
 import mongoose from 'mongoose';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function GET(req: Request) {
   try {
@@ -15,8 +14,8 @@ export async function GET(req: Request) {
 
     // If admin is fetching, they need to be authenticated
     if (isAdminFetch) {
-      const session = await getServerSession(authOptions);
-      if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const auth = await requireAdminApi('/admin/reviews');
+      if ('error' in auth) return auth.error;
       
       // Admin sees all reviews, sorted by newest
       const reviews = await Review.find()

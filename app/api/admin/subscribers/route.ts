@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Subscriber from '@/models/Subscriber';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/subscribers');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { searchParams } = new URL(req.url);
     
@@ -33,6 +36,8 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/subscribers');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { email, subscribed } = await req.json();
 
@@ -57,6 +62,8 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/subscribers');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { searchParams } = new URL(req.url);
     const email = searchParams.get('email');

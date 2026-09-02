@@ -1,9 +1,12 @@
 import nodemailer from "nodemailer";
 import connectDB from '@/lib/db/mongodb';
 import Subscriber from '@/models/Subscriber';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/subscribers');
+    if ('error' in auth) return auth.error;
     const body = await req.json();
     const { email, sendToAll, templateType, subject, message, product, discountCode, buttonText } = body;
 

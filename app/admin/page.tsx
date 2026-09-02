@@ -3,6 +3,9 @@
 import AdminLayout from '@/components/AdminLayout';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { canAccessAdminPage } from '@/lib/adminPermissions';
+import type { ReactNode } from 'react';
 import { 
   Package, 
   TrendingUp, 
@@ -10,30 +13,48 @@ import {
   ShieldCheck, 
   PlusCircle, 
   ArrowUpRight,
-  LayoutGrid
+  LayoutGrid,
+  Download
 } from 'lucide-react';
 
+type DashboardProduct = {
+  _id: string;
+  title: string;
+  category: string;
+  brand?: string;
+  variants: Array<{ stockQuantity?: number; images?: string[] }>;
+  analytics?: { views?: number };
+};
+
 export default function AdminDashboard() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<DashboardProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const canManageProducts = canAccessAdminPage(
+    session?.user?.role,
+    session?.user?.allowedPages,
+    '/admin/products'
+  );
 
   useEffect(() => {
-    fetchData();
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(Array.isArray(data) ? data : []);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    void fetchData();
   }, []);
-
-  const fetchData = async () => {
-    const res = await fetch('/api/products');
-    if (res.ok) {
-      const data = await res.json();
-      setProducts(data);
-    }
-    setLoading(false);
-  };
 
   const stats = useMemo(() => {
     const totalViews = products.reduce((acc, p) => acc + (p.analytics?.views || 0), 0);
     const categoryCount = new Set(products.map(p => p.category)).size;
-    const outOfStock = products.filter(p => p.variants.some((v: any) => v.stockQuantity === 0)).length;
+    const outOfStock = products.filter(p => p.variants.some((v) => v.stockQuantity === 0)).length;
     
     return {
       totalProducts: products.length,
@@ -42,6 +63,26 @@ export default function AdminDashboard() {
       outOfStock
     };
   }, [products]);
+
+  const downloadReport = () => {
+    const escapeCell = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows = products.map((product) => {
+      const stock = product.variants?.reduce(
+        (sum: number, variant: { stockQuantity?: number }) => sum + (variant.stockQuantity || 0),
+        0
+      ) || 0;
+      return [product.title, product.category, product.brand, product.variants?.length || 0, stock, product.analytics?.views || 0]
+        .map(escapeCell)
+        .join(',');
+    });
+    const csv = [['Product', 'Category', 'Brand', 'Variants', 'Stock', 'Views'].map(escapeCell).join(','), ...rows].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `8gears-inventory-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <AdminLayout>
@@ -62,13 +103,13 @@ export default function AdminDashboard() {
                 Your inventory is synchronized with the global cluster. You have {stats.totalProducts} active units live.
               </p>
             </div>
-            <Link 
+            {canManageProducts && <Link 
               href="/admin/products/new"
               className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-orange-900/40 flex items-center gap-3 active:scale-95"
             >
               <PlusCircle size={22} />
               Add New Product
-            </Link>
+            </Link>}
           </div>
         </header>
 
@@ -105,7 +146,7 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black text-slate-900 tracking-tight">Recently Added</h3>
-              <Link href="/admin/products" className="text-sm font-bold text-orange-600 hover:underline">View All</Link>
+              {canManageProducts && <Link href="/admin/products" className="text-sm font-bold text-orange-600 hover:underline">View All</Link>}
             </div>
             <div className="space-y-4">
               {products.slice(0, 5).map((product) => (
@@ -121,12 +162,12 @@ export default function AdminDashboard() {
                       <p className="text-xs font-bold text-slate-500 uppercase">{product.category}</p>
                     </div>
                   </div>
-                  <Link 
+                  {canManageProducts && <Link 
                     href={`/admin/products/edit/${product._id}`}
                     className="p-2 bg-white rounded-lg border border-slate-200 hover:border-orange-500 hover:text-orange-600 transition-all"
                   >
                     <ArrowUpRight size={18} />
-                  </Link>
+                  </Link>}
                 </div>
               ))}
               {products.length === 0 && (
@@ -146,8 +187,13 @@ export default function AdminDashboard() {
                     <span className="text-xs font-black uppercase tracking-widest text-orange-200 mb-1">Reliability</span>
                 </div>
             </div>
-            <button className="mt-8 w-full bg-white text-orange-600 py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition-all active:scale-95">
-              Generate Report
+            <button
+              type="button"
+              onClick={downloadReport}
+              disabled={loading || products.length === 0}
+              className="mt-8 flex w-full items-center justify-center gap-2 bg-white text-orange-600 py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+            >
+              <Download size={18} /> Generate Report
             </button>
           </div>
         </div>
@@ -156,7 +202,7 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ title, value, sub, icon }: any) {
+function StatCard({ title, value, sub, icon }: { title: string; value: string | number; sub: string; icon: ReactNode }) {
   return (
     <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
       <div className="flex justify-between items-start mb-4">

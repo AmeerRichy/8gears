@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db/mongodb";
 import Review from "@/models/Review";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireAdminApi('/admin/reviews');
+    if ('error' in auth) return auth.error;
 
     await dbConnect();
 
@@ -39,11 +35,8 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireAdminApi('/admin/reviews');
+    if ('error' in auth) return auth.error;
 
     await dbConnect();
 

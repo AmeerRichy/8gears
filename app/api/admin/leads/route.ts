@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import CheckoutLead from '@/models/CheckoutLead';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/leads');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { searchParams } = new URL(req.url);
     

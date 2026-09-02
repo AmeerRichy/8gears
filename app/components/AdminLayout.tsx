@@ -12,11 +12,12 @@ import {
   LogOut,
   Menu,
   X,
-  Settings,
   ShieldCheck,
   Truck,
-  MessageSquare
+  MessageSquare,
+  Users
 } from 'lucide-react';
+import { canAccessAdminPage } from '@/lib/adminPermissions';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -27,12 +28,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
+    } else if (status === 'authenticated' && session.user?.isActive === false) {
+      void signOut({ callbackUrl: '/admin/login' });
+    } else if (status === 'authenticated' && !canAccessAdminPage(session.user?.role, session.user?.allowedPages, pathname)) {
+      router.replace('/admin');
     }
-  }, [status, router]);
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
+  }, [status, session, pathname, router]);
 
   if (status === 'loading') {
     return (
@@ -54,13 +55,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // { name: 'Subscribers', href: '/admin/subscribers', icon: MessageSquare },
     { name: 'Categories', href: '/admin/categories', icon: FolderTree },
     { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
-  ];
+    { name: 'Leads', href: '/admin/leads', icon: LayoutDashboard },
+    { name: 'Subscribers', href: '/admin/subscribers', icon: MessageSquare },
+    { name: 'Users', href: '/admin/users', icon: Users },
+  ].filter((item) => canAccessAdminPage(session.user?.role, session.user?.allowedPages, item.href));
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="h-screen overflow-hidden bg-slate-50 flex font-sans">
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
+        />
+      )}
       {/* Sidebar for Desktop */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 h-screen w-72 shrink-0 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="h-full flex flex-col">
@@ -79,11 +91,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-6 space-y-2">
+          <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto p-6">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => setSidebarOpen(false)}
                 className={`
                   flex items-center gap-4 px-4 py-4 rounded-2xl transition-all font-bold group
                   ${isActive(item.href)
@@ -100,17 +113,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 px-4">Utilities</p>
               <Link
                 href="/"
+                onClick={() => setSidebarOpen(false)}
                 className="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold group"
               >
                 <ExternalLink size={22} className="text-slate-500 group-hover:text-orange-500" />
                 <span className="tracking-tight">View Live Store</span>
-              </Link>
-              <Link
-                href="/admin/settings"
-                className="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold group"
-              >
-                <Settings size={22} className="text-slate-500 group-hover:text-orange-500" />
-                <span className="tracking-tight">System Settings</span>
               </Link>
             </div>
           </nav>
@@ -129,9 +136,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="min-w-0 flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Header */}
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+        <header className="h-20 shrink-0 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -147,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end">
               <span className="text-sm font-black text-slate-900">{session.user?.name}</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master Administrator</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{session.user?.role === 'super_admin' ? 'Super Administrator' : 'Panel User'}</span>
             </div>
             <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black">
               {session.user?.name?.charAt(0)}
@@ -156,7 +163,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content Container */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

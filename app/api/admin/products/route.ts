@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Product from '@/models/Product';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const products = await Product.find({}).sort({ createdAt: -1 });
     return NextResponse.json(products);
@@ -14,6 +17,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const body = await req.json();
     const product = await Product.create(body);
@@ -25,6 +30,8 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const body = await req.json();
     const { _id, ...updateData } = body;
@@ -37,6 +44,8 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { ids } = await req.json();
     const result = await Product.deleteMany({ _id: { $in: ids } });

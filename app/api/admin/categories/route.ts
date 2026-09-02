@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Category from '@/models/Category';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
+    const auth = await requireAdminApi(['/admin/categories', '/admin/products']);
+    if ('error' in auth) return auth.error;
     await connectDB();
     const categories = await Category.find({}).sort({ name: 1 });
     return NextResponse.json(categories);
@@ -14,6 +17,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/categories');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const body = await req.json();
     
@@ -34,6 +39,8 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/categories');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

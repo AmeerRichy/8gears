@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Lock } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +28,7 @@ export default function AdminLoginPage() {
       setError('Invalid credentials');
       setLoading(false);
     } else {
-      router.push('/admin/products');
+      router.push('/admin');
       router.refresh();
     }
   };
@@ -51,7 +52,7 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Username</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Username or Email</label>
             <input
               type="text"
               value={username}
@@ -62,13 +63,24 @@ export default function AdminLoginPage() {
           </div>
           <div>
             <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-orange-500 outline-none transition-all font-bold"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-6 py-4 pr-14 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-orange-500 outline-none transition-all font-bold"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-white hover:text-slate-700"
+              >
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

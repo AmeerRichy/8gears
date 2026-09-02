@@ -16,7 +16,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/categories")
+    fetch("/api/categories")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setCategories(data);

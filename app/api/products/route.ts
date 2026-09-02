@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Product from '@/models/Product';
 import { z } from 'zod';
+import { requireAdminApi } from '@/lib/adminAuth';
 
 // Zod Schema for Product Validation
 const variantSchema = z.object({
@@ -43,6 +44,8 @@ const productSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAdminApi('/admin/products');
+    if ('error' in auth) return auth.error;
     await connectDB();
     const body = await req.json();
     
