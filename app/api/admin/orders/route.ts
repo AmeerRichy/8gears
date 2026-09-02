@@ -10,8 +10,16 @@ export async function GET(req: Request) {
     const search = searchParams.get('search');
     const paymentStatus = searchParams.get('paymentStatus');
     const orderStatus = searchParams.get('orderStatus');
+    const archive = searchParams.get('archive') || 'active';
 
     let query: any = {};
+
+    if (archive === 'archived') {
+      query.archived = true;
+    } else if (archive !== 'all') {
+      // $ne keeps orders created before the archive field was introduced visible.
+      query.archived = { $ne: true };
+    }
 
     if (search) {
       query.$or = [
@@ -37,4 +45,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

@@ -18,7 +18,9 @@ import {
   MapPin,
   ShieldCheck,
   Box,
-  UserCheck
+  UserCheck,
+  Archive,
+  ArchiveRestore
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
@@ -27,13 +29,14 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
   const [orderStatus, setOrderStatus] = useState('');
+  const [archiveView, setArchiveView] = useState<'active' | 'archived' | 'all'>('active');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     fetchOrders();
-  }, [search, paymentStatus, orderStatus]);
+  }, [search, paymentStatus, orderStatus, archiveView]);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -41,6 +44,7 @@ export default function AdminOrdersPage() {
     if (search) query.set('search', search);
     if (paymentStatus) query.set('paymentStatus', paymentStatus);
     if (orderStatus) query.set('orderStatus', orderStatus);
+    query.set('archive', archiveView);
     
     try {
       const res = await fetch(`/api/admin/orders?${query.toString()}`);
@@ -50,6 +54,38 @@ export default function AdminOrdersPage() {
       console.error('Failed to fetch orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateArchiveStatus = async (order: any) => {
+    const willArchive = !order.archived;
+    const confirmed = window.confirm(
+      willArchive
+        ? `Archive order ${order.orderId}? It will move to Archived Orders and can be restored later.`
+        : `Restore order ${order.orderId} to Active Orders?`
+    );
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${order._id}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archived: willArchive }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to update archive status.');
+        return;
+      }
+
+      setSelectedOrder(data);
+      if (archiveView !== 'all') setIsModalOpen(false);
+      await fetchOrders();
+    } catch (error) {
+      alert('Failed to update archive status.');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -170,6 +206,23 @@ export default function AdminOrdersPage() {
             </select>
           </div>
 
+          <div className="px-8 py-4 border-b border-slate-100 flex flex-wrap gap-2 bg-white">
+            {(['active', 'archived', 'all'] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => setArchiveView(view)}
+                className={`rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  archiveView === view
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {view === 'active' ? 'Active Orders' : view === 'archived' ? 'Archived Orders' : 'All Orders'}
+              </button>
+            ))}
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -199,6 +252,11 @@ export default function AdminOrdersPage() {
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
+                      {order.archived && (
+                        <div className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mt-1">
+                          Archived {order.archivedAt ? new Date(order.archivedAt).toLocaleDateString() : ''}
+                        </div>
+                      )}
                     </td>
                     <td className="px-8 py-6">
                       <div className="font-bold text-slate-900">{order.customerInfo.name}</div>
@@ -230,6 +288,15 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="px-8 py-6 text-right">
+                      <button
+                        type="button"
+                        disabled={updating}
+                        onClick={() => updateArchiveStatus(order)}
+                        title={order.archived ? 'Restore order' : 'Archive order'}
+                        className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all disabled:opacity-50"
+                      >
+                        {order.archived ? <ArchiveRestore size={20} /> : <Archive size={20} />}
+                      </button>
                       <button 
                         onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }}
                         className="p-3 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-2xl transition-all"
@@ -259,9 +326,20 @@ export default function AdminOrdersPage() {
                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{selectedOrder.trackingId}</span>
                 </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-4 hover:bg-white rounded-2xl text-slate-400 transition-all">
-                <XCircle size={28} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={updating}
+                  onClick={() => updateArchiveStatus(selectedOrder)}
+                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 disabled:opacity-50"
+                >
+                  {selectedOrder.archived ? <ArchiveRestore size={17} /> : <Archive size={17} />}
+                  {selectedOrder.archived ? 'Restore' : 'Archive'}
+                </button>
+                <button onClick={() => setIsModalOpen(false)} className="p-4 hover:bg-white rounded-2xl text-slate-400 transition-all">
+                  <XCircle size={28} />
+                </button>
+              </div>
             </div>
 
             {/* Modal Content */}
@@ -333,6 +411,11 @@ export default function AdminOrdersPage() {
                     Deployment Control
                   </h3>
                   <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white">
+                    {selectedOrder.archived && (
+                      <div className="mb-5 rounded-2xl border border-indigo-400/30 bg-indigo-400/10 p-4 text-xs font-bold text-indigo-100">
+                        This order is archived and read-only. Restore it before changing fulfillment details.
+                      </div>
+                    )}
                     <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-4">Master Status Override</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -347,7 +430,7 @@ export default function AdminOrdersPage() {
                       ].map((status) => (
                         <button
                           key={status}
-                          disabled={updating || selectedOrder.orderStatus === status}
+                          disabled={updating || selectedOrder.archived || selectedOrder.orderStatus === status}
                           onClick={() => updateOrderStatus(selectedOrder._id, status)}
                           className={`py-3 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50
                             ${selectedOrder.orderStatus === status 
@@ -367,6 +450,7 @@ export default function AdminOrdersPage() {
                             placeholder="Courier Name (e.g. FedEx)"
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-orange-500"
                             defaultValue={selectedOrder.shipping?.courierName}
+                            disabled={selectedOrder.archived}
                             onBlur={(e) => updateFulfillment(selectedOrder._id, { 'shipping.courierName': e.target.value })}
                           />
                           <input 
@@ -374,6 +458,7 @@ export default function AdminOrdersPage() {
                             placeholder="Tracking Number"
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-orange-500"
                             defaultValue={selectedOrder.shipping?.trackingNumber}
+                            disabled={selectedOrder.archived}
                             onBlur={(e) => updateFulfillment(selectedOrder._id, { 'shipping.trackingNumber': e.target.value })}
                           />
                        </div>
@@ -422,4 +507,3 @@ function StatBox({ title, value, sub }: any) {
     </div>
   );
 }
-

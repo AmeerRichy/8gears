@@ -27,16 +27,24 @@ export async function PATCH(
     await connectDB();
     const { id } = await params;
     const body = await req.json();
+
+    const existingOrder = await Order.findById(id);
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+    if (existingOrder.archived) {
+      return NextResponse.json(
+        { error: 'Archived orders are read-only. Restore this order before editing it.' },
+        { status: 409 }
+      );
+    }
+
     const order = await Order.findByIdAndUpdate(id, body, { 
       new: true,
       returnDocument: 'after' 
     });
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    }
     return NextResponse.json(order);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

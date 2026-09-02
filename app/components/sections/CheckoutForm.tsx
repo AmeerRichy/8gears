@@ -53,6 +53,7 @@ export default function CheckoutForm() {
   });
 
   const shipping = 0;
+  const isFreeOrder = total === 0;
 
   const saveLead = async (statusOverride?: string) => {
     try {
@@ -119,7 +120,7 @@ export default function CheckoutForm() {
   const firstItem = cart[0];
 
   useEffect(() => {
-    if (paymentMethod !== 'PayPal') return;
+    if (paymentMethod !== 'PayPal' || isFreeOrder) return;
     if (paypalLoaded) return;
 
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -152,11 +153,11 @@ export default function CheckoutForm() {
     };
 
     document.body.appendChild(script);
-  }, [paymentMethod, paypalLoaded]);
+  }, [paymentMethod, paypalLoaded, isFreeOrder]);
 
   useEffect(() => {
     if (step !== 'confirm') return;
-    if (paymentMethod !== 'PayPal') return;
+    if (paymentMethod !== 'PayPal' || isFreeOrder) return;
     if (!paypalLoaded) return;
     if (!window.paypal) return;
     if (!paypalRef.current) return;
@@ -262,6 +263,7 @@ export default function CheckoutForm() {
     form.country,
     clearCart,
     leadId,
+    isFreeOrder,
   ]);
 
   const handleChange = (
@@ -388,6 +390,50 @@ export default function CheckoutForm() {
       }
 
       setError(err.message || 'Something went wrong.');
+      setLoading(false);
+    }
+  };
+
+  const handleFreeOrder = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/payment/free', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
+          customer: {
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+          },
+          shippingAddress: {
+            address: form.address,
+            apartment: form.apartment,
+            city: form.city,
+            state: form.state,
+            zip: form.zip,
+            country: form.country,
+          },
+          leadId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to place free order.');
+
+      clearCart?.();
+      setSuccessData({ orderId: data.orderId, trackingId: data.trackingId });
+      setSuccessOpen(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to place free order.');
+    } finally {
       setLoading(false);
     }
   };
@@ -742,7 +788,9 @@ export default function CheckoutForm() {
 
                     <div className="mt-3 flex items-center gap-2 text-[14px] font-semibold">
                       <CreditCard size={17} />
-                      {paymentMethod === 'Stripe' ? (
+                      {isFreeOrder ? (
+                        <span>No payment required</span>
+                      ) : paymentMethod === 'Stripe' ? (
                         <span>Credit/Debit Card via Stripe</span>
                       ) : (
                         <span>PayPal</span>
@@ -765,7 +813,19 @@ export default function CheckoutForm() {
 
                 {error && <ErrorMessage message={error} />}
 
-                {paymentMethod === 'Stripe' ? (
+                {isFreeOrder ? (
+                  <button
+                    onClick={handleFreeOrder}
+                    disabled={loading}
+                    className="mt-5 flex h-[58px] w-full items-center justify-center rounded-full bg-black text-[14px] font-bold tracking-wide text-white transition hover:bg-black/85 disabled:opacity-70"
+                  >
+                    {loading ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      'Place Free Order'
+                    )}
+                  </button>
+                ) : paymentMethod === 'Stripe' ? (
                   <button
                     onClick={handleStripeCheckout}
                     disabled={loading}

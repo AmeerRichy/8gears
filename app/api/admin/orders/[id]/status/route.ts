@@ -24,6 +24,12 @@ export async function PUT(
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
+    if (order.archived) {
+      return NextResponse.json(
+        { error: 'Archived orders are read-only. Restore this order before editing it.' },
+        { status: 409 }
+      );
+    }
 
     if (orderStatus) order.orderStatus = orderStatus;
     if (fulfillmentStatus) order.fulfillmentStatus = fulfillmentStatus;

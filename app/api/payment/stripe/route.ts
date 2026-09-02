@@ -17,6 +17,13 @@ export async function POST(req: Request) {
     // 1. Build and validate items from DB
     const checkoutData = await buildCheckoutOrderItems(items);
 
+    if (checkoutData.totalAmount === 0) {
+      return NextResponse.json(
+        { error: 'No Stripe payment is required for a free order.' },
+        { status: 400 }
+      );
+    }
+
     // 2. Generate unique IDs
     const orderId = await generateOrderId();
     const trackingId = await generateTrackingId();

@@ -37,7 +37,7 @@ export interface IOrder extends Document {
     currency: string;
   };
   payment: {
-    paymentMethod: 'Stripe' | 'PayPal' | 'COD' | 'Test';
+    paymentMethod: 'Stripe' | 'PayPal' | 'COD' | 'Test' | 'Free';
     paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
     paymentProviderId?: string;
     stripeSessionId?: string;
@@ -65,6 +65,9 @@ export interface IOrder extends Document {
   adminNotes?: string;
   stockReduced: boolean;
   orderConfirmationEmailSentAt?: Date;
+  archived: boolean;
+  archivedAt?: Date;
+  archivedBy?: string;
   trackingTimeline: Array<{
     status: string;
     message: string;
@@ -115,7 +118,7 @@ const OrderSchema: Schema = new Schema(
       currency: { type: String, default: 'USD' },
     },
     payment: {
-      paymentMethod: { type: String, enum: ['Stripe', 'PayPal', 'COD', 'Test'], required: true },
+      paymentMethod: { type: String, enum: ['Stripe', 'PayPal', 'COD', 'Test', 'Free'], required: true },
       paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed', 'refunded'],
@@ -156,6 +159,9 @@ const OrderSchema: Schema = new Schema(
     adminNotes: { type: String },
     stockReduced: { type: Boolean, default: false },
     orderConfirmationEmailSentAt: { type: Date },
+    archived: { type: Boolean, default: false, index: true },
+    archivedAt: { type: Date },
+    archivedBy: { type: String },
     trackingTimeline: [
       {
         status: { type: String, required: true },
@@ -167,6 +173,8 @@ const OrderSchema: Schema = new Schema(
   },
   { timestamps: true }
 );
+
+OrderSchema.index({ archived: 1, createdAt: -1 });
 
 // Force refresh model to avoid schema caching issues
 if (mongoose.models.Order) {
