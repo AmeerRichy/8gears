@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -11,7 +10,6 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,14 +20,16 @@ export default function AdminLoginPage() {
       username,
       password,
       redirect: false,
+      callbackUrl: '/admin',
     });
 
-    if (result?.error) {
+    if (!result?.ok || result.error) {
       setError('Invalid credentials');
       setLoading(false);
     } else {
-      router.push('/admin');
-      router.refresh();
+      // A full navigation guarantees the Set-Cookie response from signIn has
+      // been committed before the production route guard evaluates /admin.
+      window.location.assign(result.url || '/admin');
     }
   };
 
