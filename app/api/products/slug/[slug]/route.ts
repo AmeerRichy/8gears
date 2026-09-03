@@ -6,7 +6,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   try {
     const { slug } = await params;
     await connectDB();
-    const product = await Product.findOne({ slug });
+    const product = await Product.findOne({ slug, isActive: { $ne: false } });
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }

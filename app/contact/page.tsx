@@ -6,6 +6,13 @@ import ContactSupportCards from "@/components/sections/ Contactsupportcards";
 import ContactFAQ from "@/components/sections/Contactfaq";
 import ContactFormSection from "@/components/sections/ContactForm";
 import ContactHero from "@/components/sections/ContactHero";
+import { createPageMetadata } from "@/app/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Contact Us",
+  description: "Contact 8-Gear for help with motorcycle riding gear, orders, product information, partnerships, and customer support.",
+  path: "/contact",
+});
 
 export default function Contact() {
   return (
@@ -14,11 +21,13 @@ export default function Contact() {
         <div className="min-h-screen bg-white" />
       }
     >
-      <ContactHero />
-      <ContactSupportCards />
-      <ContactFormSection />
-      <ContactFAQ />
-      <ContactSection />
+      <main>
+        <ContactHero />
+        <ContactSupportCards />
+        <ContactFormSection />
+        <ContactFAQ />
+        <ContactSection />
+      </main>
       <Footer />
     </Suspense>
   );

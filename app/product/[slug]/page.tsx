@@ -1,92 +1,128 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import connectDB from "@/app/lib/db/mongodb";
 import Product from "@/app/models/Product";
 import ProductDetail from "@/app/components/product/ProductDetail";
+import JsonLd from "@/app/components/JsonLd";
+import { DISPLAY_CURRENCY } from "@/app/lib/checkout/constants";
+import { absoluteUrl, cleanSeoText, createPageMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/app/lib/seo";
 
 interface ProductPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: ProductPageProps) {
-  try {
-    const { slug } = await params;
+async function findPublishedProduct(slug: string) {
+  await connectDB();
+  return Product.findOne({ slug, isActive: { $ne: false } });
+}
 
-    await connectDB();
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await findPublishedProduct(slug);
 
-    const product = await Product.findOne({ slug });
-
-    if (!product) return { title: "Product Not Found" };
-
-    return {
-      title: `${product.title} | 8 GEARS`,
-      description: product.baseDescription,
-      openGraph: {
-        title: product.title,
-        description: product.baseDescription,
-        images: [product.variants?.[0]?.images?.[0]],
-      },
-    };
-  } catch (error) {
-    return { title: "8 GEARS" };
+  if (!product) {
+    return createPageMetadata({
+      title: "Product Not Found",
+      description: "The requested 8-Gear product could not be found.",
+      path: `/product/${encodeURIComponent(slug)}`,
+      noIndex: true,
+      image: null,
+    });
   }
+
+  const description = cleanSeoText(product.baseDescription || product.fullDescription) || DEFAULT_DESCRIPTION;
+  const title = product.category ? `${product.title} – ${product.category}` : product.title;
+
+  return createPageMetadata({
+    title,
+    description,
+    path: `/product/${product.slug}`,
+    image: product.variants?.[0]?.images?.[0] || undefined,
+  });
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = await findPublishedProduct(slug);
+  if (!product) notFound();
+
   try {
-    const { slug } = await params;
-
-    console.log("Fetching product with slug:", slug);
-
-    await connectDB();
-
-    const product = await Product.findOne({ slug });
-
-    if (!product) {
-      const allProducts = await Product.find({}, "slug");
-
-      console.log("--- DEBUG: PRODUCT NOT FOUND ---");
-      console.log("Requested Slug:", slug);
-      console.log(
-        "Available Slugs in DB:",
-        allProducts.map((p) => p.slug)
-      );
-      console.log("-------------------------------");
-
-      notFound();
-    }
-
-    try {
-      await Product.findByIdAndUpdate(product._id, {
-        $inc: { "analytics.views": 1 },
-      });
-    } catch (analyticsError) {
-      console.error("Analytics update failed:", analyticsError);
-    }
-
-    const relatedQuery: any = {
-      _id: { $ne: product._id },
-    };
-
-    if (product.category) {
-      relatedQuery.category = product.category;
-    }
-
-    const relatedProducts = await Product.find(relatedQuery)
-      .limit(4)
-      .lean();
-
-    return (
-      <main>
-        <ProductDetail
-          product={JSON.parse(JSON.stringify(product))}
-          relatedProducts={JSON.parse(JSON.stringify(relatedProducts))}
-        />
-      </main>
-    );
-  } catch (error: any) {
-    console.error("CRITICAL ERROR in ProductPage:", error);
-    throw error;
+    await Product.findByIdAndUpdate(product._id, { $inc: { "analytics.views": 1 } });
+  } catch (analyticsError) {
+    console.error("Analytics update failed:", analyticsError);
   }
+
+  const relatedQuery: Record<string, unknown> = {
+    _id: { $ne: product._id },
+    isActive: { $ne: false },
+  };
+  if (product.category) relatedQuery.category = product.category;
+  const relatedProducts = await Product.find(relatedQuery).limit(4).lean();
+
+  const productUrl = absoluteUrl(`/product/${product.slug}`);
+  const imageUrls = product.variants
+    .flatMap((variant: { images?: string[] }) => variant.images || [])
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((image: string) => absoluteUrl(image) || image);
+  const primaryVariant = product.variants?.[0];
+  const categoryUrl = product.category
+    ? absoluteUrl(`/category?cat=${encodeURIComponent(product.category.toLowerCase())}`)
+    : null;
+
+  const productSchema = productUrl
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": `${productUrl}#product`,
+        name: product.title,
+        description: cleanSeoText(product.fullDescription || product.baseDescription, 5000),
+        url: productUrl,
+        image: imageUrls,
+        sku: primaryVariant?.sku || undefined,
+        brand: { "@type": "Brand", name: product.brand || SITE_NAME },
+        category: product.category || undefined,
+        offers: primaryVariant
+          ? {
+              "@type": "Offer",
+              url: productUrl,
+              priceCurrency: DISPLAY_CURRENCY,
+              price: primaryVariant.price,
+              sku: primaryVariant.sku,
+              availability: primaryVariant.stockQuantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              itemCondition: "https://schema.org/NewCondition",
+            }
+          : undefined,
+        aggregateRating:
+          product.reviews?.reviewCount > 0 && product.reviews?.rating > 0
+            ? {
+                "@type": "AggregateRating",
+                ratingValue: product.reviews.rating,
+                reviewCount: product.reviews.reviewCount,
+              }
+            : undefined,
+      }
+    : null;
+
+  const breadcrumbs = productUrl
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+          { "@type": "ListItem", position: 2, name: product.category || "Collection", item: categoryUrl || absoluteUrl("/category") },
+          { "@type": "ListItem", position: 3, name: product.title, item: productUrl },
+        ],
+      }
+    : null;
+
+  return (
+    <main>
+      {productSchema && breadcrumbs && <JsonLd data={[productSchema, breadcrumbs]} />}
+      <ProductDetail
+        product={JSON.parse(JSON.stringify(product))}
+        relatedProducts={JSON.parse(JSON.stringify(relatedProducts))}
+      />
+    </main>
+  );
 }

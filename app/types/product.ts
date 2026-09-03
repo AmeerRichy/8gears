@@ -11,6 +11,7 @@ export interface Variant {
 
 export interface Product {
   _id: string;
+  isActive: boolean;
   title: string;
   slug: string;
   category: string;

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const slides = [
   {
@@ -139,9 +140,6 @@ const Hero = () => {
             className={`
               absolute
               inset-0
-              bg-cover
-              bg-top
-              bg-no-repeat
               transition-opacity
               duration-[1000ms]
               ease-in-out
@@ -151,10 +149,16 @@ const Hero = () => {
                   : "pointer-events-none opacity-0"
               }
             `}
-            style={{
-              backgroundImage: `url("${slide.image}")`,
-            }}
-          />
+          >
+            <Image
+              src={slide.image}
+              alt=""
+              fill
+              priority={index === 0}
+              sizes="100vw"
+              className="object-cover object-top"
+            />
+          </div>
         ))}
       </div>
 

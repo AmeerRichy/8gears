@@ -22,6 +22,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -43,7 +44,7 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/admin/products', { cache: 'no-store' });
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -63,6 +64,26 @@ export default function AdminProductsPage() {
       }
     } catch (error) {
       alert('Failed to delete product');
+    }
+  };
+
+  const toggleProductStatus = async (id: string, isActive: boolean) => {
+    setUpdatingStatusId(id);
+    try {
+      const res = await fetch(`/api/admin/products/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive }),
+      });
+      if (!res.ok) throw new Error('Unable to update product status');
+      setProducts((current) =>
+        current.map((product) => product._id === id ? { ...product, isActive } : product)
+      );
+    } catch (error) {
+      console.error('Failed to update product status:', error);
+      alert('Failed to update product status. Please try again.');
+    } finally {
+      setUpdatingStatusId(null);
     }
   };
 
@@ -149,18 +170,19 @@ export default function AdminProductsPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-white text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-100">
-                  <th className="px-8 py-6">Product Details</th>
-                  <th className="px-8 py-6">Category</th>
-                  <th className="px-8 py-6">Variants</th>
-                  <th className="px-8 py-6">Stock Status</th>
-                  <th className="px-8 py-6 text-right">Actions</th>
+                  <th className="px-6 py-5">Product Details</th>
+                  <th className="px-5 py-5">Category</th>
+                  <th className="px-5 py-5">Variants</th>
+                  <th className="px-5 py-5">Stock</th>
+                  <th className="px-5 py-5">Status</th>
+                  <th className="px-6 py-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   Array(5).fill(0).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      <td colSpan={5} className="px-8 py-6 h-24">
+                      <td colSpan={6} className="px-8 py-6 h-24">
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-16 bg-slate-50 rounded-2xl"></div>
                           <div className="flex-1 space-y-2">
@@ -173,7 +195,7 @@ export default function AdminProductsPage() {
                   ))
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-8 py-32 text-center">
+                    <td colSpan={6} className="px-8 py-32 text-center">
                       <div className="flex flex-col items-center">
                         <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                           <Package className="text-slate-200" size={40} />
@@ -187,10 +209,16 @@ export default function AdminProductsPage() {
                   filteredProducts.map((product) => {
                     const totalStock = product.variants.reduce((acc: number, v: any) => acc + v.stockQuantity, 0);
                     return (
-                      <tr key={product._id} className="hover:bg-slate-50/50 transition-all group">
-                        <td className="px-8 py-6">
+                      <tr key={product._id} className={cn(
+                        'transition-colors hover:bg-slate-50/70',
+                        product.isActive === false && 'bg-slate-50/40'
+                      )}>
+                        <td className="px-6 py-5">
                           <div className="flex items-center">
-                            <div className="h-16 w-16 rounded-2xl overflow-hidden bg-slate-100 mr-5 border border-slate-100 shadow-sm transition-transform group-hover:rotate-2 duration-300">
+                            <div className={cn(
+                              'mr-4 h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-100 shadow-sm',
+                              product.isActive === false && 'opacity-60 grayscale'
+                            )}>
                               {product.variants[0]?.images[0] ? (
                                 <img src={getOptimizedCloudinaryImage(product.variants[0].images[0], 160)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                               ) : (
@@ -200,17 +228,17 @@ export default function AdminProductsPage() {
                               )}
                             </div>
                             <div>
-                              <div className="font-black text-slate-900 text-lg leading-tight tracking-tighter">{product.title}</div>
+                              <div className="max-w-[240px] truncate font-extrabold leading-tight text-slate-900" title={product.title}>{product.title}</div>
                               <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">{product.brand}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-5 py-5">
                           <span className="px-4 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-[10px] font-black uppercase tracking-wider border border-orange-100/50">
                             {product.category}
                           </span>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-5 py-5">
                           <div className="flex -space-x-2">
                             {Array.from(new Set(product.variants.map((v: any) => v.color))).slice(0, 3).map((color: any, idx) => (
                               <div key={idx} className="w-8 h-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[8px] font-black text-white shadow-sm" title={color}>
@@ -225,7 +253,7 @@ export default function AdminProductsPage() {
                           </div>
                           <p className="text-[10px] text-slate-400 font-black mt-2 uppercase tracking-tight">{product.variants.length} total SKUs</p>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-5 py-5">
                           <div className="flex flex-col">
                             <span className={cn(
                               "text-xs font-black px-3 py-1.5 rounded-lg w-fit border",
@@ -238,29 +266,61 @@ export default function AdminProductsPage() {
                             <span className="text-[9px] text-slate-400 font-bold uppercase mt-1.5 tracking-widest">Global Inventory</span>
                           </div>
                         </td>
-                        <td className="px-8 py-6 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Link
-                              href={`/product/${product.slug}`}
-                              target="_blank"
-                              className="p-2.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all"
-                              title="Preview Storefront"
-                            >
-                              <ExternalLink size={18} />
-                            </Link>
+                        <td className="px-5 py-5">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={product.isActive !== false}
+                            disabled={updatingStatusId === product._id}
+                            onClick={() => toggleProductStatus(product._id, product.isActive === false)}
+                            className={cn(
+                              'inline-flex min-w-[92px] items-center justify-center gap-2 rounded-full border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all disabled:cursor-wait disabled:opacity-60',
+                              product.isActive === false
+                                ? 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                                : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                            )}
+                            title={product.isActive === false ? 'Make product visible on the store' : 'Hide product from the store'}
+                          >
+                            <span className={cn('h-2 w-2 rounded-full', product.isActive === false ? 'bg-slate-400' : 'bg-emerald-500')} />
+                            <span>
+                              {updatingStatusId === product._id
+                                ? 'Saving…'
+                                : product.isActive === false ? 'Inactive' : 'Active'}
+                            </span>
+                          </button>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <div className="inline-flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                            {product.isActive === false ? (
+                              <span
+                                className="inline-flex cursor-not-allowed items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-slate-300"
+                                title="Activate this product before viewing it on the storefront"
+                              >
+                                <ExternalLink size={15} /> Hidden
+                              </span>
+                            ) : (
+                              <Link
+                                href={`/product/${product.slug}`}
+                                target="_blank"
+                                className="inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                                title="View on storefront"
+                              >
+                                <ExternalLink size={15} /> View
+                              </Link>
+                            )}
                             <Link
                               href={`/admin/products/edit/${product._id}`}
-                              className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                              className="inline-flex items-center gap-1.5 border-l border-slate-200 bg-slate-900 px-3 py-2.5 text-xs font-bold text-white transition-colors hover:bg-orange-600"
                               title="Edit Details"
                             >
-                              <Edit size={18} />
+                              <Edit size={15} /> Edit
                             </Link>
                             <button
                               onClick={() => deleteProduct(product._id)}
-                              className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                              className="inline-flex items-center gap-1.5 border-l border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
                               title="Delete Product"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={15} /> Delete
                             </button>
                           </div>
                         </td>

@@ -7,20 +7,29 @@ import ImpactProgressSection from "@/components/sections/SustainabilityImpactPro
 import BuiltToLastSection from "@/components/sections/BuiltToLastSection";
 import SustainabilityThreadSection from "@/components/sections/SustainabilityThreadSection";
 import WhyChooseSection from "@/components/sections/WhyChooseSection";
+import { createPageMetadata } from "@/app/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Durable and Responsible Riding Gear",
+  description: "Discover 8-Gear's approach to durable motorcycle apparel, responsible materials, product longevity, and considered manufacturing.",
+  path: "/sustainability",
+  image: "/assets/images/sustainabilityhero.png",
+});
 
 
 export default function sustainability() {
   return (
     <>
-      <SustainabilityHero />
-      <SustainabilityCommitment/>
-      <ImpactProgressSection/>
-      <BuiltToLastSection/>
-      <SustainabilityThreadSection/>
-      <WhyChooseSection/>
-      <ContactSection />
+      <main>
+        <SustainabilityHero />
+        <SustainabilityCommitment/>
+        <ImpactProgressSection/>
+        <BuiltToLastSection/>
+        <SustainabilityThreadSection/>
+        <WhyChooseSection/>
+        <ContactSection />
+      </main>
       <Footer />
     </>
   );
 }
-

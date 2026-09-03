@@ -194,8 +194,10 @@ const DenimFeature = () => {
             >
               <img
                 src="/assets/images/denim-feature-left.png"
-                alt="8Gears rider wearing protective apparel"
+                alt="8-Gear rider wearing protective motorcycle apparel"
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="block h-full w-full object-cover"
               />
             </div>
@@ -222,8 +224,10 @@ const DenimFeature = () => {
           >
             <img
               src="/assets/images/denim-feature-right.png"
-              alt="8Gears water repellent protective hoodie"
+              alt="8-Gear water-repellent protective riding hoodie"
               draggable={false}
+              loading="lazy"
+              decoding="async"
               className="block h-full w-full object-cover"
             />
           </div>

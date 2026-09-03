@@ -2,8 +2,13 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/footer";
 import PrivacyDetail from "@/components/sections/PrivacyDetail";
 import PrivacyHero from "@/components/sections/PrivacyHero";
-import TncDetail from "@/components/sections/TncDetail";
-import TncHero from "@/components/sections/Tnchero";
+import { createPageMetadata } from "@/app/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description: "Read how 8-Gear collects, uses, protects, and manages information when you use our website and services.",
+  path: "/privacy-policy",
+});
 
 
 
@@ -12,9 +17,11 @@ import TncHero from "@/components/sections/Tnchero";
 export default function PrivacyPolicy() {
   return (
     <>
-       <PrivacyHero/>
-       <PrivacyDetail/>
-       <ContactSection/>
+      <main>
+        <PrivacyHero/>
+        <PrivacyDetail/>
+        <ContactSection/>
+      </main>
       <Footer />
     </>
   );

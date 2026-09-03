@@ -2,8 +2,13 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/footer";
 import ShippingPolicyDetail from "@/components/sections/ShippingPolicyDetail";
 import ShippingPolicyHero from "@/components/sections/ShippingPolicyHero";
-import TncDetail from "@/components/sections/TncDetail";
-import TncHero from "@/components/sections/Tnchero";
+import { createPageMetadata } from "@/app/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Shipping Policy",
+  description: "Learn about 8-Gear order processing, shipping methods, delivery estimates, tracking, and delivery support.",
+  path: "/shopping-policy",
+});
 
 
 
@@ -12,9 +17,11 @@ import TncHero from "@/components/sections/Tnchero";
 export default function ShippingPolicy() {
   return (
     <>
-    <ShippingPolicyHero/>
-       <ShippingPolicyDetail/>
-       <ContactSection/>
+      <main>
+        <ShippingPolicyHero/>
+        <ShippingPolicyDetail/>
+        <ContactSection/>
+      </main>
       <Footer />
     </>
   );

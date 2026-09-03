@@ -79,7 +79,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     
-    const query = category ? { category } : {};
+    const query = category
+      ? { category, isActive: { $ne: false } }
+      : { isActive: { $ne: false } };
     const products = await Product.find(query).sort({ createdAt: -1 });
     
     return NextResponse.json(products);

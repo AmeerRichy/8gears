@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -193,9 +194,12 @@ function FooterContent() {
             className="inline-flex items-center"
             aria-label="8Gear Home"
           >
-            <img
+            <Image
               src="/logo.png"
-              alt="8Gear"
+              alt="8-Gear"
+              width={2322}
+              height={1210}
+              sizes="(max-width: 640px) 115px, 145px"
               draggable={false}
               className="
                 block
@@ -268,9 +272,12 @@ function FooterContent() {
               className="inline-flex items-center"
               aria-label="8Gear Home"
             >
-              <img
+              <Image
                 src="/logo.png"
-                alt="8Gear"
+                alt="8-Gear"
+                width={2322}
+                height={1210}
+                sizes="150px"
                 draggable={false}
                 className="
                   block

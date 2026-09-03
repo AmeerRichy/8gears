@@ -6,16 +6,18 @@ import { Search, Filter } from "lucide-react";
 import ProductCard from "@/components/productcard";
 import { ProductSkeleton } from "@/components/Skeleton";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/app/types/product";
+
+type CategoryOption = { _id: string; name: string };
 
 export default function CategoryListing() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [animationCycle, setAnimationCycle] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -42,6 +44,9 @@ export default function CategoryListing() {
   const selectedCategoryValue = (
     searchParams.get("cat") || "all"
   ).toLowerCase();
+  const selectedCategoryName = categories.find(
+    (category) => String(category.name || "").toLowerCase() === selectedCategoryValue
+  )?.name;
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -71,10 +76,6 @@ export default function CategoryListing() {
     return result;
   }, [products, searchQuery, selectedCategoryValue]);
 
-  useEffect(() => {
-    setAnimationCycle((previousCycle) => previousCycle + 1);
-  }, [selectedCategoryValue, searchQuery]);
-
   const updateCategory = (categoryName: string) => {
     const normalizedCategory = categoryName.toLowerCase();
 
@@ -94,8 +95,11 @@ export default function CategoryListing() {
         ========================================================= */}
         <div className="flex items-start justify-between gap-6">
           <h1 className="font-[var(--font-sf-pro)] text-[34px] font-normal leading-none tracking-[-1.5px] text-black sm:text-[42px] lg:text-[46px]">
-            The Full{" "}
-            <span className="font-bold tracking-[-2px]">Collection</span>
+            {selectedCategoryName ? (
+              <><span className="font-bold tracking-[-2px]">{selectedCategoryName}</span> Collection</>
+            ) : (
+              <>The Full <span className="font-bold tracking-[-2px]">Collection</span></>
+            )}
           </h1>
 
           <p className="hidden pt-[10px] font-[var(--font-sf-pro)] text-[12px] font-normal tracking-[0.08em] text-[#8ba0bf] sm:block">
@@ -180,7 +184,7 @@ export default function CategoryListing() {
             <div className="grid grid-cols-1 gap-x-[28px] gap-y-[34px] sm:grid-cols-2 lg:grid-cols-4">
               {filteredProducts.map((product, index) => (
                 <div
-                  key={`${animationCycle}-${product._id}`}
+                  key={`${selectedCategoryValue}-${searchQuery}-${product._id}`}
                   className="product-card-animation"
                   style={{
                     animationDelay: `${index * 65}ms`,

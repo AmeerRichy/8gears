@@ -12,6 +12,7 @@ export interface IVariant {
 }
 
 export interface IProduct extends Document {
+  isActive: boolean;
   title: string;
   slug: string;
   category: string;
@@ -61,6 +62,7 @@ const VariantSchema = new Schema<IVariant>({
 
 const ProductSchema = new Schema<IProduct>(
   {
+    isActive: { type: Boolean, default: true, index: true },
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     category: { type: String, required: true },

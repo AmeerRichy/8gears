@@ -1,17 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 const FleeceBanner = () => {
-  const router = useRouter();
-
   return (
     <section className="relative w-full overflow-hidden bg-black">
       <div className="relative min-h-[620px] w-full lg:aspect-[1920/1078] lg:min-h-0">
         {/* Background Image */}
-        <img
+        <Image
           src="/assets/images/fleece-banner.png"
-          alt="Explore Certified Fleece Collection"
+          alt="Motorcycle rider wearing the 8-Gear fleece collection"
+          fill
+          sizes="100vw"
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
@@ -29,12 +30,12 @@ const FleeceBanner = () => {
               Explore Certified Fleece Collection
             </h2>
 
-            <button
-              onClick={() => router.push("/category?cat=all")}
+            <Link
+              href="/category?cat=all"
               className="mt-[58px] flex h-[70px] w-[255px] items-center justify-center rounded-full border border-white/25 bg-black/55 font-[var(--font-sf-pro)] text-[17px] font-medium text-white backdrop-blur-[5px] transition-all duration-300 hover:bg-white hover:text-black sm:w-[265px] sm:text-[18px]"
             >
               Explore Collection
-            </button>
+            </Link>
           </div>
         </div>
       </div>

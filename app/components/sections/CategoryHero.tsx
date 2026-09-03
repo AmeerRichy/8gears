@@ -53,9 +53,9 @@ export default function CategoryHero() {
       <div className="mx-auto flex min-h-[620px] w-full max-w-[1920px] flex-col justify-center px-[24px] py-[56px] sm:px-[40px] lg:flex-row lg:items-center lg:justify-between lg:gap-[60px] lg:px-[70px] lg:py-[54px] xl:px-[72px]">
         {/* Left Content */}
         <div className="w-full max-w-[760px] text-white lg:flex-1">
-          <h1 className="font-[var(--font-sf-pro)] text-[46px] font-bold leading-[1.02] tracking-[0.4px] text-white sm:text-[58px] lg:text-[70px] xl:text-[74px]">
+          <p className="font-[var(--font-sf-pro)] text-[46px] font-bold leading-[1.02] tracking-[0.4px] text-white sm:text-[58px] lg:text-[70px] xl:text-[74px]">
             Ride Beyond Limits
-          </h1>
+          </p>
 
           <p className="mt-[28px] max-w-[630px] font-[var(--font-sf-pro)] text-[22px] font-normal leading-[1.28] tracking-[0.2px] text-white sm:text-[27px] lg:text-[35px] lg:leading-[1.23]">
             Discover high-performance

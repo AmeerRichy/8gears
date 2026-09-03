@@ -1,14 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import ProductCard from "@/components/productcard";
 import { useEffect, useState } from "react";
 import { ProductSkeleton } from "@/components/Skeleton";
+import type { Product } from "@/app/types/product";
 
 export default function LatestProducts() {
-  const router = useRouter();
-
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,9 +96,8 @@ export default function LatestProducts() {
           </h2>
 
           {/* EXPLORE MORE - DESKTOP */}
-          <button
-            type="button"
-            onClick={() => router.push("/category?cat=all")}
+          <Link
+            href="/category?cat=all"
             className="
               group
 
@@ -152,7 +150,7 @@ export default function LatestProducts() {
             >
               →
             </span>
-          </button>
+          </Link>
         </div>
 
         {/* =====================================================
@@ -284,9 +282,8 @@ export default function LatestProducts() {
             sm:hidden
           "
         >
-          <button
-            type="button"
-            onClick={() => router.push("/category?cat=all")}
+          <Link
+            href="/category?cat=all"
             className="
               group
 
@@ -334,7 +331,7 @@ export default function LatestProducts() {
             >
               →
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </section>
