@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -177,63 +176,81 @@ function FooterContent() {
         "
       >
         {/* =====================================================
-            MOBILE / TABLET BRAND
+            MOBILE / TABLET BRAND STATEMENT
         ====================================================== */}
 
         <div
           className="
-            mb-9
+            mb-10
+            max-w-[520px]
 
             lg:mb-12
-
             xl:hidden
           "
         >
-          <Link
-            href="/"
-            className="inline-flex items-center"
-            aria-label="8Gear Home"
-          >
-            <Image
-              src="/logo.png"
-              alt="8-Gear"
-              width={2322}
-              height={1210}
-              sizes="(max-width: 640px) 115px, 145px"
-              draggable={false}
-              className="
-                block
-                h-auto
-                w-[115px]
-                object-contain
+          {/* <p
+            className="
+              font-[var(--font-sf-pro)]
 
-                sm:w-[135px]
-                lg:w-[145px]
-              "
-            />
-          </Link>
+              text-[12px]
+              font-semibold
+              uppercase
+              leading-none
+              tracking-[1.8px]
+
+              text-black
+
+              sm:text-[13px]
+            "
+          >
+            8-Gear
+          </p> */}
+
+          <h2
+            className="
+              mt-4
+
+              max-w-[450px]
+
+              font-[var(--font-sf-pro)]
+
+              text-[24px]
+              font-[600]
+              leading-[1.12]
+              tracking-[-0.6px]
+
+              text-black
+
+              sm:mt-5
+              sm:text-[30px]
+            "
+          >
+            Built for the ride.
+            <br />
+            Made to go further.
+          </h2>
 
           <p
             className="
-              mt-5
-              max-w-[430px]
+              mt-4
+              max-w-[450px]
 
               font-[var(--font-sf-pro)]
 
               text-[13px]
               font-normal
-              leading-[1.5]
+              leading-[1.55]
 
-              text-[#66615d]
+              text-[#68635f]
 
-              sm:mt-6
+              sm:mt-5
               sm:text-[15px]
 
-              lg:text-[17px]
+              lg:text-[16px]
             "
           >
-            Elevate Every Ride with Premium Performance Gear Designed for
-            Protection, Comfort, and Unmatched Confidence.
+            Performance motorcycle gear designed around protection,
+            comfort, and confidence on every ride.
           </p>
         </div>
 
@@ -263,50 +280,70 @@ function FooterContent() {
           "
         >
           {/* =================================================
-              DESKTOP BRAND
+              DESKTOP BRAND STATEMENT
           ================================================= */}
 
           <div className="hidden xl:block">
-            <Link
-              href="/"
-              className="inline-flex items-center"
-              aria-label="8Gear Home"
-            >
-              <Image
-                src="/logo.png"
-                alt="8-Gear"
-                width={2322}
-                height={1210}
-                sizes="150px"
-                draggable={false}
-                className="
-                  block
-                  h-auto
-                  w-[150px]
-                  object-contain
-                "
-              />
-            </Link>
-
-            <p
+            {/* <p
               className="
-                mt-[42px]
-                max-w-[340px]
+                font-[var(--font-sf-pro)]
+
+                text-[13px]
+                font-semibold
+                uppercase
+                leading-none
+                tracking-[2px]
+
+                text-black
+
+                2xl:text-[14px]
+              "
+            >
+              8-Gear
+            </p> */}
+
+            <h2
+              className="
+                mt-[22px]
+
+                max-w-[330px]
 
                 font-[var(--font-sf-pro)]
 
-                text-[18px]
-                font-normal
-                leading-[1.45]
-                tracking-[0.1px]
+                text-[30px]
+                font-[600]
+                leading-[1.12]
+                tracking-[-0.8px]
 
-                text-[#66615d]
+                text-black
 
-                2xl:text-[20px]
+                2xl:text-[34px]
               "
             >
-              Elevate Every Ride with Premium Performance Gear Designed for
-              Protection, Comfort, and Unmatched Confidence.
+              Built for the ride.
+              <br />
+              Made to go further.
+            </h2>
+
+            <p
+              className="
+                mt-[24px]
+                max-w-[330px]
+
+                font-[var(--font-sf-pro)]
+
+                text-[16px]
+                font-normal
+                leading-[1.5]
+                tracking-[0px]
+
+                text-[#68635f]
+
+                2xl:text-[18px]
+              "
+            >
+              Performance motorcycle gear designed around protection,
+              comfort, and confidence on every ride.
             </p>
           </div>
 
@@ -575,7 +612,6 @@ export default function Footer() {
     </Suspense>
   );
 }
-
 
 
 // "use client";
