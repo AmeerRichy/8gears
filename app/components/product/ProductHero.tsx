@@ -293,33 +293,47 @@ export default function ProductHero({
                                 </span>
                             </div>
 
-                            {uniqueColors.length > 0 && (
-                                <div className="mt-[22px]">
-                                    <p className="text-[13px] font-normal text-black">
-                                        Color: <span className="ml-[4px]">{selectedColor}</span>
-                                    </p>
+                            {/* SKU */}
+{selectedVariant?.sku && (
+    <div className="mt-[22px]">
+        <p className="text-[13px] font-normal text-black">
+            SR NO
+            <span className="ml-[10px]">
+                {selectedVariant.sku}
+            </span>
+        </p>
+    </div>
+)}
 
-                                    <div className="mt-[9px] flex flex-wrap gap-[11px]">
-                                        {uniqueColors.map((color) => (
-                                            <button
-                                                key={color.name}
-                                                type="button"
-                                                aria-label={color.name}
-                                                onClick={() => setSelectedColor(color.name)}
-                                                className={`h-[30px] w-[56px] rounded-[6px] border p-[3px] transition-all duration-200 ${selectedColor === color.name
-                                                    ? "border-black"
-                                                    : "border-transparent hover:border-[#cccccc]"
-                                                    }`}
-                                            >
-                                                <span
-                                                    className="block h-full w-full rounded-[4px]"
-                                                    style={{ backgroundColor: color.hex }}
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+{/* Color */}
+{uniqueColors.length > 0 && (
+    <div className="mt-[14px]">
+        <p className="text-[13px] font-normal text-black">
+            Color: <span className="ml-[4px]">{selectedColor}</span>
+        </p>
+
+        <div className="mt-[9px] flex flex-wrap gap-[11px]">
+            {uniqueColors.map((color) => (
+                <button
+                    key={color.name}
+                    type="button"
+                    aria-label={color.name}
+                    onClick={() => setSelectedColor(color.name)}
+                    className={`h-[30px] w-[56px] rounded-[6px] border p-[3px] transition-all duration-200 ${
+                        selectedColor === color.name
+                            ? "border-black"
+                            : "border-transparent hover:border-[#cccccc]"
+                    }`}
+                >
+                    <span
+                        className="block h-full w-full rounded-[4px]"
+                        style={{ backgroundColor: color.hex }}
+                    />
+                </button>
+            ))}
+        </div>
+    </div>
+)}
 
                             {availableSizes.length > 0 && (
                                 <div className="mt-[19px]">
