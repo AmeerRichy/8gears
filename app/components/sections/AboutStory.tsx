@@ -217,62 +217,52 @@ export default function AboutStory() {
             {/* =================================================
                 CTA
             ================================================= */}
-            <button
-              type="button"
-              onClick={() => router.push("/category?cat=all")}
-              className="
-                group/button
+         <button
+  type="button"
+  onClick={() => router.push("/ourstory")}
+  className="
+    mt-[34px]
 
-                mt-[34px]
+    flex
+    h-[56px]
+    w-[205px]
+    items-center
+    justify-center
 
-                flex
-                h-[54px]
-                w-[205px]
-                items-center
-                justify-center
-                gap-[12px]
+    rounded-full
 
-                rounded-full
+    border
+    border-white/60
 
-                border
-                border-white/60
+    bg-black/45
+    backdrop-blur-[2px]
 
-                bg-black/25
-                backdrop-blur-[2px]
+    font-[var(--font-sf-pro)]
+    text-[15px]
+    font-[400]
+    tracking-[0px]
+    text-white
 
-                font-[var(--font-sf-pro)]
-                text-[15px]
-                font-[400]
-                text-white
+    shadow-[0_8px_25px_rgba(0,0,0,0.18)]
 
-                transition-all
-                duration-300
+    transition-all
+    duration-300
 
-                hover:border-white
-                hover:bg-white
-                hover:text-black
+    hover:-translate-y-[2px]
+    hover:border-white
+    hover:bg-white
+    hover:text-black
 
-                sm:mt-[38px]
-                sm:h-[56px]
-                sm:w-[215px]
-                sm:text-[16px]
+    sm:mt-[38px]
+    sm:h-[58px]
+    sm:w-[215px]
+    sm:text-[16px]
 
-                lg:mt-[40px]
-              "
-            >
-              <span>See More</span>
-
-              <ArrowRight
-                size={19}
-                strokeWidth={1.7}
-                className="
-                  transition-transform
-                  duration-300
-
-                  group-hover/button:translate-x-[4px]
-                "
-              />
-            </button>
+    lg:mt-[40px]
+  "
+>
+  Our Story
+</button>
           </div>
         </div>
 

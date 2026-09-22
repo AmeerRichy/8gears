@@ -10,6 +10,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+
 import { useCart } from "@/app/context/CartContext";
 import { CartDrawer } from "@/components/cartdrawer";
 import { cn } from "@/lib/utils";
@@ -22,11 +23,24 @@ export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  /*
+   * Stores the current URL hash.
+   *
+   * Example:
+   * /about#our-story
+   *
+   * pathname = "/about"
+   * activeHash = "#our-story"
+   */
+  const [activeHash, setActiveHash] = useState("");
+
   const [categories, setCategories] = useState<
     { name: string; _id: string }[]
   >([]);
 
-  const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
+  const [mobileDropdown, setMobileDropdown] = useState<
+    string | null
+  >(null);
 
   /* =====================================================
      SCROLL STATE
@@ -48,6 +62,34 @@ export default function Navbar() {
   }, []);
 
   /* =====================================================
+     CURRENT HASH
+
+     usePathname() does NOT contain the hash,
+     so we track it separately.
+  ===================================================== */
+  useEffect(() => {
+    const updateHash = () => {
+      setActiveHash(window.location.hash);
+    };
+
+    /*
+     * Read hash immediately when:
+     * - page loads
+     * - route changes
+     */
+    updateHash();
+
+    /*
+     * Update when switching between About sections.
+     */
+    window.addEventListener("hashchange", updateHash);
+
+    return () => {
+      window.removeEventListener("hashchange", updateHash);
+    };
+  }, [pathname]);
+
+  /* =====================================================
      CATEGORIES
   ===================================================== */
   useEffect(() => {
@@ -66,16 +108,16 @@ export default function Navbar() {
   }, []);
 
   /* =====================================================
-     MENU DATA
+     ABOUT ITEMS
   ===================================================== */
   const aboutItems = [
     {
-      name: "Vision",
-      link: "/about#vision",
+      name: "Who We Are",
+      link: "/about#who-we-are",
     },
     {
-      name: "Mission",
-      link: "/about#mission",
+      name: "Vision & Mission",
+      link: "/about#vision-mission",
     },
     {
       name: "Our Story",
@@ -83,48 +125,57 @@ export default function Navbar() {
     },
     {
       name: "Sustainability",
-      link: "/sustainability",
-    },
-    {
-      name: "Policies",
-      link: "/policies",
+      link: "/about#sustainability",
     },
   ];
 
+  /* =====================================================
+     COLLECTION ITEMS
+  ===================================================== */
   const collectionItems = categories.map((category) => ({
     name: category.name,
+
     link: `/category?cat=${encodeURIComponent(
       category.name.toLowerCase()
-    )}`,
+    )}#category-listing`,
   }));
 
+  /* =====================================================
+     MAIN MENU
+  ===================================================== */
   const menuItems = [
     {
       name: "Home",
       link: "/",
     },
+
     {
       name: "About Us",
       link: "/about",
       children: aboutItems,
     },
+
     {
       name: "Collection",
       link: "/category?cat=all",
       children: collectionItems,
     },
+
     {
       name: "Technology",
       link: "/technology",
     },
+
     {
       name: "Sustainability",
       link: "/sustainability",
     },
+
     {
       name: "Our Dealers",
       link: "/dealers",
     },
+
     {
       name: "Contact Us",
       link: "/contact",
@@ -132,7 +183,7 @@ export default function Navbar() {
   ];
 
   /* =====================================================
-     ACTIVE MENU
+     ACTIVE MAIN MENU
   ===================================================== */
   const isItemActive = (
     item: (typeof menuItems)[number]
@@ -148,32 +199,93 @@ export default function Navbar() {
       );
     }
 
+    /*
+     * About Us remains active for:
+     *
+     * /about
+     * /about#who-we-are
+     * /about#our-story
+     * etc.
+     */
+    if (item.name === "About Us") {
+      return pathname === "/about";
+    }
+
     return (
       pathname === item.link ||
       pathname.startsWith(`${item.link}/`)
     );
   };
 
+  /* =====================================================
+     ACTIVE ABOUT SECTION
+
+     Example:
+
+     child.link:
+     "/about#our-story"
+
+     current:
+     pathname = "/about"
+     activeHash = "#our-story"
+  ===================================================== */
+  const isAboutChildActive = (link: string) => {
+    if (pathname !== "/about") {
+      return false;
+    }
+
+    const hashPosition = link.indexOf("#");
+
+    if (hashPosition === -1) {
+      return false;
+    }
+
+    const childHash = link.slice(hashPosition);
+
+    return activeHash === childHash;
+  };
+
   return (
     <>
       <nav
         className={cn(
-          "fixed left-0 top-0 z-[100] w-full transition-all duration-300",
+          `
+            fixed
+            left-0
+            top-0
+            z-[100]
+            w-full
+
+            transition-all
+            duration-300
+          `,
 
           isScrolled
-            ? "border-b border-white/35 bg-white/70 shadow-[0_8px_32px_rgba(15,23,42,0.10)] backdrop-blur-xl backdrop-saturate-150"
+            ? `
+                border-b
+                border-white/35
+
+                bg-white/70
+
+                shadow-[0_8px_32px_rgba(15,23,42,0.10)]
+
+                backdrop-blur-xl
+                backdrop-saturate-150
+              `
             : "bg-white"
         )}
       >
         {/* =====================================================
-            DESKTOP / MOBILE NAV CONTAINER
+            NAV CONTAINER
         ====================================================== */}
         <div
           className="
             mx-auto
+
             h-[95px]
             w-full
             max-w-[1920px]
+
             px-[72px]
 
             max-xl:px-[42px]
@@ -188,25 +300,32 @@ export default function Navbar() {
           "
         >
           {/* =====================================================
-              DESKTOP GRID
-
-              Equal left/right columns keep the menu
-              perfectly centered on the viewport.
+              DESKTOP
           ====================================================== */}
           <div
             className="
               hidden
               h-full
               w-full
+
               grid-cols-[150px_minmax(0,1fr)_150px]
+
               items-center
+
               lg:grid
             "
           >
-            {/* ================= LOGO ================= */}
+            {/* =================================================
+                LOGO
+            ================================================= */}
             <Link
               href="/"
-              className="flex shrink-0 items-center justify-self-start"
+              className="
+                flex
+                shrink-0
+                items-center
+                justify-self-start
+              "
             >
               <Image
                 src="/logo.png"
@@ -214,28 +333,46 @@ export default function Navbar() {
                 width={135}
                 height={70}
                 priority
-                className="h-auto w-[135px] object-contain"
+                className="
+                  h-auto
+                  w-[135px]
+                  object-contain
+                "
               />
             </Link>
 
-            {/* ================= MENU ================= */}
-            <div className="flex min-w-0 items-center justify-center">
+            {/* =================================================
+                DESKTOP MENU
+            ================================================= */}
+            <div
+              className="
+                flex
+                min-w-0
+                items-center
+                justify-center
+              "
+            >
               <div
                 className="
                   flex
                   items-center
                   justify-center
+
                   gap-[clamp(16px,1.65vw,32px)]
                 "
               >
                 {menuItems.map((item) =>
                   item.children ? (
-                    /* =====================================
-                       DROPDOWN ITEM
-                    ====================================== */
+                    /* =========================================
+                        DROPDOWN PARENT
+                    ========================================= */
                     <div
                       key={item.name}
-                      className="group relative py-8"
+                      className="
+                        group
+                        relative
+                        py-8
+                      "
                     >
                       <Link
                         href={item.link}
@@ -247,18 +384,25 @@ export default function Navbar() {
                         className={cn(
                           `
                             relative
+
                             flex
                             items-center
                             gap-1.5
+
                             whitespace-nowrap
+
                             rounded-full
+
                             px-2.5
                             py-2
+
                             text-[14px]
                             font-normal
                             leading-none
                             tracking-[0.01em]
+
                             text-[#555555]
+
                             transition-all
                             duration-200
 
@@ -267,8 +411,13 @@ export default function Navbar() {
 
                             2xl:text-[15px]
                           `,
+
                           isItemActive(item) &&
-                            "bg-black/[0.055] font-semibold text-black"
+                            `
+                              bg-black/[0.055]
+                              font-semibold
+                              text-black
+                            `
                         )}
                       >
                         {item.name}
@@ -279,33 +428,49 @@ export default function Navbar() {
                           className="
                             transition-transform
                             duration-200
+
                             group-hover:rotate-180
                             group-focus-within:rotate-180
                           "
                         />
                       </Link>
 
-                      {/* DROPDOWN */}
+                      {/* =========================================
+                          DROPDOWN
+                      ========================================= */}
                       <div
                         className="
                           invisible
+
                           absolute
                           left-1/2
                           top-[calc(100%-8px)]
+
                           min-w-[250px]
+
                           -translate-x-1/2
                           translate-y-3
+
                           overflow-hidden
+
                           rounded-2xl
+
                           border
                           border-black/[0.08]
+
                           bg-white/95
+
                           p-2.5
+
                           opacity-0
+
                           shadow-[0_24px_70px_rgba(15,23,42,0.18)]
+
                           ring-1
                           ring-white/80
+
                           backdrop-blur-2xl
+
                           transition-all
                           duration-200
 
@@ -318,64 +483,201 @@ export default function Navbar() {
                           group-focus-within:opacity-100
                         "
                       >
-                        <div className="mb-1 px-3 pb-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-black/40">
+                        {/* =====================================
+                            DROPDOWN LABEL
+                        ====================================== */}
+                        <div
+                          className="
+                            mb-1
+
+                            px-3
+                            pb-2
+                            pt-1.5
+
+                            text-[10px]
+                            font-semibold
+                            uppercase
+                            tracking-[0.16em]
+
+                            text-black/40
+                          "
+                        >
                           {item.name === "Collection"
                             ? "Shop by category"
                             : "Discover our brand"}
                         </div>
 
+                        {/* =====================================
+                            DROPDOWN CHILDREN
+                        ====================================== */}
                         {item.children.length > 0 ? (
-                          item.children.map((child) => (
-                            <Link
-                              key={child.name}
-                              href={child.link}
-                              className="
-                                group/item
-                                flex
-                                items-center
-                                justify-between
-                                rounded-xl
-                                px-3
-                                py-3
-                                text-[15px]
-                                font-medium
-                                text-[#555555]
-                                transition-all
+                          item.children.map((child) => {
+                            /*
+                             * ABOUT US DROPDOWN
+                             *
+                             * Native anchor is intentional.
+                             *
+                             * This guarantees:
+                             * /technology
+                             *      ↓
+                             * /about#our-story
+                             *
+                             * loads AND scrolls correctly.
+                             */
+                            if (item.name === "About Us") {
+                              const childActive =
+                                isAboutChildActive(
+                                  child.link
+                                );
 
-                                hover:bg-black
-                                hover:pl-4
-                                hover:text-white
-                              "
-                            >
-                              {child.name}
+                              return (
+                                <a
+                                  key={child.name}
+                                  href={child.link}
+                                  aria-current={
+                                    childActive
+                                      ? "location"
+                                      : undefined
+                                  }
+                                  className={cn(
+                                    `
+                                      group/item
 
-                              <span
+                                      flex
+                                      items-center
+                                      justify-between
+
+                                      rounded-xl
+
+                                      px-3
+                                      py-3
+
+                                      text-[15px]
+                                      font-medium
+
+                                      text-[#555555]
+
+                                      transition-all
+                                      duration-200
+
+                                      hover:bg-black
+                                      hover:pl-4
+                                      hover:text-white
+                                    `,
+
+                                    childActive &&
+                                      `
+                                        bg-black
+                                        pl-4
+                                        text-white
+                                      `
+                                  )}
+                                >
+                                  {child.name}
+
+                                  <span
+                                    className={cn(
+                                      `
+                                        text-lg
+                                        leading-none
+
+                                        transition-all
+                                      `,
+
+                                      childActive
+                                        ? `
+                                            translate-x-0
+                                            opacity-100
+                                          `
+                                        : `
+                                            translate-x-1
+                                            opacity-0
+
+                                            group-hover/item:translate-x-0
+                                            group-hover/item:opacity-100
+                                          `
+                                    )}
+                                  >
+                                    ›
+                                  </span>
+                                </a>
+                              );
+                            }
+
+                            /*
+                             * COLLECTION DROPDOWN
+                             */
+                            return (
+                              <Link
+                                key={child.name}
+                                href={child.link}
                                 className="
-                                  translate-x-1
-                                  text-lg
-                                  leading-none
-                                  opacity-0
+                                  group/item
+
+                                  flex
+                                  items-center
+                                  justify-between
+
+                                  rounded-xl
+
+                                  px-3
+                                  py-3
+
+                                  text-[15px]
+                                  font-medium
+
+                                  text-[#555555]
+
                                   transition-all
 
-                                  group-hover/item:translate-x-0
-                                  group-hover/item:opacity-100
+                                  hover:bg-black
+                                  hover:pl-4
+                                  hover:text-white
                                 "
                               >
-                                ›
-                              </span>
-                            </Link>
-                          ))
+                                {child.name}
+
+                                <span
+                                  className="
+                                    translate-x-1
+
+                                    text-lg
+                                    leading-none
+
+                                    opacity-0
+
+                                    transition-all
+
+                                    group-hover/item:translate-x-0
+                                    group-hover/item:opacity-100
+                                  "
+                                >
+                                  ›
+                                </span>
+                              </Link>
+                            );
+                          })
                         ) : (
-                          <span className="block px-4 py-3 text-[14px] text-[#888888]">
+                          <span
+                            className="
+                              block
+
+                              px-4
+                              py-3
+
+                              text-[14px]
+                              text-[#888888]
+                            "
+                          >
                             No categories available
                           </span>
                         )}
                       </div>
                     </div>
                   ) : (
-                    /* =====================================
-                       NORMAL ITEM
-                    ====================================== */
+                    /* =========================================
+                        NORMAL MENU ITEM
+                    ========================================= */
                     <Link
                       key={item.name}
                       href={item.link}
@@ -387,14 +689,19 @@ export default function Navbar() {
                       className={cn(
                         `
                           whitespace-nowrap
+
                           rounded-full
+
                           px-2.5
                           py-2
+
                           text-[14px]
                           font-normal
                           leading-none
                           tracking-[0.01em]
+
                           text-[#555555]
+
                           transition-all
                           duration-200
 
@@ -403,8 +710,13 @@ export default function Navbar() {
 
                           2xl:text-[15px]
                         `,
+
                         isItemActive(item) &&
-                          "bg-black/[0.055] font-semibold text-black"
+                          `
+                            bg-black/[0.055]
+                            font-semibold
+                            text-black
+                          `
                       )}
                     >
                       {item.name}
@@ -414,24 +726,36 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* =====================================================
-                RIGHT SIDE
-                CART ONLY
-            ====================================================== */}
-            <div className="flex items-center justify-self-end">
+            {/* =================================================
+                CART
+            ================================================= */}
+            <div
+              className="
+                flex
+                items-center
+                justify-self-end
+              "
+            >
               <button
                 type="button"
                 aria-label="Open Cart"
-                onClick={() => setDrawerOpen(true)}
+                onClick={() =>
+                  setDrawerOpen(true)
+                }
                 className="
                   relative
+
                   flex
                   h-[44px]
                   w-[44px]
+
                   items-center
                   justify-center
+
                   rounded-full
+
                   text-black
+
                   transition-all
                   duration-200
 
@@ -449,14 +773,20 @@ export default function Navbar() {
                       absolute
                       right-[1px]
                       top-[1px]
+
                       flex
                       h-[17px]
                       min-w-[17px]
+
                       items-center
                       justify-center
+
                       rounded-full
+
                       bg-black
+
                       px-[4px]
+
                       text-[9px]
                       font-bold
                       leading-none
@@ -475,7 +805,13 @@ export default function Navbar() {
           ====================================================== */}
           <Link
             href="/"
-            className="flex shrink-0 items-center lg:hidden"
+            className="
+              flex
+              shrink-0
+              items-center
+
+              lg:hidden
+            "
           >
             <Image
               src="/logo.png"
@@ -483,20 +819,37 @@ export default function Navbar() {
               width={105}
               height={55}
               priority
-              className="h-auto w-[105px] object-contain"
+              className="
+                h-auto
+                w-[105px]
+                object-contain
+              "
             />
           </Link>
 
           {/* =====================================================
               MOBILE BUTTONS
           ====================================================== */}
-          <div className="flex items-center gap-5 lg:hidden">
+          <div
+            className="
+              flex
+              items-center
+              gap-5
+
+              lg:hidden
+            "
+          >
             {/* CART */}
             <button
               type="button"
               aria-label="Cart"
-              onClick={() => setDrawerOpen(true)}
-              className="relative text-black"
+              onClick={() =>
+                setDrawerOpen(true)
+              }
+              className="
+                relative
+                text-black
+              "
             >
               <ShoppingBag
                 size={25}
@@ -509,14 +862,20 @@ export default function Navbar() {
                     absolute
                     -right-[8px]
                     -top-[8px]
+
                     flex
                     h-[17px]
                     min-w-[17px]
+
                     items-center
                     justify-center
+
                     rounded-full
+
                     bg-black
+
                     px-[4px]
+
                     text-[9px]
                     font-bold
                     leading-none
@@ -533,9 +892,11 @@ export default function Navbar() {
               type="button"
               aria-label="Toggle Menu"
               onClick={() =>
-                setMobileMenu((prev) => !prev)
+                setMobileMenu((previous) => !previous)
               }
-              className="text-black"
+              className="
+                text-black
+              "
             >
               {mobileMenu ? (
                 <X size={29} />
@@ -555,23 +916,46 @@ export default function Navbar() {
               absolute
               left-0
               top-full
+
               w-full
+
               border-t
               border-black/5
+
               bg-white
+
               shadow-xl
+
               lg:hidden
             "
           >
-            <div className="flex flex-col px-7 py-8">
+            <div
+              className="
+                flex
+                flex-col
+
+                px-7
+                py-8
+              "
+            >
               {menuItems.map((item) =>
                 item.children ? (
-                  /* DROPDOWN */
+                  /* =========================================
+                      MOBILE DROPDOWN
+                  ========================================= */
                   <div
                     key={item.name}
-                    className="border-b border-black/5"
+                    className="
+                      border-b
+                      border-black/5
+                    "
                   >
-                    <div className="flex items-center">
+                    <div
+                      className="
+                        flex
+                        items-center
+                      "
+                    >
                       <Link
                         href={item.link}
                         onClick={() =>
@@ -583,9 +967,21 @@ export default function Navbar() {
                             : undefined
                         }
                         className={cn(
-                          "flex-1 py-4 text-[18px] font-medium text-[#555555]",
+                          `
+                            flex-1
+
+                            py-4
+
+                            text-[18px]
+                            font-medium
+                            text-[#555555]
+                          `,
+
                           isItemActive(item) &&
-                            "font-bold text-black"
+                            `
+                              font-bold
+                              text-black
+                            `
                         )}
                       >
                         {item.name}
@@ -598,20 +994,26 @@ export default function Navbar() {
                           mobileDropdown === item.name
                         }
                         onClick={() =>
-                          setMobileDropdown((current) =>
-                            current === item.name
-                              ? null
-                              : item.name
+                          setMobileDropdown(
+                            (current) =>
+                              current === item.name
+                                ? null
+                                : item.name
                           )
                         }
-                        className="p-4 text-[#555555]"
+                        className="
+                          p-4
+                          text-[#555555]
+                        "
                       >
                         <ChevronDown
                           size={20}
                           className={cn(
                             "transition-transform",
+
                             mobileDropdown ===
-                              item.name && "rotate-180"
+                              item.name &&
+                              "rotate-180"
                           )}
                         />
                       </button>
@@ -621,21 +1023,119 @@ export default function Navbar() {
                       <div className="pb-3 pl-5">
                         {item.children.length > 0 ? (
                           item.children.map(
-                            (child) => (
-                              <Link
-                                key={child.name}
-                                href={child.link}
-                                onClick={() =>
-                                  setMobileMenu(false)
-                                }
-                                className="block py-2.5 text-[16px] text-[#777777]"
-                              >
-                                {child.name}
-                              </Link>
-                            )
+                            (child) => {
+                              /*
+                               * ABOUT MOBILE CHILD
+                               */
+                              if (
+                                item.name ===
+                                "About Us"
+                              ) {
+                                const childActive =
+                                  isAboutChildActive(
+                                    child.link
+                                  );
+
+                                return (
+                                  <a
+                                    key={
+                                      child.name
+                                    }
+                                    href={
+                                      child.link
+                                    }
+                                    onClick={() => {
+                                      setMobileMenu(
+                                        false
+                                      );
+
+                                      setMobileDropdown(
+                                        null
+                                      );
+                                    }}
+                                    aria-current={
+                                      childActive
+                                        ? "location"
+                                        : undefined
+                                    }
+                                    className={cn(
+                                      `
+                                        block
+
+                                        rounded-lg
+
+                                        px-3
+                                        py-2.5
+
+                                        text-[16px]
+
+                                        transition-colors
+
+                                        text-[#777777]
+                                      `,
+
+                                      childActive &&
+                                        `
+                                          bg-black
+                                          font-medium
+                                          text-white
+                                        `
+                                    )}
+                                  >
+                                    {
+                                      child.name
+                                    }
+                                  </a>
+                                );
+                              }
+
+                              /*
+                               * COLLECTION MOBILE CHILD
+                               */
+                              return (
+                                <Link
+                                  key={
+                                    child.name
+                                  }
+                                  href={
+                                    child.link
+                                  }
+                                  onClick={() => {
+                                    setMobileMenu(
+                                      false
+                                    );
+
+                                    setMobileDropdown(
+                                      null
+                                    );
+                                  }}
+                                  className="
+                                    block
+
+                                    py-2.5
+
+                                    text-[16px]
+                                    text-[#777777]
+                                  "
+                                >
+                                  {
+                                    child.name
+                                  }
+                                </Link>
+                              );
+                            }
                           )
                         ) : (
-                          <span className="block py-2.5 text-[14px] text-[#999999]">
+                          <span
+                            className="
+                              block
+
+                              py-2.5
+
+                              text-[14px]
+                              text-[#999999]
+                            "
+                          >
                             No categories available
                           </span>
                         )}
@@ -643,7 +1143,9 @@ export default function Navbar() {
                     )}
                   </div>
                 ) : (
-                  /* NORMAL MOBILE LINK */
+                  /* =========================================
+                      NORMAL MOBILE LINK
+                  ========================================= */
                   <Link
                     key={item.name}
                     href={item.link}
@@ -656,9 +1158,22 @@ export default function Navbar() {
                         : undefined
                     }
                     className={cn(
-                      "border-b border-black/5 py-4 text-[18px] font-medium text-[#555555]",
+                      `
+                        border-b
+                        border-black/5
+
+                        py-4
+
+                        text-[18px]
+                        font-medium
+                        text-[#555555]
+                      `,
+
                       isItemActive(item) &&
-                        "font-bold text-black"
+                        `
+                          font-bold
+                          text-black
+                        `
                     )}
                   >
                     {item.name}
@@ -675,7 +1190,9 @@ export default function Navbar() {
       ====================================================== */}
       <CartDrawer
         isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() =>
+          setDrawerOpen(false)
+        }
       />
     </>
   );

@@ -57,7 +57,7 @@ export default function Categories() {
           {categories.slice(0, 4).map((category) => (
             <Link
               key={category._id}
-              href={`/category?cat=${category.name}`}
+              href={`/category?cat=${encodeURIComponent(category.name.toLowerCase())}#category-listing`}
               className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
               <div className="aspect-[4/5] overflow-hidden bg-slate-100">

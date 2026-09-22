@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const categories = ["Denim", "Fleece", "Chino’s", "Cargo’s"];
@@ -44,15 +45,22 @@ export default function CafeRacer() {
 
           {/* Categories */}
           <div className="mt-[28px] flex max-w-[700px] flex-wrap items-center gap-x-[24px] gap-y-[14px] sm:mt-[34px] sm:gap-x-[34px] lg:gap-x-[38px]">
-            {categories.map((category) => (
-              <div key={category} className="flex items-center gap-[12px]">
-                <span className="h-[3px] w-[24px] rounded-full bg-[#a67547]" />
+            {categories.map((category) => {
+              const catSlug = category.toLowerCase().replace("’", "'");
+              return (
+                <Link
+                  key={category}
+                  href={`/category?cat=${encodeURIComponent(catSlug)}#category-listing`}
+                  className="flex items-center gap-[12px] hover:opacity-85 transition-opacity"
+                >
+                  <span className="h-[3px] w-[24px] rounded-full bg-[#a67547]" />
 
-                <span className="font-[var(--font-sf-pro)] text-[16px] font-semibold text-white sm:text-[19px] lg:text-[21px]">
-                  {category}
-                </span>
-              </div>
-            ))}
+                  <span className="font-[var(--font-sf-pro)] text-[16px] font-semibold text-white sm:text-[19px] lg:text-[21px]">
+                    {category}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
 
           {/* CTA */}

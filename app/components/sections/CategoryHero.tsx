@@ -66,19 +66,20 @@ export default function CategoryHero() {
 
           {/* CTA Buttons */}
           <div className="mt-[48px] flex w-full flex-col gap-[16px] sm:mt-[72px] sm:flex-row sm:gap-[38px] lg:mt-[78px]">
-            <Link
-              href="/category?cat=all"
-              className="flex h-[62px] w-full items-center justify-center rounded-full border border-white/20 bg-[#8d898b] px-[34px] font-[var(--font-sf-pro)] text-[17px] font-semibold text-white transition-all duration-300 hover:bg-[#a09c9e] sm:h-[72px] sm:w-[260px] sm:text-[20px]"
-            >
-              Shop All Gear
-            </Link>
+            <a
+                href="/assets/8GearCatalogueRetailersBooklet.pdf"
+                download="8Gear_Catalogue_Retailers_Booklet.pdf"
+                className="flex h-[62px] w-full items-center justify-center rounded-full border border-white/20 bg-[#8d898b] px-[34px] font-[var(--font-sf-pro)] text-[17px] font-semibold text-white transition-all duration-300 hover:bg-[#a09c9e] sm:h-[72px] sm:w-[260px] sm:text-[20px]"
+                >
+                Download Catalog
+              </a>
 
-            <Link
-              href="#products"
+            {/* <Link
+              href="#category-listing"
               className="flex h-[62px] w-full items-center justify-center rounded-full border border-white/50 bg-black/30 px-[34px] font-[var(--font-sf-pro)] text-[17px] font-semibold text-white backdrop-blur-[7px] transition-all duration-300 hover:bg-black/55 sm:h-[72px] sm:w-[260px] sm:text-[20px]"
             >
               Explore
-            </Link>
+            </Link> */}
           </div>
         </div>
 

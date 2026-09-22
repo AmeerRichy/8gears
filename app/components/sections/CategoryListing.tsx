@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter } from "lucide-react";
 import ProductCard from "@/components/productcard";
@@ -18,6 +18,7 @@ export default function CategoryListing() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const isInternalFilterClickRef = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -40,6 +41,88 @@ export default function CategoryListing() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleScroll = () => {
+      if (isInternalFilterClickRef.current) {
+        isInternalFilterClickRef.current = false;
+        return;
+      }
+
+      const hash = window.location.hash;
+      const currentCat = (
+        searchParams.get("cat") || "all"
+      ).toLowerCase();
+
+      if (hash === "#category-listing") {
+        const scrollToListing = (behavior: ScrollBehavior = "auto") => {
+          const target = document.getElementById("category-listing");
+          if (!target) return;
+
+          const navbarOffset = 115;
+          const targetTop =
+            window.scrollY +
+            target.getBoundingClientRect().top -
+            navbarOffset;
+
+          window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior,
+          });
+        };
+
+        const timer1 = setTimeout(() => scrollToListing("auto"), 100);
+        const timer2 = setTimeout(() => scrollToListing("smooth"), 400);
+
+        return () => {
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+        };
+      } else if (currentCat === "all") {
+        const forceTop = () => {
+          if (window.location.hash !== "#category-listing") {
+            window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+          }
+        };
+
+        forceTop();
+        const rafId = requestAnimationFrame(forceTop);
+        const timerId = setTimeout(forceTop, 50);
+
+        return () => {
+          cancelAnimationFrame(rafId);
+          clearTimeout(timerId);
+        };
+      }
+    };
+
+    const cleanupScroll = handleScroll();
+
+    const handlePopStateOrPageShow = () => {
+      const hash = window.location.hash;
+      const currentCat = (
+        new URLSearchParams(window.location.search).get("cat") || "all"
+      ).toLowerCase();
+
+      if (hash !== "#category-listing" && currentCat === "all") {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        });
+      }
+    };
+
+    window.addEventListener("popstate", handlePopStateOrPageShow);
+    window.addEventListener("pageshow", handlePopStateOrPageShow);
+
+    return () => {
+      if (cleanupScroll) cleanupScroll();
+      window.removeEventListener("popstate", handlePopStateOrPageShow);
+      window.removeEventListener("pageshow", handlePopStateOrPageShow);
+    };
+  }, [searchParams]);
 
   const selectedCategoryValue = (
     searchParams.get("cat") || "all"
@@ -77,6 +160,7 @@ export default function CategoryListing() {
   }, [products, searchQuery, selectedCategoryValue]);
 
   const updateCategory = (categoryName: string) => {
+    isInternalFilterClickRef.current = true;
     const normalizedCategory = categoryName.toLowerCase();
 
     router.push(

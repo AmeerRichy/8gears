@@ -116,7 +116,7 @@ const DenimFeature = () => {
 
             <button
               type="button"
-              onClick={() => router.push("/category?cat=all")}
+              onClick={() => router.push("/category?cat=denim#category-listing")}
               className="
                 mt-[26px]
 
