@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
+import type { IVariant } from '@/models/Product';
 import CheckoutLead from '@/models/CheckoutLead';
 import Subscriber from '@/models/Subscriber';
 import { buildCheckoutOrderItems } from '@/lib/checkout/buildCheckoutOrderItems';
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
     for (const item of checkoutData.items) {
       const product = await Product.findById(item.productId);
       if (product) {
-        const variant = product.variants.find((candidate) => candidate.sku === item.sku);
+        const variant = product.variants.find((candidate: IVariant) => candidate.sku === item.sku);
         if (variant) {
           variant.stockQuantity = Math.max(0, variant.stockQuantity - item.quantity);
           product.analytics.totalSold += item.quantity;
