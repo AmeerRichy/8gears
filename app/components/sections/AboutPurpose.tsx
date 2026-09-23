@@ -211,7 +211,7 @@ export default function AboutPurpose() {
             "
           >
             {/* ICON */}
-            <div
+            {/* <div
               className="
                 flex
                 h-[68px]
@@ -232,12 +232,12 @@ export default function AboutPurpose() {
                 className="h-[34px] w-[34px]"
                 strokeWidth={2.2}
               />
-            </div>
+            </div> */}
 
             {/* TITLE */}
             <h3
               className="
-                mt-[35px]
+                mt-[20px]
 
                 font-[var(--font-sf-pro)]
                 text-[28px]
@@ -256,7 +256,7 @@ export default function AboutPurpose() {
             {/* DESCRIPTION */}
             <p
               className="
-                mt-[22px]
+                mt-[15px]
                 max-w-[600px]
 
                 font-[var(--font-sf-pro)]
@@ -272,9 +272,7 @@ export default function AboutPurpose() {
                 lg:leading-[1.4]
               "
             >
-              To build a global brand with sustainable, high-performance
-              gear that delivers unmatched safety, comfort, style, and
-              reliability—for every rider and terrain.
+              To become one of the world's most trusted motorcycle apparel brands, proudly representing Canadian innovation and Pakistani craftsmanship while setting new standards for Intelligent Riding Apparel. We are building a global community of riders who believe safety, quality, innovation, and style should always ride together.
             </p>
           </div>
         </article>
@@ -396,7 +394,7 @@ export default function AboutPurpose() {
             "
           >
             {/* ICON */}
-            <div
+            {/* <div
               className="
                 flex
                 h-[68px]
@@ -412,17 +410,17 @@ export default function AboutPurpose() {
                 sm:h-[72px]
                 sm:w-[72px]
               "
-            >
+             >
               <Target
                 className="h-[34px] w-[34px]"
                 strokeWidth={2.2}
               />
-            </div>
+            </div> */}
 
             {/* TITLE */}
             <h3
               className="
-                mt-[35px]
+                mt-[20px]
 
                 font-[var(--font-sf-pro)]
                 text-[28px]
@@ -441,7 +439,7 @@ export default function AboutPurpose() {
             {/* DESCRIPTION */}
             <p
               className="
-                mt-[22px]
+                mt-[15px]
                 max-w-[600px]
 
                 font-[var(--font-sf-pro)]
@@ -457,9 +455,9 @@ export default function AboutPurpose() {
                 lg:leading-[1.4]
               "
             >
-              To create purpose-driven products with a commitment to
-              sustainability, innovation, and craftsmanship—empowering
-              riders and the planet.
+              To create Intelligent Riding Apparel that combines world-class protection, modern style,
+exceptional comfort, and uncompromising quality—empowering riders to travel with confidence
+wherever their journey takes them.
             </p>
           </div>
         </article>

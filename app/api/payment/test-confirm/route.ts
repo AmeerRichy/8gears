@@ -6,6 +6,7 @@ import CheckoutLead from '@/models/CheckoutLead';
 import Subscriber from '@/models/Subscriber';
 import { buildCheckoutOrderItems } from '@/lib/checkout/buildCheckoutOrderItems';
 import { generateOrderId, generateTrackingId } from '@/lib/checkout/idGenerators';
+import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmationEmail';
 
 export async function POST(req: Request) {
   try {
@@ -65,8 +66,7 @@ export async function POST(req: Request) {
     for (const item of checkoutData.items) {
       const product = await Product.findById(item.productId);
       if (product) {
-        // @ts-ignore
-        const variant = product.variants.id(item.variantId);
+        const variant = product.variants.find((candidate) => candidate.sku === item.sku);
         if (variant) {
           variant.stockQuantity = Math.max(0, variant.stockQuantity - item.quantity);
           product.analytics.totalSold += item.quantity;
@@ -105,6 +105,14 @@ export async function POST(req: Request) {
       );
     }
 
+    try {
+      await sendOrderConfirmationEmail(order);
+      order.orderConfirmationEmailSentAt = new Date();
+      await order.save();
+    } catch (emailError) {
+      console.error('[Email] Failed to send test order confirmation email:', emailError);
+    }
+
     return NextResponse.json({
       success: true,
       orderId: order.orderId,
@@ -114,8 +122,11 @@ export async function POST(req: Request) {
       totalAmount: order.amounts.totalAmount,
       currency: order.amounts.currency,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Test Payment Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

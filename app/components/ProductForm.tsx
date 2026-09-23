@@ -925,8 +925,7 @@ export default function ProductForm({
   };
 
   const generateSKU = (
-    color: string,
-    size: string
+    color: string
   ) => {
     const title =
       watch("title") || "PROD";
@@ -947,18 +946,11 @@ export default function ProductForm({
         ""
       );
 
-    const cleanSize = size
-      .toUpperCase()
-      .replace(
-        /[^A-Z0-9]/g,
-        ""
-      );
-
     const timestamp = Date.now()
       .toString()
       .slice(-4);
 
-    return `${cleanTitle}-${cleanColor}-${cleanSize}-${timestamp}`;
+    return `${cleanTitle}-${cleanColor}-${timestamp}`;
   };
 
   const onInvalid: SubmitErrorHandler<
@@ -1067,11 +1059,23 @@ export default function ProductForm({
     watch("variants") || [];
 
   useEffect(() => {
-    watchedVariants.forEach((variant, index) => {
-      if (!variant?.sku && variant?.color && variant?.size) {
+    const colorSkuMap: Record<string, string> = {};
+    watchedVariants.forEach((variant: any) => {
+      const color = variant?.color || "Black";
+      if (variant?.sku && !colorSkuMap[color]) {
+        colorSkuMap[color] = variant.sku;
+      }
+    });
+
+    watchedVariants.forEach((variant: any, index: number) => {
+      const color = variant?.color || "Black";
+      const colorSku = colorSkuMap[color] || generateSKU(color);
+      colorSkuMap[color] = colorSku;
+
+      if (variant?.sku !== colorSku) {
         setValue(
           `variants.${index}.sku`,
-          generateSKU(variant.color, variant.size),
+          colorSku,
           { shouldDirty: false, shouldValidate: false }
         );
       }
@@ -1646,8 +1650,7 @@ export default function ProductForm({
                           stockQuantity: 10,
 
                           sku: generateSKU(
-                            newColor,
-                            newSize
+                            newColor
                           ),
 
                           images: [],
@@ -1762,9 +1765,27 @@ export default function ProductForm({
                                     placeholder="Color Name"
                                   />
 
-                                  <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                    Color Group
-                                  </p>
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                      SKU:
+                                    </span>
+                                    <input
+                                      value={
+                                        watch(`variants.${firstIndex}.sku`) || ""
+                                      }
+                                      onChange={(event) => {
+                                        const newSku = event.target.value;
+                                        sameColorIndices.forEach((index) =>
+                                          setValue(`variants.${index}.sku`, newSku, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                          })
+                                        );
+                                      }}
+                                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 font-mono text-xs font-bold text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                                      placeholder="Color SKU"
+                                    />
+                                  </div>
                                 </div>
                               </div>
 
@@ -1787,10 +1808,11 @@ export default function ProductForm({
                                         size:
                                           newSize,
 
-                                        sku: generateSKU(
-                                          first.color,
-                                          newSize
-                                        ),
+                                        sku:
+                                          first?.sku ||
+                                          generateSKU(
+                                            first?.color || "Black"
+                                          ),
 
                                         stockQuantity: 10,
                                       }
@@ -2086,33 +2108,6 @@ export default function ProductForm({
                                                         true,
                                                     }
                                                   );
-
-                                                  const currentSku =
-                                                    watch(
-                                                      `variants.${fieldIndex}.sku`
-                                                    );
-
-                                                  if (
-                                                    !currentSku ||
-                                                    currentSku.includes(
-                                                      "-"
-                                                    )
-                                                  ) {
-                                                    setValue(
-                                                      `variants.${fieldIndex}.sku`,
-                                                      generateSKU(
-                                                        colorName,
-                                                        size
-                                                      ),
-                                                      {
-                                                        shouldDirty:
-                                                          true,
-
-                                                        shouldValidate:
-                                                          true,
-                                                      }
-                                                    );
-                                                  }
                                                 }}
                                                 className="w-16 bg-transparent font-black uppercase text-slate-900 focus:outline-none"
                                               />
@@ -2174,12 +2169,9 @@ export default function ProductForm({
                                             </td>
 
                                             <td className="px-6 py-4">
-                                              <input
-                                                {...register(
-                                                  `variants.${fieldIndex}.sku`
-                                                )}
-                                                className="w-full bg-transparent font-mono text-[10px] text-gray-400 focus:outline-none"
-                                              />
+                                              <span className="inline-block rounded-md bg-gray-100 px-2.5 py-1 font-mono text-[10px] font-bold text-slate-600">
+                                                {watch(`variants.${fieldIndex}.sku`) || watch(`variants.${firstIndex}.sku`) || "No SKU"}
+                                              </span>
                                             </td>
 
                                             <td className="px-6 py-4 text-right">
@@ -2220,6 +2212,9 @@ export default function ProductForm({
               isOpen={
                 mediaManager.isOpen
               }
+              allowMultiple={
+                mediaManager.multiple
+              }
               onClose={() =>
                 setMediaManager(
                   (previous) => ({
@@ -2229,7 +2224,8 @@ export default function ProductForm({
                   })
                 )
               }
-              onSelect={(url) => {
+              onSelect={(selected) => {
+                const urls = Array.isArray(selected) ? selected : [selected];
                 if (
                   mediaManager.multiple
                 ) {
@@ -2285,16 +2281,16 @@ export default function ProductForm({
                             `variants.${variantIndex}.images`
                           ) || [];
 
+                        const newUrls = urls.filter((url) => !current.includes(url));
+
                         if (
-                          !current.includes(
-                            url
-                          )
+                          newUrls.length > 0
                         ) {
                           setValue(
                             `variants.${variantIndex}.images`,
                             [
                               ...current,
-                              url,
+                              ...newUrls,
                             ],
                             {
                               shouldDirty:
@@ -2313,22 +2309,28 @@ export default function ProductForm({
                         path as any
                       ) || [];
 
-                    setValue(
-                      path as any,
-                      [...current, url],
-                      {
-                        shouldDirty:
-                          true,
+                    const newUrls = urls.filter((url) => !current.includes(url));
 
-                        shouldValidate:
-                          true,
-                      }
-                    );
+                    if (
+                      newUrls.length > 0
+                    ) {
+                      setValue(
+                        path as any,
+                        [...current, ...newUrls],
+                        {
+                          shouldDirty:
+                            true,
+
+                          shouldValidate:
+                            true,
+                        }
+                      );
+                    }
                   }
                 } else {
                   setValue(
                     mediaManager.path as any,
-                    url,
+                    urls[0] || "",
                     {
                       shouldDirty:
                         true,

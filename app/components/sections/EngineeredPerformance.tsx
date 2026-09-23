@@ -139,27 +139,7 @@ export default function EngineeredPerformance() {
               }
             `}
           >
-            {/* =================================================
-                NUMBER
-            ================================================= */}
-            <p
-              className="
-                text-[15px]
-                font-[400]
-                leading-none
-                tracking-[0px]
-                text-black
-
-                sm:text-[16px]
-
-                md:text-[18px]
-
-                lg:text-[20px]
-              "
-            >
-              03
-            </p>
-
+   
             {/* =================================================
                 HEADING
             ================================================= */}
@@ -213,9 +193,8 @@ export default function EngineeredPerformance() {
                 xl:leading-[1.5]
               "
             >
-              Every detail is engineered around the rider —
-              combining protection, mobility and durability
-              without compromising comfort or design.
+              Our journey didn't begin in a large factory. It began in a small room, with two partners sharing one vision. Every investment we made had one purpose: 
+
             </p>
 
             {/* =================================================
@@ -259,26 +238,17 @@ export default function EngineeredPerformance() {
                     xl:text-[19px]
                   "
                 >
-                  <p>
-                    From reinforced construction to carefully
-                    considered ergonomics, each element is designed
-                    to perform naturally with the rider through
-                    changing speeds, conditions and environments.
-                  </p>
+                <ul className="list-disc pl-5 space-y-2">
+  <li>To control quality.</li>
+  <li>To innovate faster.</li>
+  <li>To deliver on time.</li>
+  <li>To build products we would proudly wear ourselves.</li>
+</ul>
 
                   <p>
-                    Materials are selected for their ability to
-                    resist wear while remaining flexible where
-                    movement matters most. Every closure, seam and
-                    protective layer has a purpose beyond appearance.
+          Today, every design, every fabric selection, every protective liner, every stitch, and every final inspection reflects the standards we set for ourselves—not the minimum expected by the industry. Because if our name is on the product, it has to earn a rider's trust.
                   </p>
 
-                  <p>
-                    The result is riding gear built to perform
-                    consistently — giving riders confidence,
-                    freedom of movement and dependable protection
-                    wherever the road leads.
-                  </p>
                 </div>
               </div>
             </div>

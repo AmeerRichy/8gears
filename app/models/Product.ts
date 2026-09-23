@@ -56,7 +56,7 @@ const VariantSchema = new Schema<IVariant>({
   price: { type: Number, required: true },
   comparePrice: { type: Number },
   stockQuantity: { type: Number, required: true, default: 0 },
-  sku: { type: String, required: true, unique: true },
+  sku: { type: String, required: true },
   images: { type: [String], required: true },
 });
 

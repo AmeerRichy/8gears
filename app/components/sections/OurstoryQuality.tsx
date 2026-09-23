@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { motion, useAnimate, useReducedMotion } from "motion/react";
 
-export default function OurOrigin() {
+export default function OurstoryQuality() {
   const [showBack, setShowBack] = useState(false);
   const [scope, animate] = useAnimate();
   const prefersReducedMotion = useReducedMotion();
@@ -79,7 +79,7 @@ export default function OurOrigin() {
           w-full
           max-w-[1920px]
 
-          px-[16px]
+          px-[24px]
           sm:px-[40px]
           md:px-[52px]
           lg:px-[76px]
@@ -90,39 +90,28 @@ export default function OurOrigin() {
         <motion.div
           ref={scope}
           initial={false}
-          className={`
+          className="
             relative
             mx-auto
 
+            h-[520px]
             w-full
             max-w-[1600px]
 
             origin-center
             overflow-hidden
+            rounded-[30px]
 
-            rounded-[24px]
             bg-[#0b0b0b]
 
+            sm:h-[560px]
             sm:rounded-[34px]
-            lg:rounded-[38px]
 
-            ${
-              showBack
-                ? `
-                  h-[860px]
-                  min-[390px]:h-[800px]
-                  sm:h-[680px]
-                  md:h-[620px]
-                  lg:h-[610px]
-                `
-                : `
-                  h-[520px]
-                  sm:h-[560px]
-                  md:h-[590px]
-                  lg:h-[610px]
-                `
-            }
-          `}
+            md:h-[590px]
+
+            lg:h-[610px]
+            lg:rounded-[38px]
+          "
           style={{
             willChange: "transform",
           }}
@@ -131,8 +120,8 @@ export default function OurOrigin() {
             /* ================= FRONT ================= */
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/ourorigin.png"
-                alt="Designers working together in a motorcycle gear workshop"
+                src="/assets/images/quality.png"
+                alt="Black leather combined with heritage textile detailing"
                 fill
                 priority={false}
                 quality={88}
@@ -147,9 +136,9 @@ export default function OurOrigin() {
                   select-none
                   object-cover
 
-                  object-[58%_center]
+                  object-[55%_center]
 
-                  sm:object-[55%_center]
+                  sm:object-[53%_center]
                   md:object-center
                 "
               />
@@ -161,7 +150,7 @@ export default function OurOrigin() {
                   absolute
                   inset-0
 
-                  bg-[linear-gradient(90deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.57)_19%,rgba(0,0,0,0.25)_38%,rgba(0,0,0,0.06)_55%,rgba(0,0,0,0)_68%)]
+                  bg-[linear-gradient(90deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.52)_21%,rgba(0,0,0,0.22)_39%,rgba(0,0,0,0.05)_55%,rgba(0,0,0,0)_68%)]
                 "
               />
 
@@ -173,7 +162,7 @@ export default function OurOrigin() {
                   inset-x-0
                   bottom-0
 
-                  h-[330px]
+                  h-[340px]
 
                   bg-gradient-to-t
                   from-black/45
@@ -197,8 +186,8 @@ export default function OurOrigin() {
                   className="
                     w-full
 
-                    px-[24px]
-                    pb-[34px]
+                    px-[28px]
+                    pb-[42px]
 
                     sm:px-[40px]
                     sm:pb-[50px]
@@ -213,17 +202,19 @@ export default function OurOrigin() {
                   <div
                     className="
                       max-w-[470px]
+
+                      font-[var(--font-sf-pro)]
                       text-white
                     "
                   >
                     <h2
                       className="
-                        font-[var(--font-sf-pro)]
+                        mt-[18px]
 
-                        text-[30px]
+                        text-[34px]
                         font-[650]
-                        leading-[1.05]
-                        tracking-[-1px]
+                        leading-[1.16]
+                        tracking-[-1.1px]
                         text-white
 
                         sm:text-[38px]
@@ -231,33 +222,38 @@ export default function OurOrigin() {
                         lg:text-[42px]
                       "
                     >
-                      Our Origin
+                      <span className="block">Protection,</span>
+
+                      <span className="mt-[10px] block">
+                        Engineered Differently.
+                      </span>
                     </h2>
 
-                    <p
+                    <div
                       className="
-                        mt-[12px]
+                        mt-[18px]
 
-                        max-w-[455px]
-
-                        font-[var(--font-sf-pro)]
-
-                        text-[14px]
-                        font-[400]
-                        leading-[1.5]
-                        tracking-[-0.1px]
-                        text-white/95
-
-                        sm:mt-[14px]
-                        sm:text-[17px]
-
-                        md:text-[18px]
-                        lg:text-[19px]
+                        flex
+                        items-center
+                        gap-[13px]
                       "
                     >
-                      8 GEAR was never created to become just another motorcycle
-                      apparel brand. It was created to...
-                    </p>
+                      <p
+                        className="
+                          text-[16px]
+                          font-[400]
+                          leading-none
+                          text-white/95
+
+                          sm:text-[17px]
+                          lg:text-[18px]
+                        "
+                      >
+                        Quality is not a department.
+                         It is our culture.
+
+                      </p>
+                    </div>
 
                     <button
                       type="button"
@@ -265,7 +261,7 @@ export default function OurOrigin() {
                       className="
                         group
 
-                        mt-[16px]
+                        mt-[22px]
 
                         inline-flex
                         cursor-pointer
@@ -278,7 +274,7 @@ export default function OurOrigin() {
 
                         font-[var(--font-sf-pro)]
 
-                        text-[15px]
+                        text-[16px]
                         font-[400]
                         leading-none
                         text-white
@@ -336,13 +332,14 @@ export default function OurOrigin() {
                 "
               />
 
+              {/* WARM ACCENT */}
               <div
                 className="
                   pointer-events-none
                   absolute
                   inset-0
 
-                  bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.06),transparent_36%)]
+                  bg-[radial-gradient(circle_at_85%_15%,rgba(150,79,43,0.12),transparent_38%)]
                 "
               />
 
@@ -370,16 +367,16 @@ export default function OurOrigin() {
                   h-full
                   w-full
 
-                  overflow-hidden
+                  overflow-y-auto
 
-                  px-[24px]
-                  py-[30px]
+                  px-[28px]
+                  py-[36px]
 
                   sm:px-[42px]
-                  sm:py-[40px]
+                  sm:py-[44px]
 
                   md:px-[54px]
-                  md:py-[48px]
+                  md:py-[52px]
 
                   lg:px-[68px]
                   lg:py-[60px]
@@ -397,107 +394,87 @@ export default function OurOrigin() {
                     justify-center
                   "
                 >
-                  {/* EYEBROW */}
-                  <p
-                    className="
-                      font-[var(--font-sf-pro)]
-
-                      text-[10px]
-                      font-[500]
-                      uppercase
-                      tracking-[2.1px]
-                      text-white/45
-
-                      sm:text-[12px]
-                      sm:tracking-[2.4px]
-                    "
-                  >
-                    Where it started
-                  </p>
+                 
 
                   {/* TITLE */}
                   <h2
                     className="
-                      mt-[10px]
+                      mt-[14px]
 
                       font-[var(--font-sf-pro)]
 
-                      text-[29px]
+                      text-[34px]
                       font-[650]
-                      leading-[1.05]
-                      tracking-[-1px]
+                      leading-[1.12]
+                      tracking-[-1.1px]
                       text-white
 
-                      sm:mt-[14px]
                       sm:text-[38px]
-
                       md:text-[42px]
                       lg:text-[44px]
                     "
                   >
-                    Our Origin
+                   <span className="block">Protection,</span>
+
+                      <span className="mt-[10px] block">
+                        Engineered Differently.
+                      </span>
                   </h2>
 
-                  {/* FULL STORY */}
+                  {/* STORY */}
                   <div
                     className="
-                      mt-[18px]
+                      mt-[24px]
 
                       w-full
                       max-w-[1120px]
 
-                      space-y-[11px]
+                      space-y-[15px]
 
                       font-[var(--font-sf-pro)]
 
-                      text-[13px]
+                      text-[14px]
                       font-[400]
-                      leading-[1.5]
+                      leading-[1.58]
                       text-white/72
 
-                      sm:mt-[22px]
-                      sm:space-y-[13px]
-                      sm:text-[14px]
-                      sm:leading-[1.55]
+                      sm:text-[15px]
+                      sm:leading-[1.62]
 
-                      md:mt-[24px]
-                      md:text-[15px]
+                      md:text-[16px]
 
-                      lg:space-y-[15px]
                       lg:text-[17px]
-                      lg:leading-[1.62]
+                      lg:leading-[1.65]
                     "
                   >
                     <p>
-                      8 GEAR was never created to become just another motorcycle
-                      apparel brand. It was created to solve a problem. Before
-                      founding 8 GEAR, we spent years working behind the scenes
-                      in the apparel industry, manufacturing and supplying
-                      private-label products for brands and businesses around
-                      the world.
+                      Quality is not a department.
+                      It is our culture.
+
                     </p>
 
                     <p>
-                      Like countless riders around the world, we also experienced
-                      the realities of the road. Falls, close calls, changing
-                      weather, and thousands of kilometers taught us one
-                      important lesson:
+                      Every product that leaves our facility is built with the same care and attention we expect for
+ourselves as riders.
+
                     </p>
 
                     <p>
-                      <b>
-                        Protection isn't optional—but it should never come at
-                        the cost of comfort or style.
-                      </b>
+                      Customer satisfaction is not simply another business objective.
+It is the foundation of every decision we make.
                     </p>
 
                     <p>
-                      Traditional motorcycle gear was often heavy, hot, bulky,
-                      and uncomfortable, especially during long summer rides.
-                      We knew there had to be another way. A way to create
-                      riding apparel that delivers real protection while
-                      looking and feeling like modern lifestyle clothing. That
-                      belief became the beginning of 8 GEAR.
+                      From manufacturing and product development to customer service, dealer partnerships, and
+after-sales support, we remain personally involved because we believe trust is earned through
+consistency.
+
+                    </p>
+
+                    <p>
+                      When riders choose 8 GEAR, they are placing their confidence in us.
+We take that responsibility seriously.
+                      
                     </p>
                   </div>
 
@@ -508,7 +485,7 @@ export default function OurOrigin() {
                     className="
                       group
 
-                      mt-[20px]
+                      mt-[27px]
 
                       inline-flex
                       w-fit
@@ -522,7 +499,7 @@ export default function OurOrigin() {
 
                       font-[var(--font-sf-pro)]
 
-                      text-[14px]
+                      text-[15px]
                       font-[400]
                       text-white
 
@@ -537,10 +514,7 @@ export default function OurOrigin() {
                       focus-visible:ring-offset-4
                       focus-visible:ring-offset-[#0b0b0b]
 
-                      sm:mt-[24px]
                       sm:text-[16px]
-
-                      lg:mt-[27px]
                     "
                   >
                     <ArrowLeft

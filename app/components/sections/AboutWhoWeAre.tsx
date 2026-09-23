@@ -132,10 +132,7 @@ export default function AboutWhoWeAre() {
                 lg:leading-[1.5]
               "
             >
-              The right gear doesn&apos;t just protect you—it sets
-              <br className="hidden xl:block" />
-              <span className="xl:hidden"> </span>
-              you free to live the ride and terrain.
+              8 GEAR exists to redefine what motorcycle apparel can be. We don't simply manufacture motorcycle clothing. We engineer intelligent riding solutions. We combine advanced protection, premium materials, modern fashion, and intelligent design into apparel that moves effortlessly between the road and everyday life. We believe the future of motorcycle apparel is intelligent, versatile, and built entirely around the rider.
             </p>
           </div>
         </div>

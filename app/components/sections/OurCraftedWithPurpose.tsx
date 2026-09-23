@@ -184,7 +184,7 @@ export default function CraftedWithPurpose() {
                 xl:text-[50px]
               "
             >
-              Crafted with Purpose
+              Intelligent Riding Apparel
             </h2>
 
             {/* =================================================
@@ -214,9 +214,8 @@ export default function CraftedWithPurpose() {
                 xl:leading-[1.5]
               "
             >
-              Every piece begins with thoughtful design,
-              premium materials, and a commitment to creating
-              gear that performs as beautifully as it looks.
+              We believed riders should never have to choose between comfort & safety. We asked ourselves a simple question: Why can't motorcycle apparel be as intelligent as the riders who wear it?
+
             </p>
 
             {/* =================================================
@@ -261,24 +260,24 @@ export default function CraftedWithPurpose() {
                   "
                 >
                   <p>
-                    From the first sketch to the final stitch,
-                    every detail is considered with the rider
-                    in mind. We focus on durability, comfort,
-                    movement, and protection without compromising
-                    the refined aesthetic that defines our approach.
+                   That single question became the inspiration behind our brand philosophy—Intelligent Riding Apparel.
+Intelligence means designing every garment with purpose.
+
                   </p>
 
                   <p>
-                    Our materials are selected for how they perform
-                    on the road and how they age over time.
-                    Construction is deliberate, with attention
-                    given to every seam, panel, and finishing detail.
+                    It means selecting premium fabrics that perform in real-world riding conditions engineered seamlessly for strength & Durability. 
+
                   </p>
 
                   <p>
-                    The result is motorcycle gear designed to become
-                    part of the ride — dependable, considered, and
-                    built with purpose.
+                    It means using removable armor, rider-focused ergonomics, ventilation, stretch panels, weather resistant components, and modern styling that work together as one complete system. 
+
+                  </p>
+
+                   <p>
+                    Protection should feel natural. Comfort should never be compromised. Safety should never be optional.
+That philosophy became more than a product concept. It became the foundation of everything we build.
                   </p>
                 </div>
               </div>

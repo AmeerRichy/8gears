@@ -164,7 +164,7 @@ export default function OurStoryHero() {
                 xl:text-[64px]
               "
             >
-              Built by Riders. For Riders.
+              Every Great Ride Begins with a Purpose.
             </h1>
 
             {/* =================================================

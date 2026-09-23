@@ -24,9 +24,6 @@ export default function HeritageStandard() {
           return;
         }
 
-        /* =====================================================
-            PHASE 1 — CLOSE CARD
-        ====================================================== */
         await animate(
           scope.current,
           {
@@ -38,18 +35,12 @@ export default function HeritageStandard() {
           }
         );
 
-        /* =====================================================
-            SWAP CONTENT WHILE EDGE-ON
-        ====================================================== */
         setShowBack(nextSide);
 
         await new Promise<void>((resolve) => {
           requestAnimationFrame(() => resolve());
         });
 
-        /* =====================================================
-            PHASE 2 — OPEN CARD
-        ====================================================== */
         await animate(
           scope.current,
           {
@@ -76,15 +67,12 @@ export default function HeritageStandard() {
         bg-white
 
         py-[18px]
-
         sm:py-[28px]
         md:py-[38px]
         lg:py-[50px]
       "
     >
-      {/* =====================================================
-          MAIN CONTAINER
-      ====================================================== */}
+      {/* MAIN CONTAINER */}
       <div
         className="
           mx-auto
@@ -92,16 +80,13 @@ export default function HeritageStandard() {
           max-w-[1920px]
 
           px-[24px]
-
           sm:px-[40px]
           md:px-[52px]
           lg:px-[76px]
           xl:px-[108px]
         "
       >
-        {/* =====================================================
-            CARD
-        ====================================================== */}
+        {/* CARD */}
         <motion.div
           ref={scope}
           initial={false}
@@ -111,10 +96,9 @@ export default function HeritageStandard() {
 
             h-[520px]
             w-full
-            max-w-[1380px]
+            max-w-[1600px]
 
             origin-center
-
             overflow-hidden
             rounded-[30px]
 
@@ -133,13 +117,8 @@ export default function HeritageStandard() {
           }}
         >
           {!showBack ? (
-            /* =================================================
-                FRONT
-            ================================================= */
+            /* ================= FRONT ================= */
             <div className="absolute inset-0">
-              {/* ===============================================
-                  IMAGE
-              =============================================== */}
               <Image
                 src="/assets/images/heritage-standard.png"
                 alt="Black leather combined with heritage textile detailing"
@@ -151,7 +130,7 @@ export default function HeritageStandard() {
                   (max-width: 640px) 100vw,
                   (max-width: 1024px) calc(100vw - 104px),
                   (max-width: 1536px) calc(100vw - 152px),
-                  1380px
+                  1600px
                 "
                 className="
                   select-none
@@ -164,9 +143,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* ===============================================
-                  LEFT READABILITY GRADIENT
-              =============================================== */}
+              {/* LEFT GRADIENT */}
               <div
                 className="
                   pointer-events-none
@@ -177,9 +154,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* ===============================================
-                  BOTTOM CINEMATIC FADE
-              =============================================== */}
+              {/* BOTTOM FADE */}
               <div
                 className="
                   pointer-events-none
@@ -196,9 +171,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* ===============================================
-                  FRONT CONTENT
-              =============================================== */}
+              {/* FRONT CONTENT */}
               <div
                 className="
                   absolute
@@ -234,27 +207,6 @@ export default function HeritageStandard() {
                       text-white
                     "
                   >
-                    {/* =========================================
-                        NUMBER
-                    ========================================= */}
-                    <p
-                      className="
-                        text-[15px]
-                        font-[400]
-                        leading-none
-                        text-white/90
-
-                        sm:text-[16px]
-
-                        lg:text-[18px]
-                      "
-                    >
-                      04
-                    </p>
-
-                    {/* =========================================
-                        TITLE
-                    ========================================= */}
                     <h2
                       className="
                         mt-[18px]
@@ -266,24 +218,17 @@ export default function HeritageStandard() {
                         text-white
 
                         sm:text-[38px]
-
                         md:text-[40px]
-
                         lg:text-[42px]
                       "
                     >
-                      <span className="block">
-                        Two Heritages.
-                      </span>
+                      <span className="block">Proudly Built</span>
 
                       <span className="mt-[10px] block">
-                        One Standard.
+                        Across Borders
                       </span>
                     </h2>
 
-                    {/* =========================================
-                        SHORT DESCRIPTION
-                    ========================================= */}
                     <div
                       className="
                         mt-[18px]
@@ -292,9 +237,7 @@ export default function HeritageStandard() {
                         items-center
                         gap-[13px]
                       "
-                       >
-                    
-
+                    >
                       <p
                         className="
                           text-[16px]
@@ -303,17 +246,13 @@ export default function HeritageStandard() {
                           text-white/95
 
                           sm:text-[17px]
-
                           lg:text-[18px]
                         "
                       >
-                        Timeless styles.
+                        8 GEAR is proudly built on two foundations.
                       </p>
                     </div>
 
-                    {/* =========================================
-                        SHOW MORE
-                    ========================================= */}
                     <button
                       type="button"
                       onClick={() => flipCard(true)}
@@ -372,20 +311,15 @@ export default function HeritageStandard() {
               </div>
             </div>
           ) : (
-            /* =================================================
-                BACK
-            ================================================= */
+            /* ================= BACK ================= */
             <div
               className="
                 absolute
                 inset-0
-
                 bg-[#0b0b0b]
               "
             >
-              {/* ===============================================
-                  BACKGROUND DEPTH
-              =============================================== */}
+              {/* BACKGROUND */}
               <div
                 className="
                   pointer-events-none
@@ -396,7 +330,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* Warm heritage accent */}
+              {/* WARM ACCENT */}
               <div
                 className="
                   pointer-events-none
@@ -407,9 +341,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* ===============================================
-                  SUBTLE EDGE
-              =============================================== */}
+              {/* EDGE */}
               <div
                 className="
                   pointer-events-none
@@ -424,9 +356,7 @@ export default function HeritageStandard() {
                 "
               />
 
-              {/* ===============================================
-                  BACK CONTENT
-              =============================================== */}
+              {/* BACK CONTENT */}
               <div
                 className="
                   relative
@@ -448,39 +378,22 @@ export default function HeritageStandard() {
 
                   lg:px-[68px]
                   lg:py-[60px]
+
+                  xl:px-[78px]
                 "
               >
                 <div
                   className="
                     flex
                     min-h-full
-                    max-w-[850px]
+                    w-full
+                    max-w-[1180px]
                     flex-col
                     justify-center
                   "
                 >
-                  {/* =========================================
-                      EYEBROW
-                  ========================================= */}
-                  <p
-                    className="
-                      font-[var(--font-sf-pro)]
 
-                      text-[11px]
-                      font-[500]
-                      uppercase
-                      tracking-[2.4px]
-                      text-white/45
-
-                      sm:text-[12px]
-                    "
-                  >
-                    Our Heritage
-                  </p>
-
-                  {/* =========================================
-                      TITLE
-                  ========================================= */}
+                  {/* TITLE */}
                   <h2
                     className="
                       mt-[14px]
@@ -498,19 +411,18 @@ export default function HeritageStandard() {
                       lg:text-[44px]
                     "
                   >
-                    Two Heritages.
+                    Proudly Built
                     <br />
-                    One Standard.
+                    Across Borders
                   </h2>
 
-                  {/* =========================================
-                      FULL STORY
-                  ========================================= */}
+                  {/* STORY */}
                   <div
                     className="
                       mt-[24px]
 
-                      max-w-[790px]
+                      w-full
+                      max-w-[1120px]
 
                       space-y-[15px]
 
@@ -531,41 +443,37 @@ export default function HeritageStandard() {
                     "
                   >
                     <p>
-                      Our story brings together two distinct
-                      heritages: the precision and performance
-                      demanded by modern motorcycle culture,
-                      and the character of timeless craftsmanship.
+                      8 GEAR is proudly built on two foundations.
                     </p>
 
                     <p>
-                      We draw inspiration from enduring materials,
-                      traditional textures, and design influences
-                      that carry a sense of history, then combine
-                      them with construction techniques created
-                      for life on the road.
+                      Our global vision is driven from Canada, while our
+                      manufacturing expertise and craftsmanship are rooted in
+                      Pakistan.
                     </p>
 
                     <p>
-                      Every contrast is intentional. Technical
-                      protection meets considered detailing.
-                      Modern silhouettes meet heritage character.
-                      Function and identity are treated as parts
-                      of the same design rather than separate
-                      ideas.
+                      Together, these two countries represent the values that
+                      define our company: Innovation. Resilience. Craftsmanship.
+                      Integrity.
                     </p>
 
                     <p>
-                      Different influences may shape each piece,
-                      but the standard remains the same: gear
-                      designed with purpose, built with care,
-                      and made to remain relevant beyond a
-                      single season.
+                      We are proud to represent a Canadian-Pakistani brand that
+                      proves world-class motorcycle apparel can be designed,
+                      engineered, and manufactured through passion, dedication,
+                      and uncompromising standards.
+                    </p>
+
+                    <p>
+                      Our ambition is simple:
+                      <br />
+                      To see riders around the world wearing 8 GEAR with
+                      complete confidence.
                     </p>
                   </div>
 
-                  {/* =========================================
-                      BACK BUTTON
-                  ========================================= */}
+                  {/* BACK BUTTON */}
                   <button
                     type="button"
                     onClick={() => flipCard(false)}

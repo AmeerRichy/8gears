@@ -11,6 +11,7 @@ import EngineeredPerformance from "@/components/sections/EngineeredPerformance";
 import HeritageStandard from "@/components/sections/Ourheritage";
 import RideWithConfidence from "@/components/sections/RideWithConfidence";
 import ContactSection from "@/components/ContactSection";
+import OurstoryQuality from "@/components/sections/OurstoryQuality";
 
 export const metadata: Metadata = {
   ...createPageMetadata({
@@ -29,6 +30,7 @@ export default function OurStory() {
     <OurPromise/>
     <OurOrigin/>
     <CraftedWithPurpose/>
+    <OurstoryQuality/>
     <EngineeredPerformance/>
     <HeritageStandard/>
     <RideWithConfidence/>

@@ -141,7 +141,7 @@ export default function RideWithConfidence() {
             "
           >
             <span className="block">
-              Ride with Confidence.
+              Ride Smart. 
             </span>
 
             <span
@@ -153,7 +153,7 @@ export default function RideWithConfidence() {
                 lg:mt-[4px]
               "
             >
-              Ride with Purpose.
+              Ride Protected.
             </span>
 
             <span
@@ -165,7 +165,7 @@ export default function RideWithConfidence() {
                 lg:mt-[4px]
               "
             >
-              Ride with Protection.
+              Ride with Comfort & Style.
             </span>
           </h2>
 

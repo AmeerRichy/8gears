@@ -3,6 +3,10 @@ import { IOrder } from '@/models/Order';
 
 const requiredSmtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'] as const;
 
+function isTruthy(value: string | undefined): boolean {
+  return value === 'true' || value === '1';
+}
+
 function assertEmailConfig() {
   const missingVars = requiredSmtpVars.filter((key) => !process.env[key]);
 
@@ -14,7 +18,9 @@ function assertEmailConfig() {
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
-  secure: Number(process.env.SMTP_PORT) === 465,
+  secure: process.env.SMTP_SECURE
+    ? isTruthy(process.env.SMTP_SECURE)
+    : Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -50,6 +56,9 @@ function buildEmailHTML(order: IOrder): string {
               <div style="font-weight: 600; color: #1a1a2e; font-size: 14px;">${item.title}</div>
               <div style="font-size: 12px; color: #666; margin-top: 2px;">
                 ${item.color} &bull; ${item.size}
+              </div>
+              <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                SKU: ${item.sku}
               </div>
             </div>
           </div>
@@ -247,7 +256,7 @@ function buildAdminEmailHTML(order: IOrder): string {
       <tr>
         <td style="padding: 10px 8px; border-bottom: 1px solid #eee; font-size: 14px; color: #1a1a2e;">
           ${item.title}<br/>
-          <span style="font-size: 12px; color: #888;">${item.color} / ${item.size}</span>
+          <span style="font-size: 12px; color: #888;">${item.color} / ${item.size} &bull; SKU: ${item.sku}</span>
         </td>
         <td style="padding: 10px 8px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; color: #555;">×${item.quantity}</td>
         <td style="padding: 10px 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 14px; font-weight: 600; color: #1a1a2e;">
@@ -369,17 +378,18 @@ export async function sendOrderConfirmationEmail(order: IOrder): Promise<void> {
   const adminHtml = buildAdminEmailHTML(order);
 
   const ADMIN_EMAIL_DEST = process.env.ADMIN_EMAIL || process.env.SMTP_USER!;
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER!;
 
   // Send both emails in parallel
   await Promise.all([
     transporter.sendMail({
-      from: `"8Gears" <${process.env.SMTP_USER}>`,
+      from: `"8Gears" <${from}>`,
       to: order.customerInfo.email,
       subject: `Order Confirmed – ${order.orderId} 🎉`,
       html: customerHtml,
     }),
     transporter.sendMail({
-      from: `"8Gears Orders" <${process.env.SMTP_USER}>`,
+      from: `"8Gears Orders" <${from}>`,
       to: ADMIN_EMAIL_DEST,
       subject: `🛒 New Order: ${order.orderId} from ${order.customerInfo.name}`,
       html: adminHtml,

@@ -22,14 +22,14 @@ const supportLinks = [
   { name: "About 8Gear", href: "/about" },
   { name: "Contact", href: "/contact" },
   { name: "Return Policy", href: "/return-policy" },
-  { name: "Shopping Policy", href: "/shopping-policy" },
+  { name: "Shipping Policy", href: "/shipping-policy" },
   { name: "Warranty", href: "/warranty" },
 ];
 
 const otherLinks = [
   { name: "Dealers", href: "/dealers" },
-  { name: "Journal", href: "/blog" },
-  { name: "Catalog", href: "/category?cat=all" },
+  // { name: "Journal", href: "/blog" },
+  { name: "Catalog", href:"/assets/8GearCatalogueRetailersBooklet.pdf"},
 ];
 
 const socialLinks = [
