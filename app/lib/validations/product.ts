@@ -11,7 +11,16 @@ export const variantSchema = z.object({
   images: z.array(z.string()),
 });
 
+export const sectionSettingsSchema = z.object({
+  closeUp: z.boolean().optional(),
+  engineered: z.boolean().optional(),
+  cinematic: z.boolean().optional(),
+  style: z.boolean().optional(),
+  evolution: z.boolean().optional(),
+});
+
 export const productSchema = z.object({
+  sectionSettings: sectionSettingsSchema.optional(),
   title: z.string().min(3),
   slug: z.string().min(3),
   category: z.string(),

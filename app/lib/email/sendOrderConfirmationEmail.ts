@@ -1,31 +1,5 @@
-import nodemailer from 'nodemailer';
-import { IOrder } from '@/models/Order';
-
-const requiredSmtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'] as const;
-
-function isTruthy(value: string | undefined): boolean {
-  return value === 'true' || value === '1';
-}
-
-function assertEmailConfig() {
-  const missingVars = requiredSmtpVars.filter((key) => !process.env[key]);
-
-  if (missingVars.length > 0) {
-    throw new Error(`Missing email configuration: ${missingVars.join(', ')}`);
-  }
-}
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE
-    ? isTruthy(process.env.SMTP_SECURE)
-    : Number(process.env.SMTP_PORT) === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+import { MICROSOFT_MAILBOX, sendMicrosoftMail } from './microsoftGraph';
+import type { IOrder } from '@/models/Order';
 
 function buildEmailHTML(order: IOrder): string {
   const {
@@ -372,24 +346,21 @@ function buildAdminEmailHTML(order: IOrder): string {
 }
 
 export async function sendOrderConfirmationEmail(order: IOrder): Promise<void> {
-  assertEmailConfig();
-
   const customerHtml = buildEmailHTML(order);
   const adminHtml = buildAdminEmailHTML(order);
 
-  const ADMIN_EMAIL_DEST = process.env.ADMIN_EMAIL || process.env.SMTP_USER!;
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER!;
+  const ADMIN_EMAIL_DEST = process.env.ADMIN_EMAIL || MICROSOFT_MAILBOX;
 
   // Send both emails in parallel
   await Promise.all([
-    transporter.sendMail({
-      from: `"8Gears" <${from}>`,
+    sendMicrosoftMail({
+      senderName: '8Gears',
       to: order.customerInfo.email,
       subject: `Order Confirmed – ${order.orderId} 🎉`,
       html: customerHtml,
     }),
-    transporter.sendMail({
-      from: `"8Gears Orders" <${from}>`,
+    sendMicrosoftMail({
+      senderName: '8Gears Orders',
       to: ADMIN_EMAIL_DEST,
       subject: `🛒 New Order: ${order.orderId} from ${order.customerInfo.name}`,
       html: adminHtml,

@@ -1,3 +1,4 @@
+import type { ProductSectionSettings } from '@/lib/productSections';
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVariant {
@@ -13,6 +14,7 @@ export interface IVariant {
 
 export interface IProduct extends Document {
   isActive: boolean;
+  sectionSettings?: Partial<ProductSectionSettings>;
   title: string;
   slug: string;
   category: string;
@@ -86,6 +88,13 @@ const ProductSchema = new Schema<IProduct>(
     logistics: {
       shipping: { type: String, required: true },
       returns: { type: String, required: true },
+    },
+    sectionSettings: {
+      closeUp: { type: Boolean, default: false },
+      engineered: { type: Boolean, default: false },
+      cinematic: { type: Boolean, default: false },
+      style: { type: Boolean, default: false },
+      evolution: { type: Boolean, default: false },
     },
     // Premium Layout Sections
     closeUpSection: [

@@ -28,7 +28,8 @@ export default function LatestProducts() {
       });
   }, []);
 
-  const latestProducts = [...products].slice(-4).reverse();
+  // The products API returns active products ordered newest first.
+  const latestProducts = products.slice(0, 4);
 
   return (
     <section className="w-full overflow-hidden bg-white">

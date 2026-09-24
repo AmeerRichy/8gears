@@ -1,3 +1,4 @@
+import type { ProductSectionSettings } from '@/lib/productSections';
 export interface Variant {
   color: string;
   colorHex?: string;
@@ -12,6 +13,7 @@ export interface Variant {
 export interface Product {
   _id: string;
   isActive: boolean;
+  sectionSettings?: Partial<ProductSectionSettings>;
   title: string;
   slug: string;
   category: string;

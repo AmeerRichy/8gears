@@ -2,7 +2,9 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useFormContext } from "react-hook-form";
+import { PRODUCT_SECTIONS, hasSectionContent, type ProductSectionKey } from "@/lib/productSections";
 import { useCart } from "@/app/context/CartContext";
 
 import ProductHero from "@/app/components/product/ProductHero";
@@ -26,6 +28,7 @@ export default function ProductDetail({
   isCMS?: boolean;
 }) {
   const { addToCart } = useCart();
+  const formContext = useFormContext();
 
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -151,6 +154,61 @@ export default function ProductDetail({
     );
   }
 
+  const showSection = (key: ProductSectionKey, content: unknown) =>
+    isCMS || (product.sectionSettings?.[key] === true && hasSectionContent(content));
+
+  const sectionContent = (key: ProductSectionKey, children: ReactNode) => {
+    if (!isCMS) return children;
+    const disabled = product.sectionSettings?.[key] !== true;
+    return (
+      <div className="relative">
+        <div
+          inert={disabled}
+          aria-hidden={disabled ? true : undefined}
+          className={disabled ? "pointer-events-none select-none blur-sm opacity-50" : undefined}
+        >
+          {children}
+        </div>
+        {disabled && (
+          <div className="absolute inset-0 z-10 flex cursor-not-allowed items-start justify-center bg-white/20 px-4 pt-12">
+            <p className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-medium text-slate-700 shadow-sm">
+              Turn this section on to add images or edit content.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const sectionToggle = (key: ProductSectionKey) => {
+    if (!isCMS || !formContext) return null;
+    const enabled = product.sectionSettings?.[key] === true;
+    const label = PRODUCT_SECTIONS.find((section) => section.key === key)?.label;
+    return (
+      <div className="flex items-center justify-between gap-4 border-y border-orange-200 bg-orange-50 px-4 py-4 sm:px-12">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">{label}</p>
+          <p className="mt-1 text-xs text-slate-600">
+            {enabled ? "On — shows on storefront when content is added." : "Off — turn on to add images or edit content."}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label={`Show ${label} on storefront`}
+          onClick={() => formContext.setValue(`sectionSettings.${key}`, !enabled, { shouldDirty: true, shouldTouch: true })}
+          className="flex shrink-0 items-center gap-3 rounded-lg p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+        >
+          <span className="text-sm font-semibold">{enabled ? "On" : "Off"}</span>
+          <span aria-hidden="true" className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${enabled ? "bg-orange-600" : "bg-slate-400"}`}>
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+          </span>
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-clip bg-white text-black">
       <ProductHero
@@ -168,15 +226,27 @@ export default function ProductDetail({
         handleAddToCart={handleAddToCart}
       />
 
-      <ProductCloseUp items={product?.closeUpSection} />
+      {sectionToggle("closeUp")}
+      {showSection("closeUp", product.closeUpSection) && (
+        sectionContent("closeUp", <ProductCloseUp items={product?.closeUpSection} />)
+      )}
 
       <ProductYouMightAlsoLike products={displayRelatedProducts} />
 
-      <ProductEngineered product={product} isCMS={isCMS} />
+      {sectionToggle("engineered")}
+      {showSection("engineered", product.engineeredSection) && (
+        sectionContent("engineered", <ProductEngineered product={product} isCMS={isCMS} />)
+      )}
 
-      <ProductCinematicHero product={product} />
+      {sectionToggle("cinematic")}
+      {showSection("cinematic", product.lifestyleImage) && (
+        sectionContent("cinematic", <ProductCinematicHero product={product} />)
+      )}
 
-      <ProductStyleAesthetics product={product} isCMS={isCMS} />
+      {sectionToggle("style")}
+      {showSection("style", product.stylishSection) && (
+        sectionContent("style", <ProductStyleAesthetics product={product} isCMS={isCMS} />)
+      )}
 
       {product._id && (
         <ProductReviewsSection
@@ -190,7 +260,10 @@ export default function ProductDetail({
         />
       )}
 
-      <ProductEvolutionGallery product={product} />
+      {sectionToggle("evolution")}
+      {showSection("evolution", product.bottomGallery) && (
+        sectionContent("evolution", <ProductEvolutionGallery product={product} />)
+      )}
       <ContactSection/>
       <Footer/>
     </div>

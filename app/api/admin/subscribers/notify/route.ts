@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { sendMicrosoftMail } from '@/lib/email/microsoftGraph';
 import connectDB from '@/lib/db/mongodb';
 import Subscriber from '@/models/Subscriber';
 import { requireAdminApi } from '@/lib/adminAuth';
@@ -17,21 +17,6 @@ export async function POST(req: Request) {
     if (!sendToAll && !email) {
       return new Response(JSON.stringify({ success: false, error: "Email is required for single notification" }), { status: 400 });
     }
-
-    if (!process.env.SMTP_HOST || !process.env.SMTP_PORT) {
-      console.warn("SMTP_HOST or SMTP_PORT is not defined. Email will not be sent.");
-      return new Response(JSON.stringify({ success: false, error: "SMTP credentials not configured in environment variables" }), { status: 500 });
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false, // false for TLS
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     let recipients: string[] = [];
     if (sendToAll) {
@@ -111,19 +96,19 @@ export async function POST(req: Request) {
 
     const mailPromises = recipients.map(recipientEmail => {
       const mailOptions = {
-        from: `"8 GEARS" <${process.env.SMTP_USER}>`,
+        senderName: '8 GEARS',
         to: recipientEmail,
         subject: subject || "Update from 8 GEARS",
         html: finalHtml,
       };
-      return transporter.sendMail(mailOptions);
+      return sendMicrosoftMail(mailOptions);
     });
 
     await Promise.all(mailPromises);
 
     return new Response(JSON.stringify({ success: true, count: recipients.length }), { status: 200 });
-  } catch (error: any) {
-    console.error("Email sending failed:", error);
-    return new Response(JSON.stringify({ success: false, error: error.message || "Email sending failed" }), { status: 500 });
+  } catch {
+    console.error("Subscriber email sending failed");
+    return new Response(JSON.stringify({ success: false, error: "Email sending failed" }), { status: 500 });
   }
 }

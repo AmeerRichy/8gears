@@ -11,6 +11,7 @@ import {
     X,
 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { DISPLAY_CURRENCY } from "@/lib/checkout/constants";
 import { EditableText } from "@/app/components/admin/CMSComponents";
 import { getCloudinarySrcSet, getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 
@@ -40,6 +41,7 @@ export default function ProductHero({
     const formContext = useFormContext();
     const isEditing = !!formContext;
     const [activeThumb, setActiveThumb] = useState(0);
+    const [showAllImages, setShowAllImages] = useState(false);
     const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
     const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
@@ -50,6 +52,7 @@ export default function ProductHero({
 
     useEffect(() => {
         setActiveThumb(0);
+        setShowAllImages(false);
     }, [selectedVariant?.sku]);
 
     useEffect(() => {
@@ -82,7 +85,11 @@ export default function ProductHero({
         : null;
 
     const productSubtitle = product?.baseDescription || product?.shortDescription;
-    const currencySymbol = product?.currencySymbol || "Rs. ";
+    const priceFormatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: DISPLAY_CURRENCY,
+        currencyDisplay: "code",
+    });
     const categoryText = product?.category?.name || product?.category;
 
     const sizeChartImage = product?.sizeChart || "";
@@ -162,12 +169,14 @@ export default function ProductHero({
                             <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-[12px] max-[768px]:grid-cols-1">
                                 {/* Thumbnails */}
                                 {images.length > 0 && (
-                                    <div className="flex flex-col gap-[10px] max-[768px]:order-2 max-[768px]:flex-row max-[768px]:overflow-x-auto max-[768px]:pb-1">
-                                        {images.slice(0, 5).map((image: string, index: number) => (
+                                    <div className="flex flex-col gap-[10px] max-[768px]:order-2 max-[768px]:flex-row max-[768px]:flex-wrap max-[768px]:pb-1">
+                                        {(showAllImages ? images : images.slice(0, 5)).map((image: string, index: number) => (
                                             <button
                                                 key={`${image}-${index}`}
                                                 type="button"
                                                 onClick={() => setActiveThumb(index)}
+                                                aria-label={`View product image ${index + 1} of ${images.length}`}
+                                                aria-pressed={activeThumb === index}
                                                 className={`h-[56px] w-[44px] shrink-0 overflow-hidden border bg-[#f1f1f1] transition-all duration-200 max-[768px]:h-[64px] max-[768px]:w-[52px] ${activeThumb === index
                                                     ? "border-black"
                                                     : "border-transparent hover:border-[#cfcfcf]"
@@ -183,6 +192,20 @@ export default function ProductHero({
                                                 />
                                             </button>
                                         ))}
+                                        {images.length > 5 && (
+                                            <button
+                                                type="button"
+                                                aria-expanded={showAllImages}
+                                                aria-label={showAllImages ? "Show fewer product images" : `Show ${images.length - 5} more product images`}
+                                                onClick={() => {
+                                                    if (showAllImages && activeThumb >= 5) setActiveThumb(0);
+                                                    setShowAllImages(!showAllImages);
+                                                }}
+                                                className="flex h-[44px] w-[44px] shrink-0 items-center justify-center border border-[#cfcfcf] bg-white text-sm font-medium text-black transition-colors hover:border-black hover:bg-[#f1f1f1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black max-[768px]:h-[52px] max-[768px]:w-[52px]"
+                                            >
+                                                {showAllImages ? <span aria-hidden="true">−</span> : `+${images.length - 5}`}
+                                            </button>
+                                        )}
                                     </div>
                                 )}
 
@@ -195,7 +218,7 @@ export default function ProductHero({
                                                 srcSet={getCloudinarySrcSet(firstImage)}
                                                 sizes="(max-width: 760px) 100vw, 42vw"
                                                 alt={product?.title || "Product image"}
-                                                className="h-full w-full object-contain min-[1201px]:object-cover"
+                                                className="h-full w-full object-contain"
                                                 decoding="async"
                                             />
                                         </div>
@@ -282,14 +305,12 @@ export default function ProductHero({
                             <div className="mt-[14px] flex items-baseline gap-[10px]">
                                 {comparePrice && (
                                     <span className="text-[17px] font-normal text-[#8a8a8a] line-through">
-                                        {currencySymbol}
-                                        {comparePrice.toLocaleString()}
+                                        {priceFormatter.format(comparePrice)}
                                     </span>
                                 )}
 
                                 <span className="text-[26px] font-medium leading-none tracking-[-0.5px] text-black">
-                                    {currencySymbol}
-                                    {price.toLocaleString()}
+                                    {priceFormatter.format(price)}
                                 </span>
                             </div>
 

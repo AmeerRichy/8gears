@@ -71,7 +71,11 @@ const variantSchema = z.object({
     .min(1, "At least one image is required"),
 });
 
+import { sectionSettingsSchema } from '@/lib/validations/product';
+import { DEFAULT_PRODUCT_SECTIONS, PRODUCT_SECTIONS } from '@/lib/productSections';
+
 const productSchema = z.object({
+  sectionSettings: sectionSettingsSchema,
   title: z
     .string()
     .min(3, "Title must be at least 3 characters"),
@@ -166,6 +170,7 @@ function normalizeProductData(
 ): ProductFormValues {
   if (!initialData) {
     return {
+      sectionSettings: { ...DEFAULT_PRODUCT_SECTIONS },
       title: "",
       slug: "",
       category: "",
@@ -252,6 +257,7 @@ function normalizeProductData(
   }
 
   return {
+    sectionSettings: { ...DEFAULT_PRODUCT_SECTIONS, ...initialData.sectionSettings },
     title: initialData.title || "",
 
     slug: initialData.slug || "",
@@ -496,107 +502,6 @@ function validateCMSFields(
     );
   }
 
-  const validCloseUps = (
-    data.closeUpSection || []
-  ).filter(
-    (item) =>
-      !isEmpty(item.image) &&
-      !isEmpty(item.title) &&
-      !isEmpty(item.description)
-  );
-
-  if (validCloseUps.length === 0) {
-    missing.push(
-      "At least 1 Close-up Section"
-    );
-  }
-
-  if (
-    isEmpty(
-      data.engineeredSection?.title
-    )
-  ) {
-    missing.push(
-      "Engineered Section Title"
-    );
-  }
-
-  if (
-    isEmpty(
-      data.engineeredSection
-        ?.description
-    )
-  ) {
-    missing.push(
-      "Engineered Section Description"
-    );
-  }
-
-  if (
-    isEmpty(
-      data.engineeredSection?.image
-    )
-  ) {
-    missing.push(
-      "Engineered Section Image"
-    );
-  }
-
-  if (isEmpty(data.lifestyleImage)) {
-    missing.push("Lifestyle Image");
-  }
-
-  if (
-    isEmpty(
-      data.stylishSection?.title
-    )
-  ) {
-    missing.push(
-      "Stylish Section Title"
-    );
-  }
-
-  if (
-    isEmpty(
-      data.stylishSection
-        ?.description
-    )
-  ) {
-    missing.push(
-      "Stylish Section Description"
-    );
-  }
-
-  if (
-    isEmpty(
-      data.stylishSection?.mainImage
-    )
-  ) {
-    missing.push("Stylish Main Image");
-  }
-
-  if (
-    isEmpty(
-      data.stylishSection
-        ?.secondaryImage
-    )
-  ) {
-    missing.push(
-      "Stylish Secondary Image"
-    );
-  }
-
-  if (
-    !Array.isArray(
-      data.bottomGallery
-    ) ||
-    data.bottomGallery.length === 0
-  ) {
-    missing.push(
-      "Bottom Gallery Images"
-    );
-  }
-
   return missing;
 }
 
@@ -822,9 +727,9 @@ export default function ProductForm({
           data.closeUpSection
             .filter(
               (item) =>
-                item.image &&
-                item.title &&
-                item.description
+                !isEmpty(item.image) ||
+                !isEmpty(item.title) ||
+                !isEmpty(item.description)
             )
             .slice(0, 3),
 
@@ -1203,6 +1108,26 @@ export default function ProductForm({
             </button>
           </div>
         </div>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-5">
+          <h2 className="text-lg font-semibold">Optional product sections</h2>
+          <p className="mt-1 text-sm text-gray-500">Optional sections appear in Visual CMS. Turn a section on to edit it and enable it on the storefront; off sections are blurred and locked. Empty sections stay hidden from customers. Turning a section off keeps its content.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PRODUCT_SECTIONS.map(({ key, label }) => (
+              <label key={key} className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-gray-200 p-3 text-sm">
+                <span>{label}</span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  aria-label={`Enable ${label}`}
+                  {...register(`sectionSettings.${key}`)}
+                  className="h-5 w-5 accent-orange-500"
+                />
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-gray-500">You Might Also Like and Reviews are always enabled. Related products appear automatically when available.</p>
+        </section>
 
         {viewMode === "preview" ? (
           <div className="fixed inset-0 z-[1000] animate-in overflow-hidden bg-slate-900 fade-in duration-300">

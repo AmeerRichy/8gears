@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { DISPLAY_CURRENCY } from "@/lib/checkout/constants";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { useCart } from "../context/CartContext";
@@ -21,7 +22,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const mainImage = mainVariant.images?.[0] || "/placeholder.png";
   const price = Number(mainVariant.price || 0);
-  const currencySymbol = (product as any)?.currencySymbol || "$";
+  const currencySymbol = `${DISPLAY_CURRENCY} `;
   const reviewCount = (product as any)?.reviews?.reviewCount || 0;
   const rating = Number((product as any)?.reviews?.rating || 0);
   const isOutOfStock = mainVariant.stockQuantity === 0;
