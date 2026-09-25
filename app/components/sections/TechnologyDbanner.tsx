@@ -34,7 +34,7 @@ export default function TechnologyDynimaSection() {
           bg-no-repeat
         "
         style={{
-          backgroundImage: "url('/assets/images/tdbbg.png')",
+          backgroundImage: "url('/assets/images/tdbbg.webp')",
         }}
       />
 

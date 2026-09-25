@@ -1,5 +1,6 @@
 "use client";
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import {
   Bike,
   Box,
@@ -499,7 +500,7 @@ export default function TrackOrderResult({
                   <div className="flex h-[51px] w-[51px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/55 sm:h-[53px] sm:w-[53px]">
                     {item.image ? (
                       <img
-                        src={item.image}
+                        src={getOptimizedCloudinaryImage(item.image, 160)}
                         alt={item.title}
                         className="h-full w-full object-cover"
                       />

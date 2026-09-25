@@ -20,7 +20,7 @@ export default function PrivacyHero() {
           "
           style={{
             backgroundImage:
-              "url('/assets/images/track-order-bg-lines.png')",
+              "url('/assets/images/track-order-bg-lines.webp')",
           }}
         />
 

@@ -120,7 +120,7 @@ export default function OurstoryQuality() {
             /* ================= FRONT ================= */
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/quality.png"
+                src="/assets/images/quality.webp"
                 alt="Black leather combined with heritage textile detailing"
                 fill
                 priority={false}

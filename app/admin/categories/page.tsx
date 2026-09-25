@@ -1,5 +1,6 @@
 'use client';
 
+import { invalidateCategoryRequests } from "@/lib/categoryRequests";
 import AdminLayout from '@/components/AdminLayout';
 import { useState, useEffect } from 'react';
 import { FolderTree, Package, Plus, Trash2, X } from 'lucide-react';
@@ -33,12 +34,14 @@ export default function ManageCategories() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      invalidateCategoryRequests();
       const res = await fetch('/api/admin/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCategory),
       });
       if (res.ok) {
+        invalidateCategoryRequests();
         fetchCategories();
         setIsModalOpen(false);
         setNewCategory({ name: '', description: '' });
@@ -56,8 +59,10 @@ export default function ManageCategories() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure? This won\'t delete products in this category, but the category itself will be removed from the master list.')) return;
     try {
+      invalidateCategoryRequests();
       const res = await fetch(`/api/admin/categories?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
+        invalidateCategoryRequests();
         setCategories(categories.filter(c => c._id !== id));
       }
     } catch (error) {

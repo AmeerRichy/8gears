@@ -153,7 +153,7 @@ export default function AboutPurpose() {
               "
             >
               <img
-                src="/assets/images/about-vision.jpg"
+                src="/assets/images/about-vision.webp"
                 alt="Mountain road representing the vision of 8-Gear"
                 className="
                   h-full
@@ -336,7 +336,7 @@ export default function AboutPurpose() {
               "
             >
               <img
-                src="/assets/images/about-mission.jpg"
+                src="/assets/images/about-mission.webp"
                 alt="Motorcyclist representing the mission of 8-Gear"
                 className="
                   h-full

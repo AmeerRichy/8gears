@@ -11,7 +11,7 @@ export default function LatestProducts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/products")
+    fetch("/api/products?limit=4")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

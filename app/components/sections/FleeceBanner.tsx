@@ -9,7 +9,7 @@ const FleeceBanner = () => {
       <div className="relative min-h-[620px] w-full lg:aspect-[1920/1078] lg:min-h-0">
         {/* Background Image */}
         <Image
-          src="/assets/images/fleece-banner.png"
+          src="/assets/images/fleece-banner.webp"
           alt="Motorcycle rider wearing the 8-Gear fleece collection"
           fill
           sizes="100vw"
@@ -18,7 +18,7 @@ const FleeceBanner = () => {
         />
 
         {/* Main Dark Overlay */}
-        <div className="absolute inset-0 bg-black/55" />
+        {/* <div className="absolute inset-0 bg-black/55" /> */}
 
         {/* Slight bottom cinematic depth */}
         <div className="absolute inset-x-0 bottom-0 h-[260px] bg-gradient-to-t from-black/20 to-transparent" />

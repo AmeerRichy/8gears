@@ -60,7 +60,7 @@ export default function AboutSustainability() {
           "
         >
           <img
-            src="/assets/images/about-sustainability.png"
+            src="/assets/images/about-sustainability.webp"
             alt="Sustainable and ethically sourced motorcycle gear"
             className="
               block
@@ -268,7 +268,7 @@ export default function AboutSustainability() {
           "
         >
           <img
-            src="/assets/images/about-sustainability.png"
+            src="/assets/images/about-sustainability.webp"
             alt="Sustainable and ethically sourced motorcycle gear"
             className="
               block

@@ -17,7 +17,7 @@ export default function CafeRacer() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/assets/images/cafe-racer-banner.png')",
+            backgroundImage: "url('/assets/images/cafe-racer-banner.webp')",
           }}
         />
 

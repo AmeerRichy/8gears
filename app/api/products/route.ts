@@ -46,7 +46,12 @@ export async function GET(req: Request) {
     const query = category
       ? { category, isActive: { $ne: false } }
       : { isActive: { $ne: false } };
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    const productsQuery = Product.find(query).sort({ createdAt: -1 });
+    const requestedLimit = Number(searchParams.get('limit'));
+    if (Number.isSafeInteger(requestedLimit) && requestedLimit > 0) {
+      productsQuery.limit(Math.min(requestedLimit, 100));
+    }
+    const products = await productsQuery;
     
     return NextResponse.json(products);
   } catch (error: any) {

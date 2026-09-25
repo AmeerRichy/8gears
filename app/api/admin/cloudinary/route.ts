@@ -56,6 +56,7 @@ export async function POST(req: Request) {
         {
           resource_type: 'image',
           folder: 'products',
+          format: 'webp',
           transformation: [
             { width: 2400, height: 2400, crop: 'limit', quality: 'auto:good' },
           ],

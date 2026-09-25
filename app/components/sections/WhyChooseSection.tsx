@@ -76,7 +76,7 @@ export default function WhyChooseSection() {
       >
         {/* Background image */}
         <Image
-          src="/assets/images/why-choose-gear.png"
+          src="/assets/images/why-choose-gear.webp"
           alt="8-Gear premium motorcycle riding gear"
           fill
           sizes="100vw"
@@ -336,7 +336,7 @@ export default function WhyChooseSection() {
           "
         >
           <Image
-            src="/assets/images/why-choose-gear.png"
+            src="/assets/images/why-choose-gear.webp"
             alt="8-Gear premium motorcycle riding gear"
             fill
             sizes="100vw"

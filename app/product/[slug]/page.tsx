@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import connectDB from "@/app/lib/db/mongodb";
@@ -11,10 +12,10 @@ interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function findPublishedProduct(slug: string) {
+const findPublishedProduct = cache(async (slug: string) => {
   await connectDB();
   return Product.findOne({ slug, isActive: { $ne: false } });
-}
+});
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;

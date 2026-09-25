@@ -6,7 +6,7 @@ import Image from "next/image";
 
 const slides = [
   {
-    image: "/assets/images/h1m.png",
+    image: "/assets/images/h1m.webp",
     title: (
       <>
         Intelligent Riding
@@ -23,7 +23,7 @@ const slides = [
     ),
   },
   {
-    image: "/assets/images/h1m.png",
+    image: "/assets/images/h2m.webp",
     title: (
       <>
         Ride Beyond
@@ -40,7 +40,7 @@ const slides = [
     ),
   },
   {
-    image: "/assets/images/h1m.png",
+    image: "/assets/images/h3m.webp",
     title: (
       <>
         Built For Every

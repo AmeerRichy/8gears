@@ -12,7 +12,7 @@ export default function ContactHero() {
           className="pointer-events-none absolute inset-0 bg-contain bg-center bg-no-repeat opacity-60"
           style={{
             backgroundImage:
-              "url('/assets/images/track-order-bg-lines.png')",
+              "url('/assets/images/track-order-bg-lines.webp')",
           }}
         />
 

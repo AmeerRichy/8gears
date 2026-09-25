@@ -30,7 +30,7 @@ export default function ArmorCertificationSection() {
       >
         <div className="relative w-full">
           <Image
-            src="/assets/images/armor-certification-full.png"
+            src="/assets/images/armor-certification-full.webp"
             alt="8 Gear protective hoodie certification and armor feature overview"
             width={1800}
             height={666}

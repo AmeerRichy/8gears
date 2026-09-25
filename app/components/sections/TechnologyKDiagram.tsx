@@ -39,7 +39,7 @@ export default function TechnologyKDiagram() {
           "
         >
           <Image
-            src="/assets/images/tddiagram.png"
+            src="/assets/images/tddiagram.webp"
             alt="8 Gear motorcycle jeans protection technology diagram"
             width={1600}
             height={900}

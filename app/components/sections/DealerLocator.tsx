@@ -314,7 +314,7 @@ function DealerMapMarker({
       >
         <span className="absolute bottom-[-1px] left-1/2 h-[6px] w-[22px] -translate-x-1/2 rounded-full bg-black/20 blur-[4px] lg:h-[7px] lg:w-[25px]" />
         <Image
-          src="/assets/images/blip.png"
+          src="/assets/images/blip.webp"
           alt=""
           width={54}
           height={66}

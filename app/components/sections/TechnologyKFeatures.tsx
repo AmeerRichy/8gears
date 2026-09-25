@@ -17,7 +17,7 @@ const features = [
         YKK® zippered fly on Brushed metal button closure
       </>
     ),
-    image: "/assets/images/tkq.png",
+    image: "/assets/images/tkq.webp",
     imageClass:
       "w-[250px] sm:w-[290px] lg:w-[330px] xl:w-[360px]",
     initialX: -110,
@@ -35,7 +35,7 @@ const features = [
         road riding with removable Level 2 Armors CE Certified
       </>
     ),
-    image: "/assets/images/tks.png",
+    image: "/assets/images/tks.webp",
     imageClass:
       "w-[250px] sm:w-[300px] lg:w-[330px] xl:w-[350px]",
     initialX: 110,
@@ -53,7 +53,7 @@ const features = [
         breathable construction. Moisture-wicking liner
       </>
     ),
-    image: "/assets/images/tkm.png",
+    image: "/assets/images/tkm.webp",
     imageClass:
       "w-[160px] sm:w-[190px] lg:w-[205px] xl:w-[220px]",
     initialX: 0,
@@ -71,7 +71,7 @@ const features = [
         stitched seams and Flat riveted seam reinforcement
       </>
     ),
-    image: "/assets/images/tkc.png",
+    image: "/assets/images/tkc.webp",
     imageClass:
       "w-[260px] sm:w-[310px] lg:w-[340px] xl:w-[370px]",
     initialX: 0,

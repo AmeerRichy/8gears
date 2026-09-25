@@ -62,7 +62,7 @@ export default function AboutStory() {
           "
           style={{
             backgroundImage:
-              "url('/assets/images/about-story.jpg')",
+              "url('/assets/images/about-story.webp')",
           }}
         />
 

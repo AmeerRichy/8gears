@@ -34,7 +34,7 @@ export default function TechnologyKevlarSection() {
           bg-no-repeat
         "
         style={{
-          backgroundImage: "url('/assets/images/tkbbg.png')",
+          backgroundImage: "url('/assets/images/tkbbg.webp')",
         }}
       />
 

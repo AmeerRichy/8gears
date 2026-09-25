@@ -1,5 +1,6 @@
 'use client';
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import AdminLayout from '@/app/components/AdminLayout';
 import { useState, useEffect } from 'react';
 import { Search, Mail, Phone, Calendar, Trash2, Download, ToggleLeft, ToggleRight, Send, LayoutTemplate, X, Image as ImageIcon, Tag, MousePointerClick, Eye } from 'lucide-react';
@@ -446,7 +447,7 @@ export default function AdminSubscribersPage() {
                     {templateType !== 'custom' && selectedProductId && (
                       <div className="text-center mb-6">
                         {products.find(p => p._id === selectedProductId)?.variants[0]?.images[0] ? (
-                          <img src={products.find(p => p._id === selectedProductId)?.variants[0].images[0]} alt="Product" className="w-full h-auto rounded-xl shadow-md" />
+                          <img src={getOptimizedCloudinaryImage(products.find(p => p._id === selectedProductId)?.variants[0].images[0], 1080)} alt="Product" className="w-full h-auto rounded-xl shadow-md" />
                         ) : (
                           <div className="w-full h-48 bg-slate-100 rounded-xl flex items-center justify-center text-slate-300">
                             <ImageIcon size={48} />

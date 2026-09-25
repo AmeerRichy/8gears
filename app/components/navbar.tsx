@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchCategories } from "@/lib/categoryRequests";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -93,7 +94,7 @@ export default function Navbar() {
      CATEGORIES
   ===================================================== */
   useEffect(() => {
-    fetch("/api/categories")
+    fetchCategories()
       .then((response) =>
         response.ok ? response.json() : []
       )
@@ -328,7 +329,7 @@ export default function Navbar() {
               "
             >
               <Image
-                src="/logo.png"
+                src="/logo.webp"
                 alt="8 Gears"
                 width={135}
                 height={70}
@@ -814,7 +815,7 @@ export default function Navbar() {
             "
           >
             <Image
-              src="/logo.png"
+              src="/logo.webp"
               alt="8 Gears"
               width={105}
               height={55}

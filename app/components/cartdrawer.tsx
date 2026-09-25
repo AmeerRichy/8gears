@@ -1,5 +1,6 @@
 "use client";
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useRouter } from "next/navigation";
@@ -185,7 +186,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     {/* Product Image */}
                     <div className="w-[100px] h-[150px] bg-[#f1f1f1] overflow-hidden shrink-0">
                       <img
-                        src={item.image}
+                        src={getOptimizedCloudinaryImage(item.image, 420)}
                         alt={item.name}
                         className="w-full h-full object-cover object-center"
                       />

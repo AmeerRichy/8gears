@@ -26,7 +26,7 @@ export default function RideWithConfidence() {
           BACKGROUND IMAGE
       ====================================================== */}
       <Image
-        src="/assets/images/ride-confidence.png"
+        src="/assets/images/ride-confidence.webp"
         alt="Motorcyclist standing beside an adventure motorcycle in the mountains"
         fill
         quality={90}

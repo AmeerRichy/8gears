@@ -78,7 +78,7 @@ export default function CraftedWithPurpose() {
           `}
         >
           <img
-            src="/assets/images/crafted-purpose.png"
+            src="/assets/images/crafted-purpose.webp"
             alt="Craftsperson stitching premium motorcycle gear"
             className="
               block
@@ -381,7 +381,7 @@ That philosophy became more than a product concept. It became the foundation of 
             "
           >
             <img
-              src="/assets/images/crafted-purpose.png"
+              src="/assets/images/crafted-purpose.webp"
               alt="Craftsperson stitching premium motorcycle gear"
               className="
                 block

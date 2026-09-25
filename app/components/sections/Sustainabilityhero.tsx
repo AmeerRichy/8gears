@@ -38,7 +38,7 @@ export default function SustainabilityHero() {
         "
         style={{
           backgroundImage:
-            'url("/assets/images/sustainabilityhero.png")',
+            'url("/assets/images/sustainabilityhero.webp")',
         }}
       />
 

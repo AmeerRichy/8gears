@@ -26,7 +26,7 @@ function SuccessBackground() {
       aria-hidden="true"
     >
       <img
-        src="/assets/images/track-order-bg-lines.png"
+        src="/assets/images/track-order-bg-lines.webp"
         alt=""
         className="absolute left-1/2 top-1/2 h-auto w-[980px] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-100 sm:w-[1400px] lg:w-full"
       />

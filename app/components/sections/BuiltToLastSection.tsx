@@ -163,7 +163,7 @@ export default function BuiltToLastSection() {
             "
           >
             <Image
-              src="/assets/images/built-to-last.png"
+              src="/assets/images/built-to-last.webp"
               alt="Sustainable motorcycle gear designed to last"
               fill
               priority={false}

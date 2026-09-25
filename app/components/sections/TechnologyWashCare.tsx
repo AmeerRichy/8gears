@@ -23,7 +23,7 @@ export default function TechnologyWashCare() {
           BACKGROUND IMAGE
       ====================================================== */}
       <Image
-        src="/assets/images/technology-wash-care.png"
+        src="/assets/images/technology-wash-care.webp"
         alt="8 Gear motorcycle jeans wash and care"
         fill
         sizes="100vw"

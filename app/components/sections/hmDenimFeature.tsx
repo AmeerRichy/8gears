@@ -193,7 +193,7 @@ const DenimFeature = () => {
               "
             >
               <img
-                src="/assets/images/denim-feature-left.png"
+                src="/assets/images/denim-feature-left.webp"
                 alt="8-Gear rider wearing protective motorcycle apparel"
                 draggable={false}
                 loading="lazy"
@@ -223,7 +223,7 @@ const DenimFeature = () => {
             "
           >
             <img
-              src="/assets/images/denim-feature-right.png"
+              src="/assets/images/denim-feature-right.webp"
               alt="8-Gear water-repellent protective riding hoodie"
               draggable={false}
               loading="lazy"

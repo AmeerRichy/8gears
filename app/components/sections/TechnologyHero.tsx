@@ -11,7 +11,7 @@ import { ArrowLeft } from "lucide-react";
 
 const slides = [
   {
-    image: "/assets/images/techhero1.png",
+    image: "/assets/images/techhero1.webp",
     boldTitle: "THE SCIENCE",
     lightTitle: "OF SAFETY",
     description: (
@@ -23,7 +23,7 @@ const slides = [
     ),
   },
   {
-    image: "/assets/images/techhero3.png",
+    image: "/assets/images/techhero3.webp",
     boldTitle: "ENGINEERED",
     lightTitle: "FOR PROTECTION",
     description: (
@@ -35,7 +35,7 @@ const slides = [
     ),
   },
   {
-    image: "/assets/images/techhero2.png",
+    image: "/assets/images/techhero2.webp",
     boldTitle: "BUILT TO",
     lightTitle: "PERFORM",
     description: (

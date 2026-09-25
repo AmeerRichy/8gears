@@ -38,7 +38,7 @@ export default function OurStoryHero() {
           md:bg-center
         "
         style={{
-          backgroundImage: 'url("/assets/images/ourstoryhero.png")',
+          backgroundImage: 'url("/assets/images/ourstoryhero.webp")',
         }}
       />
 

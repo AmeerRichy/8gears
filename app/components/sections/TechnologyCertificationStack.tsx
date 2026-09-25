@@ -21,19 +21,19 @@ const cards = [
     title: "Class A Garments (EN 17092-4:2020)",
     description:
       "Class A garments provide essential motorcycle protection with a greater focus on comfort, mobility, and lighter construction. They are particularly suitable for urban riding and lower-speed environments where ease of movement is a priority.",
-    image: "/assets/images/class-a.png",
+    image: "/assets/images/class-a.webp",
   },
   {
     title: "Class AA Garments (EN 17092-3:2020)",
     description:
       "Class AA garments provide a high level of protection from impact and abrasion while maintaining greater comfort and flexibility. They are designed for a wide range of road riding environments where certified protection and everyday usability are equally important.",
-    image: "/assets/images/class-aa.png",
+    image: "/assets/images/class-aa.webp",
   },
   {
     title: "Class AAA Garments (EN 17092-2:2020)",
     description:
       "Class AAA garments offer the highest level of protection from impact and abrasion, using materials and constructions that meet higher requirements than for garments classified as Class AA and Class A. Class AAA garments may have limiting ergonomic, weight, and thermal penalties for some riding activities. Some common examples include one-piece or combi suits.",
-    image: "/assets/images/class-aaa.png",
+    image: "/assets/images/class-aaa.webp",
   },
 ];
 

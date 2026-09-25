@@ -36,7 +36,7 @@ function TrackingBackground({
       aria-hidden="true"
     >
       <img
-        src="/assets/images/track-order-bg-lines.png"
+        src="/assets/images/track-order-bg-lines.webp"
         alt=""
         className="
           absolute

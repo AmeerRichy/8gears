@@ -7,7 +7,7 @@ const ProductFeatureBanner = () => {
     <section className="w-full bg-[#f4efe7]">
       <div className="mx-auto w-full max-w-[1920px]">
         <Image
-          src="/assets/images/2ndechero.png"
+          src="/assets/images/2ndechero.webp"
           alt="Built to move. Made to protect."
           width={1920}
           height={1008}

@@ -77,7 +77,7 @@ export default function EngineeredPerformance() {
           `}
         >
           <img
-            src="/assets/images/engineered-performance.png"
+            src="/assets/images/engineered-performance.webp"
             alt="Premium motorcycle jacket leather, stitching and zipper details"
             className="
               block
@@ -351,7 +351,7 @@ export default function EngineeredPerformance() {
             "
           >
             <img
-              src="/assets/images/engineered-performance.png"
+              src="/assets/images/engineered-performance.webp"
               alt="Premium motorcycle jacket leather, stitching and zipper details"
               className="
                 block

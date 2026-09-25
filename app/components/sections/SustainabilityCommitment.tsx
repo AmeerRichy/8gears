@@ -10,7 +10,7 @@ import {
 const pillars = [
   {
     id: 1,
-    image: "/assets/images/sustainability-materials.png",
+    image: "/assets/images/sustainability-materials.webp",
     title: "Responsible Materials",
     description:
       "We prioritize materials that reduce environmental impact without compromising protection or performance.",
@@ -18,7 +18,7 @@ const pillars = [
   },
   {
     id: 2,
-    image: "/assets/images/sustainability-durability.png",
+    image: "/assets/images/sustainability-durability.webp",
     title: "Built For Durability",
     description:
       "The most suitable gear is the gear that lasts. Our first and foremost priority is to make sure our gear passes every durability test.",
@@ -26,7 +26,7 @@ const pillars = [
   },
   {
     id: 3,
-    image: "/assets/images/sustainability-ethical.png",
+    image: "/assets/images/sustainability-ethical.webp",
     title: "Ethical Manufacturing",
     description:
       "We partner with certified factories that meet strict standards for people and the planet.",

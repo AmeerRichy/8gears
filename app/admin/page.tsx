@@ -1,5 +1,6 @@
 'use client';
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import AdminLayout from '@/components/AdminLayout';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
@@ -154,7 +155,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-slate-200 rounded-xl overflow-hidden">
                       {product.variants?.[0]?.images?.[0] && (
-                        <img src={product.variants[0].images[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={getOptimizedCloudinaryImage(product.variants[0].images[0], 160)} alt="" className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div>

@@ -17,7 +17,7 @@ const features = [
         Breathable fabric to reduce heat
       </>
     ),
-    image: "/assets/images/tdq.png",
+    image: "/assets/images/tdq.webp",
     imageClass:
       "w-[280px] sm:w-[330px] lg:w-[380px] xl:w-[420px]",
 
@@ -37,7 +37,7 @@ const features = [
         required - Protective performance retained after laundering
       </>
     ),
-    image: "/assets/images/tds.png",
+    image: "/assets/images/tds.webp",
     imageClass:
       "w-[190px] sm:w-[220px] lg:w-[240px] xl:w-[255px]",
 
@@ -57,7 +57,7 @@ const features = [
         ensuring unparalleled tensile strength &amp; low weight
       </>
     ),
-    image: "/assets/images/tdm.png",
+    image: "/assets/images/tdm.webp",
     imageClass:
       "w-[330px] sm:w-[390px] lg:w-[450px] xl:w-[500px]",
 
@@ -77,7 +77,7 @@ const features = [
         stitched seams and Flat riveted seam reinforcement
       </>
     ),
-    image: "/assets/images/tdc.png",
+    image: "/assets/images/tdc.webp",
     imageClass:
       "w-[250px] sm:w-[290px] lg:w-[320px] xl:w-[345px]",
 

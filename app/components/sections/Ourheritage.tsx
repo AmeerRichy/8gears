@@ -120,7 +120,7 @@ export default function HeritageStandard() {
             /* ================= FRONT ================= */
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/heritage-standard.png"
+                src="/assets/images/heritage-standard.webp"
                 alt="Black leather combined with heritage textile detailing"
                 fill
                 priority={false}

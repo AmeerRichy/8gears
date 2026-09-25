@@ -1,5 +1,6 @@
 'use client';
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCart } from '@/app/context/CartContext';
 import { useRouter } from 'next/navigation';
@@ -1100,7 +1101,7 @@ function OrderSummary({
             <div className="flex items-start gap-5">
               <div className="relative h-[92px] w-[92px] shrink-0 overflow-visible rounded-[18px]">
                 <img
-                  src={firstItem.image}
+                  src={getOptimizedCloudinaryImage(firstItem.image, 420)}
                   alt={firstItem.title}
                   className="h-full w-full rounded-[18px] border border-black/10 object-cover shadow-md"
                 />

@@ -1,5 +1,6 @@
 'use client';
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import AdminLayout from '@/app/components/AdminLayout';
 import { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
@@ -176,7 +177,7 @@ export default function AdminLeadsPage() {
                     {selectedLead.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl">
                         <div className="flex items-center gap-4">
-                          <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                          <img src={getOptimizedCloudinaryImage(item.image, 160)} alt="" className="w-12 h-12 rounded-xl object-cover" />
                           <div>
                             <p className="text-sm font-black text-slate-900">{item.title}</p>
                             <p className="text-[10px] font-bold text-slate-400 uppercase">{item.color} / {item.size}</p>

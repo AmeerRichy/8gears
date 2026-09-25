@@ -944,7 +944,7 @@ export default function Footer() {
 //             className="inline-flex"
 //           >
 //             <img
-//               src="/logo.png"
+//               src="/logo.webp"
 //               alt="8Gear"
 //               draggable={false}
 //               className="
@@ -1166,7 +1166,7 @@ export default function Footer() {
 //               className="inline-flex"
 //             >
 //               <img
-//                 src="/logo.png"
+//                 src="/logo.webp"
 //                 alt="8Gear"
 //                 draggable={false}
 //                 className="

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchCategories } from "@/lib/categoryRequests";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter } from "lucide-react";
@@ -23,7 +24,7 @@ export default function CategoryListing() {
   useEffect(() => {
     Promise.all([
       fetch("/api/products").then((res) => res.json()),
-      fetch("/api/categories").then((res) => res.json()),
+      fetchCategories().then((res) => res.json()),
     ])
       .then(([productsData, categoriesData]) => {
         if (Array.isArray(productsData)) {

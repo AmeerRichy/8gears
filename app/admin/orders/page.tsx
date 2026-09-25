@@ -1,5 +1,6 @@
 'use client';
 
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import AdminLayout from '@/app/components/AdminLayout';
 import { useState, useEffect } from 'react';
 import { 
@@ -266,7 +267,7 @@ export default function AdminOrdersPage() {
                       <div className="flex -space-x-2">
                         {order.items.slice(0, 3).map((item: any, idx: number) => (
                           <div key={idx} className="w-10 h-10 rounded-xl border-2 border-white bg-slate-100 overflow-hidden shadow-sm">
-                            <img src={item.image} alt="" className="w-full h-full object-cover" />
+                            <img src={getOptimizedCloudinaryImage(item.image, 420)} alt="" className="w-full h-full object-cover" />
                           </div>
                         ))}
                         {order.items.length > 3 && (
@@ -387,7 +388,7 @@ export default function AdminOrdersPage() {
                     {selectedOrder.items.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl">
                         <div className="w-16 h-16 rounded-xl bg-slate-50 overflow-hidden shrink-0">
-                          <img src={item.image} alt="" className="w-full h-full object-cover" />
+                          <img src={getOptimizedCloudinaryImage(item.image, 420)} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1">
                           <p className="font-black text-slate-900 leading-tight">{item.title}</p>

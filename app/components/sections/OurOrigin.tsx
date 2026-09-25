@@ -131,7 +131,7 @@ export default function OurOrigin() {
             /* ================= FRONT ================= */
             <div className="absolute inset-0">
               <Image
-                src="/assets/images/ourorigin.png"
+                src="/assets/images/ourorigin.webp"
                 alt="Designers working together in a motorcycle gear workshop"
                 fill
                 priority={false}

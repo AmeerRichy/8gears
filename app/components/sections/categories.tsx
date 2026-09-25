@@ -1,5 +1,7 @@
 "use client";
 
+import { fetchCategories } from "@/lib/categoryRequests";
+import { getOptimizedCloudinaryImage } from "@/lib/cloudinaryImage";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ChevronRight, Package } from "lucide-react";
@@ -16,7 +18,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/categories")
+    fetchCategories()
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setCategories(data);
@@ -62,7 +64,7 @@ export default function Categories() {
             >
               <div className="aspect-[4/5] overflow-hidden bg-slate-100">
                 <img
-                  src={category.image || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=800'}
+                  src={getOptimizedCloudinaryImage(category.image || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=800', 1080)}
                   alt={category.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
